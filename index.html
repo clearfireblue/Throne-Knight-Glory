@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Wrath of Kings: a House-based game of medieval politics. Raise a family, run one operation per season, survive the court and outlast the king.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Wrath of Kings">
+<meta name="theme-color" content="#e6d8b8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14110d" media="(prefers-color-scheme: dark)">
 <title>Wrath of Kings</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1412,8 +1418,28 @@ function groupOf(m){
 const GROUPS=['The ruling pair','Children','Kin','Wards','Returned home','The fallen'];
 
 /* ---------- render ---------- */
+/* the House's sigil as the home-screen (apple-touch-icon) and tab icon: a 180px PNG on parchment, redrawn when the sigil changes */
+let iconKey=null;
+function updateHomeIcon(){
+  const key=JSON.stringify(H.house.sigil);if(key===iconKey)return;iconKey=key;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="118" viewBox="0 0 100 118">${sigilSVG(H.house.sigil,'icon')}</svg>`;
+  const img=new Image();
+  img.onload=()=>{try{
+    const N=180,cv=document.createElement('canvas');cv.width=cv.height=N;const x=cv.getContext('2d');
+    const g=x.createRadialGradient(N/2,N*.35,N*.1,N/2,N/2,N*.75);g.addColorStop(0,'#efe3c6');g.addColorStop(1,'#d9c79f');
+    x.fillStyle=g;x.fillRect(0,0,N,N);
+    const h=N*.78,w=h*100/118;x.shadowColor='rgba(40,25,10,.35)';x.shadowBlur=6;x.shadowOffsetY=3;
+    x.drawImage(img,(N-w)/2,(N-h)/2+2,w,h);
+    const url=cv.toDataURL('image/png');
+    let link=document.querySelector('link[rel="apple-touch-icon"]');
+    if(!link){link=document.createElement('link');link.rel='apple-touch-icon';document.head.appendChild(link)}
+    link.setAttribute('sizes','180x180');link.href=url;
+  }catch(e){}};
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
 function renderHeader(){
   $('sigil').innerHTML=sigilSVG(H.house.sigil);
+  try{updateHomeIcon()}catch(e){}
   if(document.activeElement!==$('hname'))$('hname').value='House '+H.house.name;
   if(document.activeElement!==$('hwords'))$('hwords').value='“'+H.house.words+'”';
   if(document.activeElement!==$('hseat'))$('hseat').value='Seat: '+H.house.seat;
