@@ -1335,6 +1335,7 @@ function generate(seed){
 /* ---------- state + saving ---------- */
 /* ---------- save slots ---------- */
 const KEY='wrathOfKings.v1',SLOTS_KEY='wrathOfKings.slots',SLOT_KEY=id=>'wrathOfKings.slot.'+id,MAX_SLOTS=6;
+let planning=null,planTeam=[],leverage=null,ravensOpen=true;
 let H=null,sel=0,section='house',lastRoll=null,pendingConfirm=null,activeSlot=null,savesOpen=false,pendingDelete=null;
 function readMeta(){try{const m=JSON.parse(localStorage.getItem(SLOTS_KEY)||'null');if(m&&Array.isArray(m.slots))return m}catch(e){}return {active:null,slots:[]}}
 function writeMeta(m){try{localStorage.setItem(SLOTS_KEY,JSON.stringify(m))}catch(e){}}
