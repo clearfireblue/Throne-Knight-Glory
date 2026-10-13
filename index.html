@@ -38,7 +38,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 /* house header */
 header.house{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px 22px;align-items:center;padding-bottom:14px;border-bottom:1px solid var(--line)}
 .sigil{width:88px;height:104px;display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3))}
-.hname{display:block;width:100%;margin:4px 0 0 -4px;padding:0 4px;background:transparent;border:1px solid transparent;border-radius:3px;font:700 clamp(28px,5.5vw,52px)/1.08 var(--f-display);letter-spacing:.04em;text-transform:uppercase}
+.hname{display:block;width:100%;margin:4px 0 0 -4px;padding:0 4px;background:transparent;border:1px solid transparent;border-radius:3px;font:700 clamp(28px,5.5vw,52px)/1.08 var(--f-display);letter-spacing:.04em;text-transform:uppercase;resize:none;overflow:hidden;white-space:normal;overflow-wrap:break-word;color:inherit;line-height:1.08}
 .hwords,.hseat{display:block;width:100%;margin-left:-4px;padding:0 4px;background:transparent;border:1px solid transparent;border-radius:3px}
 .hwords{font-style:italic;font-size:19px}
 .hseat{font-size:15px;color:var(--muted)}
@@ -114,6 +114,23 @@ figure.cam figcaption{font:500 12px/1.3 var(--f-body);color:var(--muted);text-al
 .royaledit{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:flex-end;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
 .royaledit .fld{flex:1;min-width:10em}
 .royaledit input{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:8px 10px;min-height:44px;width:100%}
+.sgback{position:fixed;inset:0;z-index:50;background:rgba(20,12,4,.55);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 12px}
+.sgpanel{position:relative;width:100%;max-width:620px;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+.sgpanel::before,.sgpanel::after{content:"";position:absolute;width:12px;height:12px;border:2px solid var(--gold);pointer-events:none}
+.sgpanel::before{top:-1px;left:-1px;border-right:0;border-bottom:0}.sgpanel::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+.sghead{display:flex;gap:16px;align-items:center;margin-bottom:6px}
+.sghead svg{width:96px;height:113px;flex:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3))}
+.sghead h2{font-size:22px}
+.sgpanel h3{font:600 12px var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+.sgrule{margin:4px 0 0;font-size:14px;color:var(--muted)}
+.swatches{display:flex;flex-wrap:wrap;gap:6px}
+.swatches button{display:flex;align-items:center;gap:6px;min-height:40px;padding:4px 10px 4px 6px;font-size:14px;background:var(--field)}
+.swatches i{width:22px;height:22px;border-radius:2px;border:1px solid rgba(0,0,0,.45);flex:none}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px}
+.tiles button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;min-height:auto;font-size:13px;background:var(--field)}
+.tiles svg{width:40px;height:47px}
+.swatches button[aria-pressed="true"],.tiles button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow);font-weight:600}
+.sgfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 .rolled{font-size:16px;min-height:1.6em;margin:2px 0 0;padding:8px 12px;background:var(--field);border-left:3px solid var(--line)}
 .rolled.hit{border-left-color:var(--accent)}.rolled.miss{border-left-color:var(--blood)}
 .rolled .hit{color:var(--accent);font-weight:600}.rolled .miss{color:var(--blood);font-weight:600}
@@ -228,7 +245,7 @@ ul.offices li,ul.claim li{display:flex;gap:10px;align-items:center;font-size:16p
 .hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
 .hcard{display:flex;flex-direction:column;gap:8px;background:var(--field);border:1px solid var(--line);border-radius:3px;padding:12px;min-width:0}
 .hhead{display:flex;gap:10px;align-items:center}
-.hcard h3{font-size:18px}
+.hcard h3{font-size:18px;min-width:0;overflow-wrap:anywhere}
 .okc{color:var(--accent)}
 .secrets{display:grid;gap:8px;border-top:1px dashed var(--line);padding-top:8px}
 .sec{display:grid;gap:4px;font-size:15px;font-style:italic}
@@ -253,7 +270,7 @@ ul.wares{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 table.rel{width:100%;border-collapse:collapse;font-size:15px;min-width:620px}
 table.rel th,table.rel td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
 table.rel thead th{font:600 11px var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-table.rel tbody th{font:600 15px var(--f-display);letter-spacing:.03em;white-space:nowrap}
+table.rel tbody th{font:600 15px var(--f-display);letter-spacing:.03em;overflow-wrap:anywhere;min-width:7em}
 .relname{display:inline-flex;align-items:center;gap:6px}
 .chip{display:inline-block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;margin:2px 4px 2px 0;border:1px solid var(--kin);border-radius:2px;color:var(--kin)}
 .tension{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
@@ -319,7 +336,7 @@ ol.ranks li{display:grid;grid-template-columns:2em auto minmax(0,1fr) minmax(60p
 ol.ranks li.you{border-color:var(--accent);background:var(--field)}
 .rk{font:700 20px var(--f-display);color:var(--gold);text-align:center}
 .rname{display:flex;flex-direction:column;min-width:0;font-size:15px}
-.rname b{font-family:var(--f-display);font-size:16px}
+.rname b{font-family:var(--f-display);font-size:16px;overflow-wrap:anywhere}
 .rbar{height:10px;border:1px solid var(--line);border-radius:2px;overflow:hidden}
 .rbar i{display:block;height:100%;background:var(--gold)}
 .rscore{font:700 18px var(--f-display);text-align:right;font-variant-numeric:tabular-nums}
@@ -356,7 +373,7 @@ ul.slots-list li.act{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)
     <svg class="sigil" id="sigil" viewBox="0 0 100 118" role="img" aria-label="House sigil"></svg>
     <div style="min-width:0">
       <div class="eyebrow">Throne Knight Glory</div>
-      <input class="hname" id="hname" aria-label="House name">
+      <textarea class="hname" id="hname" rows="1" aria-label="House name" spellcheck="false"></textarea>
       <input class="hwords" id="hwords" aria-label="House words">
       <input class="hseat" id="hseat" aria-label="Seat of the house">
     </div>
@@ -366,6 +383,7 @@ ul.slots-list li.act{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)
     <button id="savesBtn" aria-expanded="false">Saves</button>
     <button id="newHouse">Found a new House</button>
     <button id="newSigil">Redraw sigil</button>
+    <button data-sgopen="mine">Edit sigil</button>
     <span class="note" id="saveNote"></span>
   </div>
   <div id="confirmBox"></div>
@@ -1449,6 +1467,20 @@ const SECTIONS=[['house','The House'],['tree','Family Tree'],['ops','Operations'
 function renderNav(){
   $('sect').innerHTML=SECTIONS.map(([k,l,ph])=>`<button data-sec="${k}" ${section===k?'aria-current="page"':''}>${l}${ph?`<span class="soon">Phase ${ph}</span>`:''}</button>`).join('');
 }
+/* shrink a one-line name field until its text fits, between its full size and a floor */
+function fitInput(el,min){
+  if(!el)return;el.style.fontSize='';const max=parseFloat(getComputedStyle(el).fontSize)||20;
+  if(!el.clientWidth)return;let f=max;
+  while(el.scrollWidth>el.clientWidth+1&&f>min){f-=1;el.style.fontSize=f+'px'}
+}
+/* the header name shrinks to a floor, then wraps onto more lines rather than being cut off */
+function fitArea(el,min){
+  if(!el||!el.clientWidth)return;el.style.fontSize='';el.style.height='auto';
+  let f=parseFloat(getComputedStyle(el).fontSize)||40;const line=()=>f*1.12;
+  while(el.scrollHeight>line()*1.5&&f>min){f-=1;el.style.fontSize=f+'px'}
+  el.style.height=el.scrollHeight+'px';
+}
+function fitNames(){fitArea($('hname'),22);document.querySelectorAll('input.hedit.nm').forEach(el=>fitInput(el,12))}
 function render(){
   settleTraining();
   if(H&&H.members)checkSuccession();
@@ -1461,7 +1493,9 @@ function render(){
   else if(section==='market')main.innerHTML=marketView();
   else if(section==='blood')main.innerHTML=bloodView();
   else main.innerHTML=laterView(section);
+  renderSigilPicker();
   save();
+  try{fitNames()}catch(e){}
 }
 function houseView(){
   if(!mem(sel))sel=H.members[0].id;
@@ -1642,6 +1676,58 @@ function genRivals(){
   return want.slice(0,5).map(n=>({name:n,seat:pick(SEATS),sigil:newSigil(),power:ri(1,3),hostility:0,lands:ri(4,7)}));
 }
 const rival=n=>H.rivals.find(r=>r.name===n);
+/* ---------- sigil picker: edits apply instantly; the rule of tincture is enforced against the field ---------- */
+let sigilEdit=null; /* {kind:'mine'|'rival'|'royal', name} */
+const TINCT_NAME={or:'Gold (Or)',argent:'Silver (Argent)',gules:'Red (Gules)',azure:'Blue (Azure)',vert:'Green (Vert)',sable:'Black (Sable)',purpure:'Purple (Purpure)'};
+const ORD_NAME={plain:'Plain',pale:'Pale',fess:'Fess',bend:'Bend',chevron:'Chevron',perpale:'Per pale',quarterly:'Quarterly',chief:'Chief'};
+const CHARGE_NAME={mullet:'Star',roundel:'Roundel',lozenge:'Lozenge',crescent:'Crescent',cross:'Cross',tower:'Tower',none:'None'};
+const TINCT_ORDER=['or','argent','gules','azure','vert','sable','purpure'];
+const isMetal=t=>METALS.includes(t);
+const tinctOk=(c,field)=>isMetal(c)!==isMetal(field);
+function sigilTarget(){
+  if(!sigilEdit||!H)return null;
+  if(sigilEdit.kind==='mine')return {name:H.house.name,sig:H.house.sigil,set:x=>{H.house.sigil=x}};
+  const r=rival(sigilEdit.name);
+  if(r)return {name:r.name,sig:r.sigil,set:x=>{r.sigil=x;if(H.realm.royal.name===r.name&&!H.realm.yours)H.realm.royal.sigil=x}};
+  if(H.realm.royal.name===sigilEdit.name&&!H.realm.yours)return {name:H.realm.royal.name,sig:H.realm.royal.sigil,set:x=>{H.realm.royal.sigil=x}};
+  return null;
+}
+function fixTinctures(sg){
+  const ok=TINCT_ORDER.filter(c=>tinctOk(c,sg.field));
+  if(!tinctOk(sg.ordC,sg.field))sg.ordC=ok[0];
+  if(!tinctOk(sg.chargeC,sg.field))sg.chargeC=sg.ordC;
+  return sg;
+}
+function setSigilPart(part,val){
+  const t=sigilTarget();if(!t)return;
+  const sg=Object.assign({},t.sig);sg[part]=val;
+  if(part!=='field'&&(part==='ordC'||part==='chargeC')&&!tinctOk(val,sg.field))return;
+  t.set(fixTinctures(sg));
+}
+function sigilPicker(){
+  const t=sigilTarget();if(!t){sigilEdit=null;return ''}
+  const sg=t.sig,pv=(o,id)=>`<svg viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(Object.assign({},sg,o),'pk'+id)}</svg>`;
+  const sw=(part,cur,check)=>`<div class="swatches" role="group">${TINCT_ORDER.map(c=>{const bad=check&&!tinctOk(c,sg.field);
+    return `<button data-sgpart="${part}" data-sgval="${c}" aria-pressed="${cur===c}" ${bad?`disabled title="${isMetal(c)?'Metal':'Color'} on ${isMetal(sg.field)?'metal':'color'} breaks the rule of tincture"`:''}><i style="background:${TINCT[c]}"></i>${TINCT_NAME[c]}</button>`}).join('')}</div>`;
+  const ords=ORDS.map(o=>`<button data-sgpart="ord" data-sgval="${o}" aria-pressed="${sg.ord===o}">${pv({ord:o},'o'+o)}${ORD_NAME[o]}</button>`).join('');
+  const chs=CHARGES.map(c=>`<button data-sgpart="charge" data-sgval="${c}" aria-pressed="${sg.charge===c}">${pv({charge:c},'c'+c)}${CHARGE_NAME[c]}</button>`).join('');
+  return `<div class="sgback" data-sgclose="1"><div class="sgpanel" role="dialog" aria-modal="true" aria-labelledby="sgtitle">
+    <div class="sghead"><svg viewBox="0 0 100 118" role="img" aria-label="Sigil preview">${sigilSVG(sg,'pkmain')}</svg><div><span class="eyebrow">Arms of the house</span><h2 id="sgtitle">House ${esc(t.name)}</h2>
+      <p class="sgrule">Rule of tincture: gold and silver are metals; the rest are colors. The ordinary and charge must be a metal on a colored field, or a color on a metal field.</p></div></div>
+    <h3>Field</h3>${sw('field',sg.field,false)}
+    <h3>Ordinary</h3><div class="tiles">${ords}</div>
+    ${sg.ord!=='plain'?`<h3>Ordinary color</h3>${sw('ordC',sg.ordC,true)}`:''}
+    <h3>Charge</h3><div class="tiles">${chs}</div>
+    ${sg.charge!=='none'?`<h3>Charge color</h3>${sw('chargeC',sg.chargeC,true)}`:''}
+    <div class="sgfoot"><button class="main" data-sgclose="1" id="sgdone">Done</button></div>
+  </div></div>`;
+}
+function renderSigilPicker(){
+  let box=$('sigilBox');if(!box){box=document.createElement('div');box.id='sigilBox';document.body.appendChild(box)}
+  const f=document.activeElement,key=f&&f.dataset&&f.dataset.sgpart?f.dataset.sgpart+'|'+f.dataset.sgval:null;
+  box.innerHTML=sigilPicker();
+  if(sigilEdit){const again=key&&box.querySelector(`[data-sgpart="${key.split('|')[0]}"][data-sgval="${key.split('|')[1]}"]`);(again||$('sgdone')).focus()}
+}
 /* renaming a great house: every game link that holds the old name follows it; written text (log, ravens, secrets, titles) keeps the old name */
 let houseMsg=null;
 function cleanHouseName(v){return String(v||'').trim().replace(/^house\s+/i,'').replace(/\s+/g,' ').slice(0,28)}
@@ -1678,7 +1764,7 @@ function genBoard(){const t=SEASON_OP[seasonOf(H.cycle)];
   const objs=shuffle(OPS[t].objs).slice(0,3);if(t==='Conquest')objs.sort((a,b)=>a[1]-b[1]);return objs.map(o=>genOp(t,o))}
 function ensureState(){
   if(H.influence==null)H.influence=0;
-  ['lands','captives','secrets','plans','pacts','offers','log'].forEach(k=>{if(!Array.isArray(H[k]))H[k]=[]});
+  ['lands','captives','secrets','plans','pacts','offers','log'].forEach(k=>{if(!Array.isArray(H[k]))H[k]=[]});migrateLands();
   if(!Array.isArray(H.rivals))H.rivals=genRivals();
   if(!H.ops)H.ops={nextOp:1,board:[],underway:[]};
   if(!Array.isArray(H.ops.defense))H.ops.defense=[];
@@ -1699,7 +1785,7 @@ const PEACE_STAGES={
   bandit:['Find their camp','Rout the outlaws'],
   holdBandit:['Hold the land: hang the ringleaders','Hold the land: win back the villagers'],
   holdWild:['Hold the land: clear the forest','Hold the land: raise a palisade'],
-  defend:['Meet the outlaws at the ford','Drive them back into the forest','Burn their camp']
+  defend:['Meet the raiders at the ford','Drive them back into the forest','Burn their camp','Hang the ringleaders']
 };
 const PRIZES={tourney:[['weapon','Lance'],['armor','Brigandine'],['weapon','Longsword'],['armor','Plate harness']],hunt:[['heirloom','Wolf-pelt mantle'],['specialty','A war-hound']],melee:[['weapon','Warhammer'],['armor','Mail hauberk']]};
 const BANDIT_RETURN=.15;
@@ -1722,26 +1808,82 @@ function genSiege(r,L){
   return {id:H.ops.nextOp++,type:'Battle',kind:'defend',siege:true,diff,target:r.name,peaceful:true,place:L.name,landName:L.name,created:H.cycle,
     title:`Hold the ${L.tier.toLowerCase()} of ${L.name} against House ${r.name}`,stages:SIEGE_STAGES.slice(0,diff+1).map(s=>({name:s,stat:'Might'})),gold:2*diff};
 }
+/* ---------- hold unrest: 0 peaceful, 1 restless, 2 unrest, 3 revolt ---------- */
+const UNREST=['Peaceful','Restless','Unrest','Revolt'];
+const DANGER=['','Low','Middling','High'];
+const UNREST_CHANCE=.15;
+const landIncome=l=>{const u=l.unrest||0;return u>=3?0:Math.max(0,l.income-u)};
+function migrateLands(){H.lands.forEach(l=>{if(l.unrest==null){l.unrest=l.restless?1:0;
+  if(l.restless&&!l.wild&&l.from!=='the crown')l.income+=1; /* restore the old one-off penalty: the level now carries it */
+  delete l.restless}})}
 function genDefense(L){
-  const diff=L.tier==='Outlaw holdfast'?2:1;
-  return {id:H.ops.nextOp++,type:'Battle',kind:'defend',diff,target:null,peaceful:true,place:L.name,landName:L.name,created:H.cycle,
-    title:`Defend ${L.tier.toLowerCase()} of ${L.name} from returning bandits`,stages:PEACE_STAGES.defend.slice(0,diff+1).map(s=>({name:s,stat:'Might'})),gold:2*diff};
+  const lvl=clamp(L.unrest||1,1,3),diff=lvl; /* Low 2 stages, Middling 3, High 4 */
+  return {id:H.ops.nextOp++,type:'Battle',kind:'defend',diff,target:null,peaceful:true,place:L.name,landName:L.name,created:H.cycle,unrest:lvl,
+    title:`${DANGER[lvl]}-danger raid on the ${L.tier.toLowerCase()} of ${L.name}`,stages:PEACE_STAGES.defend.slice(0,diff+1).map(s=>({name:s,stat:'Might'})),gold:2*diff};
+}
+/* ---------- investment: climb the tier ladder; 5x peaceful income; builds only while peaceful ---------- */
+const LADDER=[['Wild clearing',1,25,0],['Hamlet',2,35,1],['Village',3,40,2],['Holdfast',5,120,3],['Castle',8,300,6]]; /* name, income, peasants, seasons to build */
+const TIER_STEP={'Wild clearing':0,'Outlaw hamlet':1,'Hamlet':1,'Village':2,'Outlaw holdfast':2,'Holdfast':3,'Castle':4};
+const tierStep=L=>TIER_STEP[L.tier]==null?2:TIER_STEP[L.tier];
+const investCost=L=>5*L.income;
+function canInvest(L){return !L.build&&(L.unrest||0)===0&&tierStep(L)<LADDER.length-1&&H.gold>=investCost(L)}
+function invest(L){
+  if(!L||!canInvest(L))return;const to=tierStep(L)+1,cost=investCost(L);
+  H.gold-=cost;L.build={to,left:LADDER[to][3],cost};
+  H.log.push({cycle:H.cycle,text:`Paid ${cost} gold to raise the ${L.tier.toLowerCase()} of ${L.name} into a ${LADDER[to][0].toLowerCase()}.`});
+}
+function buildTurn(say){
+  H.lands.forEach(L=>{const b=L.build;if(!b||(L.unrest||0)!==0)return;
+    if(--b.left>0)return;
+    const from=LADDER[tierStep(L)],to=LADDER[b.to];
+    L.income+=to[1]-from[1];L.peasants+=to[2]-from[2];const old=L.tier;L.tier=to[0];delete L.build;
+    say(`Work is done: the ${old.toLowerCase()} of ${L.name} is now a ${to[0].toLowerCase()} (+${to[1]-from[1]} income, +${to[2]-from[2]} peasants).`,'good')});
+}
+function refundBuild(L,say){if(L&&L.build){H.gold+=L.build.cost;say(`The unfinished works at ${L.name} are abandoned. ${L.build.cost} gold is recovered.`,'warn');delete L.build}}
+/* ---------- routing out bandits: a free action that returns a troubled hold to peace ---------- */
+const ROUT_STAGES=['Find their camp','Rout the outlaws','Hang the ringleaders','Burn the last hideouts'];
+const isRaid=d=>!d.rout;
+const raidOn=L=>(H.ops.defense||[]).some(d=>isRaid(d)&&d.landName===L.name);
+const routOn=L=>(H.ops.defense||[]).find(d=>d.rout&&d.landName===L.name);
+const canRout=L=>(L.unrest||0)>0&&!raidOn(L)&&!routOn(L)&&L.routed!==H.cycle;
+function planRout(L){
+  if(!L||!canRout(L))return;const lvl=clamp(L.unrest,1,3);
+  H.ops.defense.push({id:H.ops.nextOp++,type:'Battle',kind:'rout',rout:true,diff:lvl,target:null,peaceful:true,place:L.name,landName:L.name,created:H.cycle,unrest:lvl,
+    title:`Rout the bandits from the ${L.tier.toLowerCase()} of ${L.name}`,stages:ROUT_STAGES.slice(0,lvl+1).map(s=>({name:s,stat:'Might'})),gold:0});
+}
+function callOffRout(L){H.ops.defense=H.ops.defense.filter(d=>!(d.rout&&d.landName===L.name))}
+function loseHold(L,say){
+  const i=H.lands.indexOf(L);if(i<0)return;H.lands.splice(i,1);refundBuild(L,say);
+  const r=!L.wild&&rival(L.from);
+  if(r){r.lands++;say(`The ${L.tier.toLowerCase()} of ${L.name} rises in revolt and goes back to House ${r.name}.`,'bad')}
+  else if(L.from==='the crown')say(`The ${L.tier.toLowerCase()} of ${L.name} rises in revolt. The crown takes it back.`,'bad');
+  else say(`The ${L.tier.toLowerCase()} of ${L.name} rises in revolt and the outlaws take it.`,'bad');
+}
+/* a raid that is failed or left unanswered: worse unrest, or the hold is lost if it was already in revolt */
+function raidLost(L,say){
+  if((L.unrest||0)>=3)loseHold(L,say);
+  else{L.unrest=(L.unrest||0)+1;say(`The raiders hold sway in the ${L.tier.toLowerCase()} of ${L.name}. It falls into ${UNREST[L.unrest].toLowerCase()}.`,'bad')}
 }
 function peaceRewardText(op){
-  if(op.kind==='defend')return op.siege?`Keep ${op.place}, and on a complete success take one of their knights captive. Fail, and House ${op.target} takes the land`:`Keep the ${op.place} and take ${op.gold} gold in loot. Fail, and the land is lost`;
+  if(op.kind==='rout')return `The hold returns to peace. Fail, and nothing changes; you may try again next season`;
+  if(op.kind==='defend')return op.siege?`Keep ${op.place}, and on a complete success take one of their knights captive. Fail, and House ${op.target} takes the land`:`Break the raid and take ${op.gold} gold in loot; the hold ${op.unrest>=3?'calms to restless':'is at peace'}. Fail, and ${op.unrest>=3?'the hold is lost':'it falls deeper into unrest'}`;
   if(op.type==='Battle')return [op.gold+' gold purse',op.favor?'royal favor':'',op.inf?'+1 influence':''].filter(Boolean).join(', ')+`. Complete success also wins ${op.prize.name}`;
   return `${op.land.tier} of ${op.land.name}: ${op.land.income} gold each season, ${op.land.peasants} peasants`;
 }
 function finishPeace(ms,grade,out){
   const op=ms.op;
+  if(op.kind==='rout'){const L=H.lands.find(l=>l.name===op.landName);
+    if(grade==='fail'||!L){out.push(`The bandits slip away from ${op.place}. Nothing changes.`);return}
+    L.unrest=0;out.push(`The bandits are routed. The ${L.tier.toLowerCase()} of ${L.name} is at peace.`);return}
   if(op.kind==='defend'){
     const i=H.lands.findIndex(l=>l.name===op.landName);
     if(op.siege){const r=rival(op.target);
-      if(grade==='fail'){if(i>=0){const L=H.lands.splice(i,1)[0];if(r)r.lands++;out.push(`House ${op.target} seizes your ${L.tier.toLowerCase()} of ${L.name}.`)}}
+      if(grade==='fail'){if(i>=0){const L=H.lands.splice(i,1)[0];refundBuild(L,t=>out.push(t));if(r)r.lands++;out.push(`House ${op.target} seizes your ${L.tier.toLowerCase()} of ${L.name}.`)}}
       else{out.push(`${op.place} holds against House ${op.target}.`);if(grade==='full'){const cap={name:pick(MALE.concat(FEMALE))+' '+op.target,rank:pick(CAPTIVE_RANKS),house:op.target,ransom:4+3*op.diff+ri(0,3)};H.captives.push(cap);out.push(`Captured ${cap.name}, ${cap.rank}`)}}
       return;}
-    if(grade==='fail'){if(i>=0){const L=H.lands.splice(i,1)[0];out.push(`The outlaws take back the ${L.tier.toLowerCase()} of ${L.name}.`)}}
-    else{const g=grade==='full'?op.gold:Math.ceil(op.gold/2);H.gold+=g;out.push(`The ${op.place} holds. +${g} gold in loot.`)}
+    const L=i>=0?H.lands[i]:null,said=t=>out.push(t);
+    if(grade==='fail'){if(L)raidLost(L,said)}
+    else{const g=grade==='full'?op.gold:Math.ceil(op.gold/2);H.gold+=g;if(L)L.unrest=(op.unrest||L.unrest)>=3?1:0;out.push(`The raid on ${op.place} is broken. +${g} gold in loot. The hold is now ${UNREST[L?L.unrest:0].toLowerCase()}.`)}
     return;
   }
   if(grade==='fail'){out.push('Nothing gained.');return}
@@ -1755,17 +1897,26 @@ function finishPeace(ms,grade,out){
     return;
   }
   const L=Object.assign({},op.land,{from:op.kind==='wild'?'the wilds':'outlaws',wild:true,cycle:H.cycle});
-  if(grade==='partial'){L.restless=true;L.peasants=Math.round(L.peasants/2);out.push('Taken, but restless: half the settlers stayed away.')}
+  if(grade==='partial'){L.unrest=1;L.peasants=Math.round(L.peasants/2);out.push('Taken, but restless: half the settlers stayed away.')}
   H.lands.push(L);out.unshift(`${L.tier} of ${L.name} claimed: +${L.income} gold each season, ${L.peasants} peasants. No house is angered.`);
 }
 /* between seasons: unanswered bandit raids cost the land; outlaws may return to other wild holdings */
 function banditTurn(say){
-  const old=(H.ops.defense||[]).filter(op=>op.created!==H.cycle);
-  old.forEach(op=>{const i=H.lands.findIndex(l=>l.name===op.landName);if(i<0)return;const L=H.lands.splice(i,1)[0];
-    if(op.siege){const r=rival(op.target);if(r)r.lands++;say(`No one rode out, and House ${op.target} seizes your ${L.tier.toLowerCase()} of ${L.name}.`,'bad')}
-    else say(`No one rode out, and the outlaws take back the ${L.tier.toLowerCase()} of ${L.name}.`,'bad')});
+  migrateLands();
+  H.ops.defense=(H.ops.defense||[]).filter(op=>!op.rout);
+  const old=H.ops.defense.filter(op=>op.created!==H.cycle);
+  old.forEach(op=>{const L=H.lands.find(l=>l.name===op.landName);if(!L)return;
+    if(op.siege){H.lands.splice(H.lands.indexOf(L),1);refundBuild(L,say);const r=rival(op.target);if(r)r.lands++;say(`No one rode out, and House ${op.target} seizes your ${L.tier.toLowerCase()} of ${L.name}.`,'bad')}
+    else{say(`No one rode out against the raid on ${L.name}.`,'bad');raidLost(L,say)}});
   H.ops.defense=(H.ops.defense||[]).filter(op=>op.created===H.cycle);
-  H.lands.filter(l=>l.wild&&!H.ops.defense.some(d=>d.landName===l.name)).forEach(L=>{if(Math.random()<BANDIT_RETURN){H.ops.defense.push(genDefense(L));say(`Bandits return to the ${L.tier.toLowerCase()} of ${L.name}. Defend it this season or lose it.`,'warn')}});
+  buildTurn(say);
+  H.lands.filter(l=>!raidOn(l)).forEach(L=>{
+    if(Math.random()>=UNREST_CHANCE)return;
+    const u=L.unrest||0,where=`the ${L.tier.toLowerCase()} of ${L.name}`;
+    if(u===0){L.unrest=1;say(`Grumbling spreads through ${where}. The hold is restless.`,'warn');return}
+    if(u<3&&Math.random()<.5){L.unrest=u+1;say(`${where[0].toUpperCase()+where.slice(1)} slides into ${UNREST[L.unrest].toLowerCase()}.`,'warn');return}
+    H.ops.defense.push(genDefense(L));say(`A ${DANGER[u].toLowerCase()}-danger raid strikes ${where}. Answer it this season.`,'warn');
+  });
 }
 
 function rewardText(op){
@@ -1777,7 +1928,7 @@ function rewardText(op){
     case 'Conquest':return `${op.land.tier} of ${op.land.name}: ${op.land.income} gold each cycle, ${op.land.peasants} peasants`;
   }
 }
-const cycleIncome=()=>H.lands.reduce((a,l)=>a+l.income,0)+H.pacts.filter(p=>p.income).reduce((a,p)=>a+p.income,0)+(H.realm&&H.realm.office==='treasurer'?3:0)+(H.realm&&H.realm.yours?8:0);
+const cycleIncome=()=>H.lands.reduce((a,l)=>a+landIncome(l),0)+H.pacts.filter(p=>p.income).reduce((a,p)=>a+p.income,0)+(H.realm&&H.realm.office==='treasurer'?3:0)+(H.realm&&H.realm.yours?8:0);
 const canServe=m=>!m.dead&&!m.captive&&m.age>=COME_OF_AGE&&m.wounds<maxWounds(m);
 const available=m=>canServe(m)&&m.onOp!==H.cycle;
 const activeTeam=ms=>ms.team.map(mem).filter(m=>m&&canServe(m));
@@ -1851,7 +2002,7 @@ function finishOp(ms){
       break}
     case 'Conquest':{
       const L=Object.assign({},op.land,{from:op.target,cycle:H.cycle});
-      if(grade==='partial'){L.restless=true;L.income=Math.max(1,L.income-1);L.peasants=Math.round(L.peasants/2);out.push('Taken, but restless: half the peasants fled and income is reduced.')}
+      if(grade==='partial'){L.unrest=1;L.peasants=Math.round(L.peasants/2);out.push('Taken, but restless: half the peasants fled.')}
       H.lands.push(L);if(r)r.lands=Math.max(0,r.lands-1);out.unshift(`${L.tier} of ${L.name} taken: +${L.income} gold each cycle, ${L.peasants} peasants`);
       break}
   }
@@ -1862,7 +2013,9 @@ function opsView(){
   const avail=H.members.filter(available),inc=cycleIncome(),busy=H.ops.underway.some(x=>!x.done);
   const under=H.ops.underway.map(missionCard).join('');
   const sea=seasonOf(H.cycle),type=SEASON_OP[sea];
-  const board=H.ops.board.map(opCard).join('')||`<p class="muted">This season’s operation has been chosen. End the season to move on to ${seasonOf(H.cycle+1)}.</p>`;
+  const xc=extraCost(),freeN=H.members.filter(available).length;
+  const board=H.ops.board.map(opCard).join('')||`<p class="muted" style="margin:0 0 8px">This season’s operation has been chosen. End the season to move on to ${seasonOf(H.cycle+1)}, or call on your influence for another.</p>
+    <p style="margin:0;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center"><button class="sm" data-extraop="1" ${H.influence>=xc&&freeN?'':'disabled'}>Another ${SEASON_OP[seasonOf(H.cycle)]} operation · ${xc} influence</button><span class="muted" style="font-size:14px">You have ${H.influence} influence${freeN?'':' · no members are free'}. Each extra operation this season costs 2 more than the last.</span></p>`;
   return `<section class="pane"><div class="cyclebar">
       <div style="min-width:0"><span class="eyebrow">${sea}, year ${yearOf(H.cycle)} · the season of ${type}</span><p style="margin:4px 0 0">${SEASON_WHY[sea]} Your house may run <b>one</b> ${type} operation this season.</p>
         <p class="muted" style="margin:2px 0 0;font-size:15px">${avail.length} member${avail.length===1?'':'s'} free · income at season’s end <b>${inc} gold</b></p></div>
@@ -1873,8 +2026,9 @@ function opsView(){
       ${H.realm&&H.realm.crisis?'<p class="hot" style="margin:6px 0 0">The throne is contested. See The Realm before the season ends.</p>':''}
     </section>
     ${under?`<section class="pane"><h2>Underway</h2><div class="opgrid">${under}</div></section>`:''}
-    ${H.ops.defense&&H.ops.defense.length?`<section class="pane crisis"><div class="boardhead"><h2>Your lands under attack</h2><span class="muted" style="font-size:15px">Defending does not use this season’s operation. Leave it, and the land is lost when the season ends.</span></div><div class="opgrid">${H.ops.defense.map(opCard).join('')}</div></section>`:''}
-    <section class="pane"><div class="boardhead"><h2>${type} this ${sea.toLowerCase()}</h2><span class="muted" style="font-size:15px">Choose one. The others are gone once you commit.</span></div>
+    ${H.ops.defense&&H.ops.defense.some(d=>d.rout)?`<section class="pane"><div class="boardhead"><h2>Routing out bandits</h2><span class="muted" style="font-size:15px">A free action: it does not use this season’s operation. Each hold can be tried once a season.</span></div><div class="opgrid">${H.ops.defense.filter(d=>d.rout).map(opCard).join('')}</div></section>`:''}
+    ${H.ops.defense&&H.ops.defense.some(isRaid)?`<section class="pane crisis"><div class="boardhead"><h2>Your lands under attack</h2><span class="muted" style="font-size:15px">Defending does not use this season’s operation. Leave a raid, and the hold falls deeper into unrest when the season ends; a hold in revolt is lost.</span></div><div class="opgrid">${H.ops.defense.filter(isRaid).map(opCard).join('')}</div></section>`:''}
+    <section class="pane"><div class="boardhead"><h2>${type} this ${sea.toLowerCase()}</h2><span style="display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center"><span class="muted" style="font-size:15px">Choose one. The others are gone once you commit.</span>${H.ops.board.length?'<button class="sm" data-reroll="1" style="margin-top:0">Reroll operations</button>':''}</span></div>
       <div class="opgrid">${board}</div></section>
     <div class="two">${holdingsPane()}${rivalsPane()}</div>
     ${H.log.length?`<section class="pane"><h2>Chronicle</h2><ul class="chron">${H.log.slice(-12).reverse().map(l=>`<li><span class="cy">${seasonOf(l.cycle)}, yr ${yearOf(l.cycle)}</span> ${esc(l.text)}</li>`).join('')}</ul></section>`:''}`;
@@ -1892,9 +2046,9 @@ function opCard(op){
       <p class="muted" style="margin:0;font-size:14px">Each extra member adds +1 to every roll, up to +2.</p>`:'<p class="muted">No one is free. Members heal and return next cycle.</p>';
   }
   return `<article class="opcard t-${op.type} ${planningThis?'planning':''}">
-    <div class="optype">${op.type}${op.kind==='defend'?' · defense':op.peaceful?' · peaceful':''} · rolls ${T.stat}${op.type==='Conquest'?', then Ability':''}</div>
+    <div class="optype">${op.type}${op.kind==='defend'?' · defense':op.kind==='rout'?' · free action':op.peaceful?' · peaceful':''} · rolls ${T.stat}${op.type==='Conquest'?', then Ability':''}</div>
     <h3>${esc(op.title)}</h3>
-    <dl class="opdl">${op.target?`<dt>${op.siege?'Attacker':'Target'}</dt><dd>${miniSigil(op.target)} House ${esc(op.target)}</dd>`:`<dt>Where</dt><dd>${esc(op.kind==='defend'?'Your land at '+op.place:op.kind==='tourney'?'The royal lists':op.place)} <span class="okc">· no house is angered</span></dd>`}
+    <dl class="opdl">${op.target?`<dt>${op.siege?'Attacker':'Target'}</dt><dd>${miniSigil(op.target)} House ${esc(op.target)}</dd>`:`<dt>Where</dt><dd>${esc(op.kind==='defend'||op.kind==='rout'?'Your land at '+op.place:op.kind==='tourney'?'The royal lists':op.place)} <span class="okc">· no house is angered</span></dd>`}
       <dt>Danger</dt><dd><span class="dpip">${'◆'.repeat(op.diff)}${'◇'.repeat(3-op.diff)}</span> ${DIFF_NAME[op.diff]}${op.diff>1?' · −'+(op.diff-1)+' to rolls':''}</dd>
       <dt>Stages</dt><dd>${stages}</dd><dt>Reward</dt><dd>${esc(rewardText(op))}</dd></dl>
     ${pickHtml}
@@ -1921,8 +2075,23 @@ function missionCard(ms){
     <h3>${esc(op.title)}</h3><div class="track">${track}</div>
     ${res?`<ul class="reslist">${res}</ul>`:''}${body}</article>`;
 }
+function routRow(l,i){
+  if(!(l.unrest||0))return '';
+  if(routOn(l))return `<br><span class="muted">Rout planned below.</span> <button class="sm" data-calloff="${i}">Call it off</button>`;
+  if(l.routed===H.cycle)return '<br><span class="muted">Already tried to rout the bandits this season.</span>';
+  if(raidOn(l))return '';
+  return `<br><button class="sm" data-rout="${i}">Rout the bandits · ${DANGER[clamp(l.unrest,1,3)].toLowerCase()} danger</button> <span class="muted" style="font-size:14px">free action · success returns the hold to peace</span>`;
+}
+function investRow(l,i){
+  const st=tierStep(l);
+  if(l.build){const to=LADDER[l.build.to];return `<br><span class="q" style="color:var(--gold);font-weight:600">Building ${esc(to[0].toLowerCase())}</span> <span class="muted">· ${l.build.left} season${l.build.left>1?'s':''} left</span>${(l.unrest||0)?' <span class="hot">· paused until peaceful</span>':''}`}
+  if(st>=LADDER.length-1)return '<br><span class="muted">At its greatest: a castle.</span>';
+  const to=LADDER[st+1],cost=investCost(l),gi=to[1]-LADDER[st][1],gp=to[2]-LADDER[st][2];
+  const why=(l.unrest||0)?' title="Only peaceful holds can be built up"':H.gold<cost?' title="Not enough gold"':'';
+  return `<br><button class="sm" data-invest="${i}" ${canInvest(l)?'':'disabled'}${why}>Build up to ${esc(to[0].toLowerCase())} · ${cost} gold · ${to[3]} season${to[3]>1?'s':''}</button> <span class="muted" style="font-size:14px">+${gi} income, +${gp} peasants${(l.unrest||0)?' · must be peaceful':''}</span>`;
+}
 function holdingsPane(){
-  const lands=H.lands.length?`<ul class="hl">${H.lands.map(l=>`<li><b>${esc(l.tier)} of ${esc(l.name)}</b> <span class="muted">· ${l.wild?'claimed from '+esc(l.from):l.from==='the crown'?'granted by the crown':'taken from House '+esc(l.from)}${l.wild&&H.ops.defense&&H.ops.defense.some(d=>d.landName===l.name)?' · <span class="hot">under attack</span>':''}</span><br>+${l.income} gold each cycle · ${l.peasants} peasants${l.restless?' · <span class="hot">restless</span>':''}</li>`).join('')}</ul>`:'<p class="muted">No lands beyond the seat yet. Conquest takes them.</p>';
+  const lands=H.lands.length?`<ul class="hl">${H.lands.map(l=>`<li><b>${esc(l.tier)} of ${esc(l.name)}</b> <span class="muted">· ${l.wild?'claimed from '+esc(l.from):l.from==='the crown'?'granted by the crown':'taken from House '+esc(l.from)}${raidOn(l)?' · <span class="hot">under attack</span>':''}</span><br>+${landIncome(l)} gold each cycle${landIncome(l)<l.income?` <span class="muted">(${l.income} at peace)</span>`:''} · ${l.peasants} peasants · <span class="${(l.unrest||0)?'hot':'okc'}">${UNREST[l.unrest||0]}</span>${routRow(l,H.lands.indexOf(l))}${investRow(l,H.lands.indexOf(l))}</li>`).join('')}</ul>`:'<p class="muted">No lands beyond the seat yet. Conquest takes them.</p>';
   const caps=H.captives.length?`<ul class="hl">${H.captives.map((c,i)=>`<li><b>${esc(c.name)}</b>, ${esc(c.rank)} <span class="muted">· House ${esc(c.house)}</span><br><button class="sm" data-ransom="${i}">Ransom for ${c.ransom} gold</button></li>`).join('')}</ul>`:'<p class="muted">None held. Battle takes prisoners.</p>';
   const ours=H.members.filter(m=>m.captive&&!m.dead);
   const held=ours.length?`<h3>Held by rivals</h3><ul class="hl">${ours.map(m=>`<li><b>${esc(fullName(m))}</b> <span class="muted">· held by House ${esc(m.captive.house)}</span><br><button class="sm" data-payransom="${m.id}" ${H.gold<m.captive.ransom?'disabled':''}>Pay ${m.captive.ransom} gold to free them</button></li>`).join('')}</ul>`:'';
@@ -1941,9 +2110,17 @@ function rivalsPane(){
     <span class="host" aria-label="Hostility ${r.hostility} of 5" title="Hostility">${Array.from({length:5},(_,i)=>`<i class="${i<r.hostility?'on':''}"></i>`).join('')}</span></li>`).join('')}</ul>
     <p class="muted" style="font-size:14px;margin:10px 0 0">Hostility rises when you attack a house or are caught working against it. The Realm (Phase 3) will make them act on it.</p></section>`;
 }
+/* extra operations: spend influence for a fresh board of this season's type; 2, 4, 6... influence per season */
+const extraCount=()=>H.ops.extra&&H.ops.extra.season===H.cycle?H.ops.extra.n:0;
+const extraCost=()=>2*(extraCount()+1);
+function extraOperation(){
+  const c=extraCost();if(H.ops.board.length||H.influence<c||!H.members.some(available))return;
+  H.influence-=c;H.ops.extra={season:H.cycle,n:extraCount()+1};H.ops.board=genBoard();planning=null;planTeam=[];
+  H.log.push({cycle:H.cycle,text:`Spent ${c} influence to mount another ${SEASON_OP[seasonOf(H.cycle)].toLowerCase()} operation.`});
+}
 function launch(opId){
   let i=H.ops.board.findIndex(o=>o.id===opId),def=false;if(i<0){i=(H.ops.defense||[]).findIndex(o=>o.id===opId);def=true}if(i<0||!planTeam.length)return;
-  const op=def?H.ops.defense.splice(i,1)[0]:H.ops.board[i];if(!def)H.ops.board=[];planTeam.forEach(id=>{mem(id).onOp=H.cycle});
+  const op=def?H.ops.defense.splice(i,1)[0]:H.ops.board[i];if(op.rout){const L=H.lands.find(l=>l.name===op.landName);if(L)L.routed=H.cycle}if(!def)H.ops.board=[];planTeam.forEach(id=>{mem(id).onOp=H.cycle});
   H.ops.underway.push({id:op.id,op,team:planTeam.slice(),stage:0,results:[],done:false});
   planning=null;planTeam=[];render();
 }
@@ -2080,7 +2257,7 @@ const EVENTS=[
 function rivalStrike(r,say){
   if(hasPeace(r.name))return;
   const ag=r.agenda;
-  if(ag==='land'&&Math.random()<.45){const free=H.lands.filter(l=>!(H.ops.defense||[]).some(d=>d.landName===l.name));if(free.length){const L=pick(free);H.ops.defense.push(genSiege(r,L));say(`House ${r.name} marches on your ${L.tier.toLowerCase()} of ${L.name}. Defend it this season or lose it.`,'warn');return}}
+  if(ag==='land'&&Math.random()<.45){const free=H.lands.filter(l=>!raidOn(l));if(free.length){const L=pick(free);H.ops.defense.push(genSiege(r,L));say(`House ${r.name} marches on your ${L.tier.toLowerCase()} of ${L.name}. Defend it this season or lose it.`,'warn');return}}
   if(ag==='revenge'||ag==='land'&&Math.random()<.3){const pool=H.members.filter(m=>!m.dead&&!m.captive&&m.age>=COME_OF_AGE);if(!pool.length)return;const m=pick(pool),roll=1+Math.floor(Math.random()*10);
     const see=m.st.Insight+(fxS(m).taster||0)+gearBonus(m,'Insight');if(roll===1||roll!==10&&roll<=see){say(`An assassin of House ${r.name} comes for ${m.given}, who sees it coming (needed ${see}, rolled ${roll}).`,'warn');return}
     say(`An assassin of House ${r.name} strikes at ${m.given}, who ${hurt(m,2)}.`,'bad');return}
@@ -2184,7 +2361,7 @@ function webView(){
   names.forEach(n=>{const [x,y]=pos[n],you=n===H.house.name,sg=you?H.house.sigil:rival(n).sigil,r=you?40:34;
     nodes+=`<g class="hnode ${you?'you':''}" ${you?'':`data-jump="house-${esc(n)}" tabindex="0" role="button" aria-label="House ${esc(n)}, rank ${rk[n]}"`}>
       <circle cx="${x}" cy="${y}" r="${r}"/><svg x="${x-r*.5}" y="${y-r*.62}" width="${r}" height="${r*1.18}" viewBox="0 0 100 118">${sigilSVG(sg,'w'+n)}</svg>
-      <text class="hn" x="${x}" y="${y+r+16}">${you?'Your house':'House '+esc(n)}</text><text class="hr" x="${x}" y="${y+r+31}">#${rk[n]} in power</text></g>`});
+      ${(()=>{const lab=you?'Your house':'House '+n,fs=Math.max(9,Math.min(13,Math.floor(170/(lab.length*.62))));return `<text class="hn" x="${x}" y="${y+r+16}" style="font-size:${fs}px"${lab.length*fs*.62>180?' textLength="180" lengthAdjust="spacingAndGlyphs"':''}>${esc(lab)}</text>`})()}<text class="hr" x="${x}" y="${y+r+31}">#${rk[n]} in power</text></g>`});
   return `<div class="webwrap"><svg class="relweb" viewBox="0 0 ${W} ${Ht}" role="img" aria-label="Web of the great houses">${edges}${labels}${nodes}</svg></div>
     <div class="legend"><span><i class="l-throne"></i>Holds the throne</span><span><i class="l-favor"></i>Your royal favor</span><span><i class="l-ally"></i>Allied</span><span><i class="l-war"></i>At war</span><span><i class="l-bound"></i>Bound to you by treaty, marriage or ward</span><span><i class="l-calm"></i>Cordial to wary</span><span><i class="l-hot"></i>Hostile to blood feud</span></div>
     <p class="muted" style="font-size:14px;margin:8px 0 0;text-align:center">Choose a house to jump to its details.</p>`;
@@ -2198,7 +2375,7 @@ function realmView(){
   const crown=`<section class="pane fold "><details data-fold="crown" ${foldOpen('crown')?'open':''}><summary><h2>The Crown</h2></summary><div class="foldbody"><div class="crownrow"><svg class="rsig big" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(Rz.royal.sigil,'royal')}</svg><div style="min-width:0">
     ${k?`<p class="kname">${crownWord(k)} ${esc(k.given)}</p><p class="muted" style="margin:0">House ${esc(Rz.royal.name)} · age ${k.age} · ${health}</p>
       <p style="margin:6px 0 0">${Rz.yours?'Your house holds the throne. Royal revenues pay 8 gold each season, and every office is yours to fill.':Rz.heir?`Heir: ${heirWord(Rz.heir)} ${esc(Rz.heir.given)}, age ${Rz.heir.age}`:'<span class="hot">No heir. The succession is open.</span>'}</p>`
-    :`<p class="kname hot">The throne is empty</p><p class="muted" style="margin:0">The claimants fight it out below.</p>`}</div></div>${!Rz.yours&&!rival(Rz.royal.name)?`<div class="royaledit"><label class="fld"><span>Royal house</span><input data-hname="${esc(Rz.royal.name)}" value="House ${esc(Rz.royal.name)}"></label><label class="fld"><span>Royal seat</span><input data-hseat="${esc(Rz.royal.name)}" value="${esc(Rz.royal.seat||'')}" placeholder="The royal seat"></label><button data-hsigil="${esc(Rz.royal.name)}">Redraw royal sigil</button></div>${houseMsg&&houseMsg.key===Rz.royal.name?`<p class="hmsg" role="alert">${esc(houseMsg.text)}</p>`:''}`:''}</div></details></section>`;
+    :`<p class="kname hot">The throne is empty</p><p class="muted" style="margin:0">The claimants fight it out below.</p>`}</div></div>${!Rz.yours&&!rival(Rz.royal.name)?`<div class="royaledit"><label class="fld"><span>Royal house</span><input data-hname="${esc(Rz.royal.name)}" value="House ${esc(Rz.royal.name)}"></label><label class="fld"><span>Royal seat</span><input data-hseat="${esc(Rz.royal.name)}" value="${esc(Rz.royal.seat||'')}" placeholder="The royal seat"></label><button data-hsigil="${esc(Rz.royal.name)}">Redraw royal sigil</button><button data-sgopen="royal" data-sgname="${esc(Rz.royal.name)}">Edit royal sigil</button></div>${houseMsg&&houseMsg.key===Rz.royal.name?`<p class="hmsg" role="alert">${esc(houseMsg.text)}</p>`:''}`:''}</div></details></section>`;
   const fav=Rz.favor,offs=Object.entries(OFFICES).map(([key,[n,d]])=>{const held=Rz.office===key;const ok=Rz.yours||H.influence>=6&&fav>=5&&k;
     return `<li><span style="min-width:0;flex:1"><b>${n}</b><br><span class="muted">${d}</span></span>${held?'<span class="status ok">Held</span>':`<button class="sm" data-office="${key}" ${ok?'':'disabled'}>${Rz.yours?'Appoint':'Seek it · 6 influence'}</button>`}</li>`}).join('');
   const court=`<section class="pane fold "><details data-fold="court" ${foldOpen('court')?'open':''}><summary><h2>Your standing at court</h2></summary><div class="foldbody">
@@ -2581,7 +2758,7 @@ function houseCard(r){
   const ties=tiesWith(r.name),groups=[...new Set(ties.map(x=>x.group))];
   const tieHtml=groups.length?groups.map(gr=>`<dt>${gr}</dt><dd><ul class="ties">${ties.filter(x=>x.group===gr).map(x=>`<li class="${x.tone}">${esc(x.text)}</li>`).join('')}</ul></dd>`).join(''):'';
   const hist=H.log.filter(l=>l.text.includes('House '+r.name)).slice(-3).reverse();
-  return `<article class="hcard" id="house-${esc(r.name)}"><div class="hhead"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'h'+r.name)}</svg><div style="min-width:0;flex:1"><h3 style="display:flex;gap:8px;align-items:center"><input class="hedit nm" data-hname="${esc(r.name)}" value="House ${esc(r.name)}" aria-label="Name of House ${esc(r.name)}">${Rz.royal.name===r.name?'<span class="status young">Royal</span>':''}</h3>${houseMsg&&houseMsg.key===r.name?`<p class="hmsg" role="alert">${esc(houseMsg.text)}</p>`:''}<p class="muted" style="margin:0;font-size:15px">${r.lord.sex==='f'?'Lady':'Lord'} ${esc(r.lord.given)}, ${r.lord.age}</p><input class="hedit st" data-hseat="${esc(r.name)}" value="Seat: ${esc(r.seat)}" aria-label="Seat of House ${esc(r.name)}"><button class="sm" data-hsigil="${esc(r.name)}">Redraw sigil</button></div></div>
+  return `<article class="hcard" id="house-${esc(r.name)}"><div class="hhead"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'h'+r.name)}</svg><div style="min-width:0;flex:1"><h3 style="display:flex;gap:8px;align-items:center"><input class="hedit nm" data-hname="${esc(r.name)}" value="House ${esc(r.name)}" aria-label="Name of House ${esc(r.name)}">${Rz.royal.name===r.name?'<span class="status young">Royal</span>':''}</h3>${houseMsg&&houseMsg.key===r.name?`<p class="hmsg" role="alert">${esc(houseMsg.text)}</p>`:''}<p class="muted" style="margin:0;font-size:15px">${r.lord.sex==='f'?'Lady':'Lord'} ${esc(r.lord.given)}, ${r.lord.age}</p><input class="hedit st" data-hseat="${esc(r.name)}" value="Seat: ${esc(r.seat)}" aria-label="Seat of House ${esc(r.name)}"><span class="acts" style="margin-top:4px"><button class="sm" data-hsigil="${esc(r.name)}">Redraw sigil</button><button class="sm" data-sgopen="rival" data-sgname="${esc(r.name)}">Edit sigil</button></span></div></div>
     <div class="stance"><span class="eyebrow" style="color:var(--gold)">${stanceOf(r)}</span>${tensionMeter(r)}</div>
     <p class="threat">${threatLine(r)}</p>
     <dl class="opdl">${tieHtml||'<dt>Ties</dt><dd class="muted">None yet. Intrigue, marriage, wards and spies all bind houses together.</dd>'}</dl>
@@ -2595,11 +2772,20 @@ function doRoll(stat,skill){
   const m=mem(sel);const base=m.st[stat],bonus=(stat==='Might'?wVal(m.gear.weapon):0)+gearBonus(m,stat),target=base+bonus,roll=1+Math.floor(Math.random()*10);
   lastRoll={id:m.id,stat,skill,base,bonus,target,roll,ok:roll===1||(roll!==10&&roll<=target)};render();
 }
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sigilEdit){sigilEdit=null;render()}});
 document.addEventListener('click',e=>{
-  const t=e.target.closest('button,[data-sel],[data-jump]');if(!t)return;
+  const t=e.target.closest('button,[data-sel],[data-jump],.sgback');if(!t)return;
   if(t.dataset.sec){section=t.dataset.sec;render();return}
   if(t.dataset.sel!=null){sel=+t.dataset.sel;if(t.dataset.go)section=t.dataset.go;lastRoll=null;render();if(t.dataset.go)window.scrollTo({top:0});return}
+  if(t.dataset.sgopen){sigilEdit={kind:t.dataset.sgopen,name:t.dataset.sgname||null};render();return}
+  if(t.dataset.sgpart){setSigilPart(t.dataset.sgpart,t.dataset.sgval);render();return}
+  if(t.dataset.sgclose){if(t.classList.contains('sgback')&&e.target!==t)return;sigilEdit=null;render();return}
   if(t.dataset.hsigil!=null){const n=t.dataset.hsigil,r=rival(n);if(r)r.sigil=newSigil();if(H.realm.royal.name===n&&!H.realm.yours)H.realm.royal.sigil=r?r.sigil:newSigil();render();return}
+  if(t.dataset.rout!=null){planRout(H.lands[+t.dataset.rout]);render();return}
+  if(t.dataset.calloff!=null){callOffRout(H.lands[+t.dataset.calloff]);render();return}
+  if(t.dataset.extraop){extraOperation();render();return}
+  if(t.dataset.reroll){if(H.ops.board.length){H.ops.board=genBoard();planning=null;planTeam=[]}render();return}
+  if(t.dataset.invest!=null){invest(H.lands[+t.dataset.invest]);render();return}
   if(t.dataset.train){buyTraining(mem(sel),t.dataset.train);render();return}
   if(t.dataset.untrain){cancelTraining(mem(sel),t.dataset.untrain);render();return}
   if(t.dataset.roll){const [s,k]=t.dataset.roll.split('|');doRoll(s,k);return}
@@ -2644,8 +2830,11 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('toggle',e=>{if(e.target.matches&&e.target.matches('details.ravens'))ravensOpen=e.target.open},true);
 document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.fold&&H){H.ui=H.ui||{};H.ui.folds=H.ui.folds||{};H.ui.folds[d.dataset.fold]=d.open;save()}},true);
+document.addEventListener('keydown',e=>{if(e.target&&e.target.id==='hname'&&e.key==='Enter'){e.preventDefault();e.target.blur()}});
 document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('g.node,g.hnode')){e.preventDefault();e.target.dispatchEvent(new MouseEvent('click',{bubbles:true}))}});
+window.addEventListener('resize',()=>{try{fitNames()}catch(e){}});
 document.addEventListener('input',e=>{
+  if(e.target&&e.target.id==='hname')fitArea(e.target,22);else if(e.target&&e.target.matches&&e.target.matches('input.hedit.nm'))fitInput(e.target,12);
   const t=e.target,m=H&&mem(sel);
   if(t.dataset.edit&&m){m[t.dataset.edit]=t.value;const b=document.querySelector(`ul.roster button[data-sel="${m.id}"]`);if(b){b.querySelector('.rn').textContent=m.given;}save();return}
   if(t.dataset.gear&&m&&t.tagName==='TEXTAREA'){m.gear[t.dataset.gear]=t.value;save();return}
@@ -2673,5 +2862,6 @@ function start(d){
 try{window.claude?.hot?.snapshot(()=>({H,sel,section,activeSlot}))}catch(e){}
 window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
 </script>
+
 
 </body></html>
