@@ -1,16 +1,5 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Wrath of Kings: a House-based game of medieval politics. Raise a family, run one operation per season, survive the court and outlast the king.">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Wrath of Kings">
-<meta name="theme-color" content="#e6d8b8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#14110d" media="(prefers-color-scheme: dark)">
-<title>Wrath of Kings</title>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Throne Knight Glory</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -113,6 +102,18 @@ figure.cam figcaption{font:500 12px/1.3 var(--f-body);color:var(--muted);text-al
 .stats .skills{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
 .skills button{min-height:36px;padding:2px 12px;font-size:15px}
 .skills button b{font-family:var(--f-display);font-variant-numeric:tabular-nums;margin-left:6px;color:var(--gold)}
+.train{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin:-4px 0 14px;font-size:15px}
+.train button{min-height:36px;padding:2px 12px;font-size:15px}
+.train .q{color:var(--gold);font-weight:600}
+.train .paused{color:var(--blood)}
+.hedit{display:block;width:100%;margin-left:-4px;padding:0 4px;background:transparent;border:1px solid transparent;border-radius:3px}
+.hedit.nm{font:600 18px var(--f-display);letter-spacing:.01em}
+.hedit.st{font-size:15px;color:var(--muted)}
+.hedit:hover{border-color:var(--line)}.hedit:focus{background:var(--panel);border-color:var(--accent);outline:none}
+.hmsg{margin:2px 0 0;font-size:14px;color:var(--blood)}
+.royaledit{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:flex-end;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
+.royaledit .fld{flex:1;min-width:10em}
+.royaledit input{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:8px 10px;min-height:44px;width:100%}
 .rolled{font-size:16px;min-height:1.6em;margin:2px 0 0;padding:8px 12px;background:var(--field);border-left:3px solid var(--line)}
 .rolled.hit{border-left-color:var(--accent)}.rolled.miss{border-left-color:var(--blood)}
 .rolled .hit{color:var(--accent);font-weight:600}.rolled .miss{color:var(--blood);font-weight:600}
@@ -349,14 +350,12 @@ ul.slots-list li.act{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
-</head>
-<body>
+
 <div class="wrap">
   <header class="house">
     <svg class="sigil" id="sigil" viewBox="0 0 100 118" role="img" aria-label="House sigil"></svg>
     <div style="min-width:0">
-      <div class="eyebrow">Wrath of Kings</div>
+      <div class="eyebrow">Throne Knight Glory</div>
       <input class="hname" id="hname" aria-label="House name">
       <input class="hwords" id="hwords" aria-label="House words">
       <input class="hseat" id="hseat" aria-label="Seat of the house">
@@ -1451,6 +1450,7 @@ function renderNav(){
   $('sect').innerHTML=SECTIONS.map(([k,l,ph])=>`<button data-sec="${k}" ${section===k?'aria-current="page"':''}>${l}${ph?`<span class="soon">Phase ${ph}</span>`:''}</button>`).join('');
 }
 function render(){
+  settleTraining();
   if(H&&H.members)checkSuccession();
   renderHeader();renderNav();
   const main=$('main');
@@ -1491,11 +1491,17 @@ function dossier(m){
   if(!m.dead&&m.onOp===H.cycle)pills.push('<span class="status young">On an operation this cycle</span>');
   if(young)pills.push(`<span class="status young">Too young for operations · of age in ${COME_OF_AGE-m.age}</span>`);
   if(m.origin!=='born')pills.push(`<span class="status kin">${m.origin==='married'?'By marriage':'By adoption'}</span>`);
+  const trainRow=(m,k)=>{
+    if(m.dead)return '';const n=queuedIn(m,k),top=m.st[k]+n,cost=nextTrainCost(m,k);
+    const pos=trainQ(m).findIndex(t=>t.k===k);
+    const q=n?`<span class="q">+${n} in training → ${top}</span>${m.captive?' <span class="paused">paused while captive</span>':` <span class="muted">· next +1 ${pos===0?'at season’s end':'in '+(pos+1)+' seasons'}</span>`} <button data-untrain="${k}" aria-label="Cancel ${k} training">Cancel (refund ${trainQ(m).filter(t=>t.k===k).reduce((a,t)=>a+t.cost,0)})</button>`:'';
+    const buy=top>=10?'<span class="muted">At its height.</span>':`<button data-train="${k}" ${H.gold<cost?'disabled':''}>Train ${k} to ${top+1} · ${cost} gold</button>`;
+    return `<div class="train">${buy}${q}</div>`};
   const stats=STATS.map(k=>{
     const v=m.st[k],bonus=(k==='Might'?wVal(m.gear.weapon):0)+gearBonus(m,k);
     const skills=SKILLS[k].map(s=>`<button data-roll="${k}|${s}">${s}<b>${v+bonus}</b></button>`).join('');
     return `<span class="sn">${k}</span><span class="pips" aria-label="${k} ${v} of 10">${Array.from({length:10},(_,i)=>`<i class="${i<v?'on':''}"></i>`).join('')}</span><span class="sv">${v}</span>
-      <p class="help">${STAT_HELP[k]}</p><div class="skills">${skills}</div>`}).join('');
+      <p class="help">${STAT_HELP[k]}</p><div class="skills">${skills}</div>${trainRow(m,k)}`}).join('');
   let roll='';
   if(lastRoll&&lastRoll.id===m.id){const L=lastRoll;
     roll=`<p class="rolled ${L.ok?'hit':'miss'}" role="status">${esc(L.skill)} (${L.stat} ${L.base}${L.bonus?' + '+L.bonus+' gear':''}): rolled <b>${L.roll}</b> against ${L.target}. <span class="${L.ok?'hit':'miss'}">${L.ok?(L.roll===1?'A perfect success.':'Success by '+(L.target-L.roll)+'.'):(L.roll===10?'Disaster.':'Failure by '+(L.roll-L.target)+'.')}</span></p>`}
@@ -1636,6 +1642,25 @@ function genRivals(){
   return want.slice(0,5).map(n=>({name:n,seat:pick(SEATS),sigil:newSigil(),power:ri(1,3),hostility:0,lands:ri(4,7)}));
 }
 const rival=n=>H.rivals.find(r=>r.name===n);
+/* renaming a great house: every game link that holds the old name follows it; written text (log, ravens, secrets, titles) keeps the old name */
+let houseMsg=null;
+function cleanHouseName(v){return String(v||'').trim().replace(/^house\s+/i,'').replace(/\s+/g,' ').slice(0,28)}
+function houseNameTaken(n,except){const lc=n.toLowerCase();return [H.house.name,H.realm&&H.realm.royal&&H.realm.royal.name].concat(H.rivals.map(r=>r.name)).some(x=>x&&x!==except&&x.toLowerCase()===lc)}
+function renameHouse(old,nw){
+  const swap=v=>{if(v===old)return nw;if(typeof v==='string'&&v.includes('|')){const p=v.split('|');if(p.length===2&&p.includes(old))return p.map(x=>x===old?nw:x).sort().join('|')}return v};
+  const walk=o=>{if(!o||typeof o!=='object')return;
+    if(Array.isArray(o)){for(let i=0;i<o.length;i++){if(typeof o[i]==='string')o[i]=swap(o[i]);else walk(o[i])}return}
+    for(const k of Object.keys(o)){if(k==='given')continue;const v=o[k];if(typeof v==='string')o[k]=swap(v);else walk(v);
+      if(k===old&&!(nw in o)){o[nw]=o[k];delete o[k]}}};
+  walk(H);if(leverage===old)leverage=nw;
+  H.log.push({cycle:H.cycle,text:`House ${old} is now known as House ${nw}.`});
+}
+function tryRenameHouse(old,raw,key){
+  const nw=cleanHouseName(raw);
+  if(!nw||nw===old){houseMsg=null;return}
+  if(houseNameTaken(nw,old)){houseMsg={key,text:`House ${nw} already exists. Pick another name.`};return}
+  houseMsg=null;renameHouse(old,nw);
+}
 function genOp(type,objPick){
   const T=OPS[type],[objT,kind]=objPick||pick(T.objs),pool=H.rivals.filter(r=>r.lands>0||type!=='Conquest'),target=pick(pool.length?pool:H.rivals).name;
   const diff=type==='Conquest'?kind:ri(1,3);
@@ -1931,10 +1956,10 @@ function closeOp(id){
 function endCycle(){
   if(H.ops.underway.some(x=>!x.done))return;
   H.ops.underway.forEach(ms=>{H.log.push({cycle:H.cycle,text:ms.op.title+': '+ms.gains.join('. ')})});H.ops.underway=[];
-  const inc=cycleIncome();H.gold+=inc;
+  const inc=cycleIncome();H.gold+=inc;trainingTurn();
   H.members.forEach(m=>{if(!m.dead&&m.wounds>0)m.wounds--});
   H.log.push({cycle:H.cycle,text:`${seasonOf(H.cycle)} ends. Your holdings pay ${inc} gold. The wounded mend.`});
-  H.news=realmTurn();banditTurn((t,tone)=>H.news.push({t,tone}));if(seasonOf(H.cycle+1)==='Spring')informantTurn((t,tone)=>H.news.push({t,tone}));if(seasonOf(H.cycle+1)==='Winter')bloodlineTurn((t,tone)=>H.news.push({t,tone}));H.news.forEach(n=>H.log.push({cycle:H.cycle,text:n.t,realm:1}));if(H.log.length>80)H.log=H.log.slice(-80);
+  H.news=realmTurn();banditTurn((t,tone)=>H.news.push({t,tone}));if(seasonOf(H.cycle+1)==='Spring')informantTurn((t,tone)=>H.news.push({t,tone}));if(seasonOf(H.cycle+1)==='Winter')bloodlineTurn((t,tone)=>H.news.push({t,tone}));settleTraining();H.news.forEach(n=>H.log.push({cycle:H.cycle,text:n.t,realm:1}));if(H.log.length>80)H.log=H.log.slice(-80);
   H.cycle++;H.ops.season=H.cycle;ensureMarket();H.ops.board=genBoard();planning=null;planTeam=[];leverage=null;render();
 }
 
@@ -2173,7 +2198,7 @@ function realmView(){
   const crown=`<section class="pane fold "><details data-fold="crown" ${foldOpen('crown')?'open':''}><summary><h2>The Crown</h2></summary><div class="foldbody"><div class="crownrow"><svg class="rsig big" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(Rz.royal.sigil,'royal')}</svg><div style="min-width:0">
     ${k?`<p class="kname">${crownWord(k)} ${esc(k.given)}</p><p class="muted" style="margin:0">House ${esc(Rz.royal.name)} · age ${k.age} · ${health}</p>
       <p style="margin:6px 0 0">${Rz.yours?'Your house holds the throne. Royal revenues pay 8 gold each season, and every office is yours to fill.':Rz.heir?`Heir: ${heirWord(Rz.heir)} ${esc(Rz.heir.given)}, age ${Rz.heir.age}`:'<span class="hot">No heir. The succession is open.</span>'}</p>`
-    :`<p class="kname hot">The throne is empty</p><p class="muted" style="margin:0">The claimants fight it out below.</p>`}</div></div></div></details></section>`;
+    :`<p class="kname hot">The throne is empty</p><p class="muted" style="margin:0">The claimants fight it out below.</p>`}</div></div>${!Rz.yours&&!rival(Rz.royal.name)?`<div class="royaledit"><label class="fld"><span>Royal house</span><input data-hname="${esc(Rz.royal.name)}" value="House ${esc(Rz.royal.name)}"></label><label class="fld"><span>Royal seat</span><input data-hseat="${esc(Rz.royal.name)}" value="${esc(Rz.royal.seat||'')}" placeholder="The royal seat"></label><button data-hsigil="${esc(Rz.royal.name)}">Redraw royal sigil</button></div>${houseMsg&&houseMsg.key===Rz.royal.name?`<p class="hmsg" role="alert">${esc(houseMsg.text)}</p>`:''}`:''}</div></details></section>`;
   const fav=Rz.favor,offs=Object.entries(OFFICES).map(([key,[n,d]])=>{const held=Rz.office===key;const ok=Rz.yours||H.influence>=6&&fav>=5&&k;
     return `<li><span style="min-width:0;flex:1"><b>${n}</b><br><span class="muted">${d}</span></span>${held?'<span class="status ok">Held</span>':`<button class="sm" data-office="${key}" ${ok?'':'disabled'}>${Rz.yours?'Appoint':'Seek it · 6 influence'}</button>`}</li>`}).join('');
   const court=`<section class="pane fold "><details data-fold="court" ${foldOpen('court')?'open':''}><summary><h2>Your standing at court</h2></summary><div class="foldbody">
@@ -2210,8 +2235,35 @@ function lineOfSuccession(){
   return pool.sort((a,b)=>rank(a)-rank(b)||b.age-a.age);
 }
 const heirOf=()=>lineOfSuccession()[0]||null;
+/* ---------- training: pay 2x the stat per +1; one +1 lands per member each season, in purchase order ---------- */
+const trainQ=m=>m.train||(m.train=[]);
+const queuedIn=(m,k)=>trainQ(m).filter(t=>t.k===k).length;
+const nextTrainCost=(m,k)=>2*(m.st[k]+queuedIn(m,k));
+function buyTraining(m,k){
+  if(!m||m.dead)return;const cost=nextTrainCost(m,k);
+  if(m.st[k]+queuedIn(m,k)>=10||H.gold<cost)return;
+  H.gold-=cost;trainQ(m).push({k,cost});
+  H.log.push({cycle:H.cycle,text:`Paid ${cost} gold to train ${m.given}'s ${k}.`});
+}
+function cancelTraining(m,k){
+  const q=trainQ(m),gone=q.filter(t=>t.k===k);if(!gone.length)return;
+  const back=gone.reduce((a,t)=>a+t.cost,0);m.train=q.filter(t=>t.k!==k);H.gold+=back;
+  H.log.push({cycle:H.cycle,text:`Cancelled ${m.given}'s ${k} training. ${back} gold refunded.`});
+}
+function settleTraining(){ /* the dead are refunded in full */
+  H.members.forEach(m=>{if(m.dead&&m.train&&m.train.length){const back=m.train.reduce((a,t)=>a+t.cost,0);m.train=[];H.gold+=back;
+    H.log.push({cycle:H.cycle,text:`${m.given}'s unfinished training is refunded: ${back} gold.`})}});
+}
+function trainingTurn(){
+  settleTraining();
+  H.members.forEach(m=>{if(m.dead||m.captive||!m.train||!m.train.length)return;
+    const t=m.train.shift();
+    if(m.st[t.k]<10){m.st[t.k]++;m.trainedPts=(m.trainedPts||0)+1;H.log.push({cycle:H.cycle,text:`Training pays off: ${m.given}'s ${t.k} rises to ${m.st[t.k]}.`})}
+    else{H.gold+=t.cost;H.log.push({cycle:H.cycle,text:`${m.given}'s ${t.k} is already at its height. ${t.cost} gold refunded.`})}
+  });
+}
 function growChild(m){
-  const want=m.age>=COME_OF_AGE?20:childTotal(m.age);let have=STATS.reduce((a,k)=>a+m.st[k],0),guard=0;
+  const want=(m.age>=COME_OF_AGE?20:childTotal(m.age))+(m.trainedPts||0);let have=STATS.reduce((a,k)=>a+m.st[k],0),guard=0;
   const lean=topStat(m.st);
   while(have<want&&guard++<40){const k=Math.random()<.4?lean:pick(STATS);if(m.st[k]<10){m.st[k]++;have++}}
 }
@@ -2529,7 +2581,7 @@ function houseCard(r){
   const ties=tiesWith(r.name),groups=[...new Set(ties.map(x=>x.group))];
   const tieHtml=groups.length?groups.map(gr=>`<dt>${gr}</dt><dd><ul class="ties">${ties.filter(x=>x.group===gr).map(x=>`<li class="${x.tone}">${esc(x.text)}</li>`).join('')}</ul></dd>`).join(''):'';
   const hist=H.log.filter(l=>l.text.includes('House '+r.name)).slice(-3).reverse();
-  return `<article class="hcard" id="house-${esc(r.name)}"><div class="hhead"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'h'+r.name)}</svg><div style="min-width:0;flex:1"><h3>House ${esc(r.name)}${Rz.royal.name===r.name?' <span class="status young">Royal</span>':''}</h3><p class="muted" style="margin:0;font-size:15px">${r.lord.sex==='f'?'Lady':'Lord'} ${esc(r.lord.given)}, ${r.lord.age} · ${esc(r.seat)}</p></div></div>
+  return `<article class="hcard" id="house-${esc(r.name)}"><div class="hhead"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'h'+r.name)}</svg><div style="min-width:0;flex:1"><h3 style="display:flex;gap:8px;align-items:center"><input class="hedit nm" data-hname="${esc(r.name)}" value="House ${esc(r.name)}" aria-label="Name of House ${esc(r.name)}">${Rz.royal.name===r.name?'<span class="status young">Royal</span>':''}</h3>${houseMsg&&houseMsg.key===r.name?`<p class="hmsg" role="alert">${esc(houseMsg.text)}</p>`:''}<p class="muted" style="margin:0;font-size:15px">${r.lord.sex==='f'?'Lady':'Lord'} ${esc(r.lord.given)}, ${r.lord.age}</p><input class="hedit st" data-hseat="${esc(r.name)}" value="Seat: ${esc(r.seat)}" aria-label="Seat of House ${esc(r.name)}"><button class="sm" data-hsigil="${esc(r.name)}">Redraw sigil</button></div></div>
     <div class="stance"><span class="eyebrow" style="color:var(--gold)">${stanceOf(r)}</span>${tensionMeter(r)}</div>
     <p class="threat">${threatLine(r)}</p>
     <dl class="opdl">${tieHtml||'<dt>Ties</dt><dd class="muted">None yet. Intrigue, marriage, wards and spies all bind houses together.</dd>'}</dl>
@@ -2547,6 +2599,9 @@ document.addEventListener('click',e=>{
   const t=e.target.closest('button,[data-sel],[data-jump]');if(!t)return;
   if(t.dataset.sec){section=t.dataset.sec;render();return}
   if(t.dataset.sel!=null){sel=+t.dataset.sel;if(t.dataset.go)section=t.dataset.go;lastRoll=null;render();if(t.dataset.go)window.scrollTo({top:0});return}
+  if(t.dataset.hsigil!=null){const n=t.dataset.hsigil,r=rival(n);if(r)r.sigil=newSigil();if(H.realm.royal.name===n&&!H.realm.yours)H.realm.royal.sigil=r?r.sigil:newSigil();render();return}
+  if(t.dataset.train){buyTraining(mem(sel),t.dataset.train);render();return}
+  if(t.dataset.untrain){cancelTraining(mem(sel),t.dataset.untrain);render();return}
   if(t.dataset.roll){const [s,k]=t.dataset.roll.split('|');doRoll(s,k);return}
   if(t.dataset.wound){const m=mem(sel);m.wounds=clamp(m.wounds+(+t.dataset.wound),0,maxWounds(m));render();return}
   if(t.dataset.plan!=null){planning=t.dataset.plan===''?null:+t.dataset.plan;planTeam=[];render();return}
@@ -2597,6 +2652,8 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{
   const t=e.target,m=H&&mem(sel);
+  if(t.dataset.hname!=null){tryRenameHouse(t.dataset.hname,t.value,t.dataset.hname);render();return}
+  if(t.dataset.hseat!=null){const n=t.dataset.hseat,r=rival(n)||(H.realm.royal.name===n?H.realm.royal:null);if(r){const v=t.value.replace(/^seat:\s*/i,'').trim().slice(0,40);if(v)r.seat=v}render();return}
   if(t.dataset.gear&&m&&t.tagName==='SELECT'){equip(m,t.dataset.gear,t.value);render();return}
   if(t.dataset.rename){renameSlot(t.dataset.rename,t.value);return}
   if(t.dataset.match){matchPick[+t.dataset.match]=+t.value;return}
@@ -2616,5 +2673,5 @@ function start(d){
 try{window.claude?.hot?.snapshot(()=>({H,sel,section,activeSlot}))}catch(e){}
 window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
 </script>
-</body>
-</html>
+
+</body></html>
