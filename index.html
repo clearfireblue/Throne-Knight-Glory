@@ -84,8 +84,9 @@ ul.roster button[aria-current="true"]{background:var(--field);border-color:var(-
 
 /* dossier */
 .dhead{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:start}
-figure.cam{margin:0;width:150px;padding:6px;background:var(--field);border:1px solid var(--line);border-radius:3px}
-figure.cam .pf{width:136px;height:136px}
+figure.cam{margin:0;width:158px;padding:6px;background:var(--field);border:1px solid var(--line);border-radius:3px}
+figure.cam .pf{width:144px;height:144px}
+.figs{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;max-width:330px}.figs>button{flex-basis:100%}
 figure.cam figcaption{font:500 12px/1.3 var(--f-body);color:var(--muted);text-align:center;padding-top:6px;letter-spacing:.06em;text-transform:uppercase}
 .given{font:700 30px/1.1 var(--f-display);letter-spacing:.04em;background:transparent;border:1px solid transparent;border-radius:3px;padding:0 4px;margin-left:-4px;width:100%;text-transform:uppercase}
 .mtitle{font-size:17px;background:transparent;border:1px solid transparent;border-radius:3px;padding:0 4px;margin-left:-4px;width:100%;color:var(--muted)}
@@ -173,7 +174,7 @@ svg.tree line.wed{stroke:var(--kin);stroke-width:4}
 .teampick button span{min-width:0;flex:1}
 .teampick button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
 .teampick b{font:600 14px var(--f-display);white-space:nowrap;color:var(--gold)}
-.teampick .pf{width:32px;height:32px}
+.teampick .pf{width:48px;height:48px}
 .track{display:flex;gap:4px}
 .track i{flex:1;height:8px;border:1px solid var(--line)}
 .track i.ok{background:var(--accent);border-color:var(--accent)}.track i.miss{background:var(--blood);border-color:var(--blood)}.track i.now{border:2px solid var(--ink)}
@@ -235,6 +236,100 @@ button.linkish{background:none;border:0;padding:0;min-height:auto;font-weight:60
 .fld span{font:600 11px var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .fld select{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:8px 10px;min-height:44px;width:100%}
 
+/* market + relations */
+ul.wares{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.ware{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:16px;padding-bottom:8px;border-bottom:1px dashed var(--line)}
+.ware:last-child{border-bottom:0;padding-bottom:0}
+.give{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.give select{background:var(--panel);border:1px solid var(--line);border-radius:3px;min-height:36px;padding:2px 8px;max-width:14em}
+.tablewrap{overflow-x:auto}
+table.rel{width:100%;border-collapse:collapse;font-size:15px;min-width:620px}
+table.rel th,table.rel td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.rel thead th{font:600 11px var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+table.rel tbody th{font:600 15px var(--f-display);letter-spacing:.03em;white-space:nowrap}
+.relname{display:inline-flex;align-items:center;gap:6px}
+.chip{display:inline-block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;margin:2px 4px 2px 0;border:1px solid var(--kin);border-radius:2px;color:var(--kin)}
+.tension{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.tension b{font-weight:600}
+.tension.t3 b,.tension.t4 b,.tension.t5 b{color:var(--blood)}
+.tension.t0 b{color:var(--accent)}
+.stance{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;padding-top:6px;border-top:1px solid var(--line)}
+.threat{margin:0;font-size:15px}
+ul.ties{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+ul.ties li.good::before{content:"+ ";color:var(--accent);font-weight:700}
+ul.ties li.bad::before{content:"− ";color:var(--blood);font-weight:700}
+ul.ties li.warn::before{content:"! ";color:var(--gold);font-weight:700}
+.theirs{padding-top:6px;border-top:1px dashed var(--line)}
+details.hist{font-size:15px}
+details.hist summary{cursor:pointer;color:var(--muted);font-weight:600;min-height:32px;display:flex;align-items:center}
+details.hist ul{margin:4px 0 0;padding-left:18px;display:grid;gap:4px}
+
+details.ravens{margin-top:12px;padding:10px 12px;background:var(--field);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:3px}
+details.ravens summary{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;cursor:pointer;min-height:32px;list-style:none}
+details.ravens summary::-webkit-details-marker{display:none}
+details.ravens summary::before{content:"▸";color:var(--gold);transition:transform .15s}
+details.ravens[open] summary::before{transform:rotate(90deg)}
+details.ravens .news{margin-top:8px}
+.ravens-none{margin:10px 0 0;font-size:15px}
+
+/* folding sections, web, rankings */
+.fold>details>summary{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;cursor:pointer;list-style:none;min-height:36px}
+.fold>details>summary::-webkit-details-marker{display:none}
+.fold>details>summary h2{margin:0}
+.fold>details>summary::before{content:"▸";color:var(--gold);font-size:16px;transition:transform .15s;align-self:center}
+.fold>details[open]>summary::before{transform:rotate(90deg)}
+.foldbody{margin-top:12px}
+.webwrap{overflow-x:auto}
+svg.relweb{display:block;width:100%;max-width:680px;min-width:480px;height:auto;margin:0 auto}
+svg.relweb line{stroke-width:3}
+.e-ally{stroke:var(--accent);opacity:.7}
+.e-war{stroke:var(--blood);stroke-dasharray:8 6;opacity:.8}
+.e-you.e-t0,.e-you.e-t1,.e-you.e-t2{stroke:var(--gold);opacity:.75}
+.e-you.e-t3,.e-you.e-t4,.e-you.e-t5{stroke:var(--blood);stroke-width:4}
+.e-you.e-bound{stroke:var(--kin);stroke-width:5}
+.e-throne{stroke:var(--gold);stroke-width:8;opacity:.85}
+.e-favor{stroke:var(--gold);stroke-dasharray:3 6;stroke-width:3}
+.elab{font:600 12px var(--f-body);text-anchor:middle;fill:var(--ink);paint-order:stroke;stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
+.elab.e-t3,.elab.e-t4,.elab.e-t5{fill:var(--blood)}.elab.e-bound{fill:var(--kin)}
+.elab.sub{font-weight:400;font-size:11px;fill:var(--muted)}
+.elab.favor{fill:var(--gold)}
+.crownnode circle{fill:var(--field);stroke:var(--gold);stroke-width:3}
+.crownnode path{fill:var(--gold)}
+.crownnode .cn{font:700 14px var(--f-display);text-anchor:middle;fill:var(--ink)}
+.crownnode .cs{font:12px var(--f-body);text-anchor:middle;fill:var(--muted)}
+.hnode circle{fill:var(--field);stroke:var(--line);stroke-width:2}
+.hnode.you circle{stroke:var(--accent);stroke-width:4}
+.hnode[data-jump]{cursor:pointer}
+.hnode[data-jump]:hover circle,.hnode:focus-visible circle{stroke:var(--accent);stroke-width:3}
+.hnode:focus{outline:none}
+.hnode .hn{font:600 13px var(--f-display);text-anchor:middle;fill:var(--ink);paint-order:stroke;stroke:var(--panel);stroke-width:4px}
+.hnode .hr{font:12px var(--f-body);text-anchor:middle;fill:var(--muted);paint-order:stroke;stroke:var(--panel);stroke-width:4px}
+.legend .l-throne{border-color:var(--gold);border-top-width:6px}.legend .l-favor{border-color:var(--gold);border-top-style:dotted}
+.legend .l-ally{border-color:var(--accent)}.legend .l-war{border-color:var(--blood);border-top-style:dashed}
+.legend .l-bound{border-color:var(--kin);border-top-width:5px}.legend .l-calm{border-color:var(--gold)}.legend .l-hot{border-color:var(--blood);border-top-width:4px}
+ol.ranks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+ol.ranks li{display:grid;grid-template-columns:2em auto minmax(0,1fr) minmax(60px,22%) 2.5em;gap:10px;align-items:center;padding:6px 8px;border:1px solid transparent;border-radius:3px}
+ol.ranks li.you{border-color:var(--accent);background:var(--field)}
+.rk{font:700 20px var(--f-display);color:var(--gold);text-align:center}
+.rname{display:flex;flex-direction:column;min-width:0;font-size:15px}
+.rname b{font-family:var(--f-display);font-size:16px}
+.rbar{height:10px;border:1px solid var(--line);border-radius:2px;overflow:hidden}
+.rbar i{display:block;height:100%;background:var(--gold)}
+.rscore{font:700 18px var(--f-display);text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:560px){ol.ranks li{grid-template-columns:2em auto minmax(0,1fr) 2.5em}.rbar{display:none}}
+
+svg.tree rect.fam{fill:var(--panel);fill-opacity:.6;stroke:var(--gold);stroke-width:1.5;stroke-dasharray:2 3}
+svg.tree text.fl{fill:var(--gold);font:italic 600 12px var(--f-body);letter-spacing:.02em}
+svg.tree .node.inlaw rect.card,svg.tree .node.ward rect.card{stroke-dasharray:5 3}
+.legend .f{border-color:var(--gold);border-top-style:dotted}.legend .d{border-color:var(--line);border-top-style:dashed}
+
+.saves{margin:8px 0 4px}
+ul.slots-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+ul.slots-list li{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:3px;background:var(--field)}
+ul.slots-list li.act{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
+.slotname{font:600 17px var(--f-display);letter-spacing:.03em;background:transparent;border:1px solid transparent;border-radius:3px;padding:2px 4px;margin-left:-4px;width:100%;max-width:22em}
+.slotname:hover{border-color:var(--line)}.slotname:focus{background:var(--panel);border-color:var(--accent);outline:none}
+
 @media (max-width:820px){
   .two{grid-template-columns:minmax(0,1fr)}
   .grid{grid-template-columns:minmax(0,1fr)}
@@ -244,7 +339,7 @@ button.linkish{background:none;border:0;padding:0;min-height:auto;font-weight:60
 @media (max-width:520px){
   .sigil{width:64px;height:76px}
   .dhead{grid-template-columns:minmax(0,1fr)}
-  figure.cam{width:120px}figure.cam .pf{width:106px;height:106px}
+  figure.cam{width:110px}figure.cam .pf{width:96px;height:96px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -263,11 +358,13 @@ button.linkish{background:none;border:0;padding:0;min-height:auto;font-weight:60
     <div class="readout" id="readout"></div>
   </header>
   <div class="bar">
+    <button id="savesBtn" aria-expanded="false">Saves</button>
     <button id="newHouse">Found a new House</button>
     <button id="newSigil">Redraw sigil</button>
     <span class="note" id="saveNote"></span>
   </div>
   <div id="confirmBox"></div>
+  <div id="savesBox"></div>
   <nav class="sect" id="sect" aria-label="Sections"></nav>
   <main id="main"></main>
 </div>
@@ -297,11 +394,11 @@ const SKILLS={
   Grit:['Endure','Resist poison'],
   Insight:['Persuade','Deceive','Court','Read intent']
 };
-const WEAPONS=[['None',0],['Dagger',0],['Arming sword',1],['Spear',1],['Longbow',1],['Mace',1],['Longsword',2],['Lance',2],['Warhammer',2],['Ancestral greatsword',3]];
-const ARMORS=[['None',0],['Padded gambeson',1],['Boiled leather',1],['Mail hauberk',2],['Brigandine',2],['Plate harness',3]];
+const WEAPONS=[['None',0],['Dagger',0],['Arming sword',1],['Spear',1],['Longbow',1],['Mace',1],['Longsword',2],['Lance',2],['Warhammer',2],['Greatsword',3],['Poleaxe',3],['Ancestral greatsword',3]];
+const ARMORS=[['None',0],['Padded gambeson',1],['Boiled leather',1],['Mail hauberk',2],['Brigandine',2],['Plate harness',3],['Gothic plate',3]];
 const wVal=n=>(WEAPONS.find(w=>w[0]===n)||WEAPONS[0])[1];
 const aVal=n=>(ARMORS.find(w=>w[0]===n)||ARMORS[0])[1];
-const maxWounds=m=>m.st.Grit+aVal(m.gear.armor);
+const maxWounds=m=>m.st.Grit+aVal(m.gear.armor)+((typeof HEIRLOOMS!=='undefined'&&HEIRLOOMS[m.gear.heirloom]||{}).wounds||0);
 const COME_OF_AGE=16;
 
 /* ---------- names ---------- */
@@ -368,67 +465,816 @@ const KIT_BY={Might:['knight','hero'],Ability:['rogue','steward'],Grit:['juggern
 function shade(hex,f){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;const m=f<0?0:255,a=Math.abs(f);
   r=Math.round(r+(m-r)*a);g=Math.round(g+(m-g)*a);b=Math.round(b+(m-b)*a);return '#'+((1<<24)|(r<<16)|(g<<8)|b).toString(16).slice(1)}
 const PX_CACHE=new Map();
-function portraitURL(m){
-  const kitName=m.age<COME_OF_AGE?'child':m.kit,old=m.age>=60;
-  const key=m.look+'|'+kitName+'|'+(old?1:0);if(PX_CACHE.has(key))return PX_CACHE.get(key);
-  const r=mulberry32(m.look),p=a=>a[Math.floor(r()*a.length)],K=KIT[kitName]||KIT.courtier;
-  const G=Array.from({length:20},()=>Array(20).fill(null));
-  const px=(x,y,c)=>{if(x>=0&&x<20&&y>=0&&y<20)G[y][x]=c};
-  const rect=(x0,y0,x1,y1,c)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)px(x,y,c)};
-  const skin=p(PX_SKIN);let hair=p(PX_HAIR);if(old)hair=p(PX_GREY);
-  const wide=r()<.5,x0=wide?6:7,x1=wide?13:12,mx=9;
-  let head='bare';{const t=r();let acc=0;for(const k in K.head){acc+=K.head[k];if(t<acc){head=k;break}}}
-  for(let y=0;y<20;y++)rect(0,y,19,y,shade(K.sky,y/20*.22-.12));
-  for(let i=0;i<5;i++){const cx=Math.floor(r()*24)-2,cy=Math.floor(r()*9),w=4+Math.floor(r()*6),h=1+Math.floor(r()*2),lt=r()<.5;rect(cx,cy,cx+w,cy+h,shade(K.sky,lt?.28:-.22))}
-  for(let i=0;i<8;i++){const x=Math.floor(r()*20),y=Math.floor(r()*13),c=shade(K.sky,.4);px(x,y,c);px(x-1,y+1,c)}
-  const A=K.armor,AD=shade(A,-.3),AL=shade(A,.25);
-  rect(4,15,15,15,A);rect(2,16,17,19,A);rect(2,16,4,17,AL);rect(15,16,17,17,AL);rect(8,17,11,19,AD);
-  if(K.mail){for(let y=15;y<20;y++)for(let x=2;x<18;x++)if((x+y)%2&&G[y][x]===A)px(x,y,shade(A,-.16))}
-  if(K.fur){const F=shade(A,.35),FD=shade(A,-.1);rect(2,15,17,16,F);for(let x=2;x<18;x++)if(r()<.5)px(x,15,FD);for(let x=3;x<18;x+=2)px(x,17,F)}
-  px(9,18,K.acc);px(10,18,K.acc);px(3,18,K.acc);px(16,18,K.acc);
-  rect(8,13,11,15,shade(skin,-.18));
-  const sD=shade(skin,-.18),eye=p(['#241a12','#355a74','#4b6a2a','#6b4423']);
-  const face=(fx0,fx1,fy)=>{rect(fx0,fy,fx1,12,skin);rect(fx0,12,fx1,12,sD);rect(fx0+1,13,fx1-1,13,sD)};
-  const eyes=(ex0,ex1)=>{px(ex0,8,eye);px(ex1,8,eye);px(ex0,7,shade(hair,-.2));px(ex1,7,shade(hair,-.2));rect(mx-1,11,mx+2,11,shade(skin,-.35))};
-  let fx0=x0,fx1=x1,open=true;
-  const H=shade(A,.1),HD=shade(A,-.25);
-  const weave=(ax,ay,bx,by,c)=>{for(let y=ay;y<=by;y++)for(let x=ax;x<=bx;x++)px(x,y,(x+y)%2?c:shade(c,-.2))};
-  if(head==='bare'){
-    face(x0,x1,5);eyes(x0+1,x1-1);
-    const st=m.sex==='f'?p(['long','long','braid','swept']):p(['short','short','crop','long','bald','swept']);
-    if(st!=='bald'){rect(x0,3,x1,4,hair);rect(x0-1,4,x0-1,7,hair);rect(x1+1,4,x1+1,7,hair)}
-    if(st==='long'||st==='braid'){rect(x0-1,8,x0-1,13,hair);rect(x1+1,8,x1+1,13,hair)}
-    if(st==='braid'){rect(x1+2,10,x1+2,16,hair);px(x1+2,17,K.acc)}
-    if(st==='swept')rect(x0,5,x0+3,5,hair);
-    if(m.sex==='m'&&m.age>=COME_OF_AGE&&r()<.45){rect(x0,11,x1,13,hair);rect(mx-1,11,mx+2,11,shade(hair,-.35))}
-    if(old){px(x0+1,9,shade(skin,-.3));px(x1-1,9,shade(skin,-.3))}
-  }else if(head==='coif'){
-    weave(x0-1,3,x1+1,13,A);fx0=x0+1;fx1=x1-1;face(fx0,fx1,6);eyes(fx0,fx1);rect(x0-1,3,x0-1,13,HD);rect(x1+1,3,x1+1,13,HD);
-  }else if(head==='hood'){
-    const C=shade(A,.05);rect(x0-1,3,x1+1,13,C);rect(x0,2,x1,2,C);px(mx,1,C);px(mx+1,1,C);rect(x0-1,4,x0-1,13,shade(C,-.25));rect(x1+1,4,x1+1,13,shade(C,-.25));
-    rect(x0-2,14,x1+2,15,C);rect(x0+1,5,x1-1,12,shade(C,-.55));fx0=x0+1;fx1=x1-1;face(fx0,fx1,6);eyes(fx0,fx1);
-  }else if(head==='nasal'){
-    face(x0,x1,6);eyes(x0+1,x1-1);rect(x0-1,3,x1+1,5,H);rect(x0,2,x1,2,H);rect(x0-1,5,x1+1,5,HD);rect(mx,6,mx+1,9,H);px(x0,3,shade(H,.45));rect(x0-1,6,x0-1,8,HD);rect(x1+1,6,x1+1,8,HD);
-  }else if(head==='cap'){
-    face(x0,x1,5);eyes(x0+1,x1-1);rect(x0-1,5,x0-1,9,hair);rect(x1+1,5,x1+1,9,hair);const C=shade(A,.12);
-    rect(x0-1,3,x1+1,4,C);rect(x0-2,4,x1+2,4,shade(C,-.2));px(x1+1,3,K.acc);px(x1+2,2,K.acc);px(x1+3,1,K.acc);px(x1+3,2,shade(K.acc,-.25));
-  }else if(head==='greathelm'){
-    open=false;rect(x0-1,3,x1+1,13,H);rect(x0,2,x1,2,H);rect(x0-1,3,x0-1,13,HD);rect(x1+1,3,x1+1,13,HD);
-    rect(x0+1,7,x1-1,7,'#0e0e12');rect(mx,8,mx+1,10,'#0e0e12');px(x0+1,11,'#0e0e12');px(x1-1,11,'#0e0e12');
-    px(x0,4,shade(H,.5));px(x0,5,shade(H,.35));if(r()<.5)rect(mx,0,mx+1,2,K.acc);
-  }
-  if(m.ruler&&(head==='bare'||head==='cap')){const g='#d6b44a';rect(x0,2,x1,2,g);px(x0,1,g);px(mx,1,g);px(mx+1,1,g);px(x1,1,g);px(mx,0,'#9b1c1c')}
-  if(open){
-    if(r()<(K.patch||0)){rect(fx0,7,fx0+1,8,'#15110f');rect(fx0,6,fx1,6,'#15110f')}
-    if(r()<(K.paint||0)){const pc=p(['#3d6fb0','#a02a2a']);px(fx0,9,pc);px(fx0,10,pc);px(fx1,9,pc);px(fx1,10,pc)}
-    if(m.age>=COME_OF_AGE&&r()<.2){px(fx1-1,9,shade(skin,-.4));px(fx1-1,10,shade(skin,-.4))}
-  }
-  /* a raven on the shoulder: the house's messenger */
-  if(K.pet&&r()<K.pet){const c='#1c1c26';rect(14,12,17,14,c);rect(13,10,14,11,c);px(13,10,'#e9e4d0');px(12,11,'#c9a23a');px(16,13,'#2e2e40');px(18,14,c);px(18,15,c);px(15,15,'#8a6a3a');px(16,15,'#8a6a3a')}
-  const cv=document.createElement('canvas');cv.width=cv.height=20;const ctx=cv.getContext('2d');
-  for(let y=0;y<20;y++)for(let x=0;x<20;x++)if(G[y][x]){ctx.fillStyle=G[y][x];ctx.fillRect(x,y,1,1)}
-  const url=cv.toDataURL();PX_CACHE.set(key,url);return url;
+/* ---------- Sprite Forge character art ---------- */
+const SF=(function(){
+/* ---------- data ---------- */
+const SKIN=[['Pallid','#e8d6c4'],['Fair','#f0cfae'],['Ruddy','#e2a988'],['Olive','#c99a6b'],['Tawny','#a8724a'],['Umber','#7d4f30'],['Deep','#553522']];
+const HAIR=[['Raven','#17120f'],['Dark brown','#3a2416'],['Chestnut','#6b3a1c'],['Auburn','#8e3b1e'],['Flaxen','#c9a35a'],['Ash grey','#8a8680'],['White','#e2dccb']];
+const EYES=[['Dark','#22180f'],['Brown','#6b4423'],['Grey','#7d838a'],['Blue','#3b6283'],['Green','#4c6b2c'],['Pale','#b9c4c4']];
+const ACCENT=[['Gold','#c19a2e'],['Brass','#9a7a3c'],['Silver','#c9cbcf'],['Blood red','#a02a2a'],['Bone white','#e6e0cc'],['Moss green','#4f7a3a']];
+const BGTINT=[['Slate','#3a4150'],['Moss','#35422f'],['Wine','#46282c'],['Ash','#4d4a45'],['Parchment','#cdbb92'],['Night','#1b1d26']];
+const CATS=['#2a2a30','#c07a3a','#8a8a90','#e2dccb','#4a3a2e'];
+const BUILD=[['lean','Lean'],['broad','Broad']];
+/* options: [value, label, weight, sex] — sex 'm' or 'f' limits an option to one body; no sex means anyone */
+const SEX=[['m','Man'],['f','Woman']];
+const HAIRSTYLE=[['bald','Bald',.6,'m'],['cropped','Cropped'],['short','Short',1.4],['long','Long'],['tied','Tied back',.8],['wild','Wild',.8],['braids','Braids',.7],['tonsure','Tonsure',.4,'m'],
+  ['wavy','Wavy',1.2,'f'],['curls','Loose curls',1,'f'],['bun','Bun',1,'f'],['crown','Crown braid',.9,'f'],['ponytail','Ponytail',1,'f'],['plait','Single plait',1.1,'f']];
+const BEARD=[['none','Clean-shaven',3],['stubble','Stubble'],['mustache','Mustache',.7],['goatee','Goatee',.6],['short','Short beard'],['long','Long beard',.7]];
+const FAMILIAR=[['none','None',6],['raven','Raven'],['rat','Rat'],['cat','Cat']];
+const BGS=[['storm','Storm sky'],['dusk','Dusk over the hamlet'],['hall','Castle hall'],['solid','Solid color'],['clear','Transparent']];
+const DARK_GARB=['robes','cassock','mourning'];
+const SETS={
+  medieval:{name:'Grimdark medieval',toneLabel:'Metal',
+    headgear:[['bare','Bare head',3],['coif','Mail coif',2],['hood','Hood',2],['nasal','Nasal helm',2],['kettle','Kettle hat',1.5],['greathelm','Great helm',1],['plague','Plague mask',.5],['circlet','Circlet',.5],['wimple','Wimple & veil',1.5,'f'],['veil','Veil',1.5,'f']],
+    garb:[['mail','Mail hauberk'],['plate','Plate harness'],['gambeson','Gambeson & tabard'],['fur','Fur & leather'],['robes','Black robes',.6],['kirtle','Kirtle & surcoat',2,'f']],
+    item:[['none','Empty hands',.5],['sword','Longsword'],['swordshield','Sword & shield'],['axe','War axe'],['spear','Spear'],['mace','Mace'],['longbow','Longbow'],['torch','Torch',.6]],
+    marks:[['none','None',4],['scar','Scar'],['patch','Eyepatch'],['paint','War paint'],['pox','Pox scars',.5],['hollow','Hollow eyes',.7]],
+    cloth:[['Crimson','#6e1f1f'],['Forest','#2f4a3a'],['Woad','#2d3a5a'],['Umber','#4a3624'],['Bone','#cfc4a6'],['Black','#25201c']],
+    tone:[['Steel','#868a92'],['Dark iron','#5a5d63'],['Blackened','#3a3a40'],['Bronze','#8f6b38']],
+    bgs:[['storm','',3],['dusk','',1],['solid','',1],['clear','',.4]]},
+  hamlet:{name:'Gothic hamlet folk',toneLabel:'Leather',
+    headgear:[['bare','Bare head',3],['feltcap','Felt cap',2],['widebrim','Wide-brim hat',1.5],['kerchief','Kerchief',1.5],['cowl','Cowl',1.5],['straw','Straw hat',1.5],['plague','Plague mask',.5],['wimple','Wimple & veil',1.2,'f'],['veil','Veil',1.5,'f']],
+    garb:[['smock','Peasant smock'],['cassock',"Priest's cassock"],['hunter',"Hunter's leathers"],['merchant',"Merchant's doublet"],['mourning','Mourning dress',1.2,'f'],['apron',"Smith's apron"],['dress','Peasant dress',2.2,'f']],
+    item:[['none','Empty hands',.6],['lantern','Lantern'],['pitchfork','Pitchfork'],['scythe','Scythe'],['book','Holy book'],['huntbow','Hunting bow'],['staff','Walking staff'],['cleaver','Cleaver'],['hammer',"Smith's hammer"]],
+    marks:[['none','None',4],['scar','Scar'],['patch','Eyepatch'],['soot','Soot smudges'],['pox','Pox scars'],['hollow','Hollow eyes']],
+    cloth:[['Undyed','#b5a585'],['Russet','#7a4a2e'],['Moss','#5a6338'],['Ash','#6c6860'],['Oxblood','#5e2626'],['Woad','#3e5068'],['Black','#26211d']],
+    tone:[['Tan','#9a6e44'],['Brown','#5f3e24'],['Black leather','#2e2420'],['Grey felt','#5c5853']],
+    bgs:[['dusk','',3],['storm','',1],['solid','',1],['clear','',.4]]},
+  heraldic:{name:'Heraldic',toneLabel:'Metal',
+    headgear:[['bare','Bare head',3],['crestedhelm','Crested great helm',1.5],['bascinet','Bascinet & aventail',1.5],['coif','Mail coif',.7],['coronet','Coronet',1],['chaperon','Chaperon',1.3],['hennin','Hennin',1.5,'f'],['wimple','Wimple & veil',.8,'f'],['veil','Veil',1.2,'f']],
+    garb:[['surcoat','Armorial surcoat',2],['jupon','Armorial jupon & plate',1.5],['tabard',"Herald's tabard",1.2],['livery','Parti-colored livery',1.5],['houppelande','Houppelande',1.5],['gown','Noble gown',2,'f'],['mail','Mail hauberk',.6]],
+    item:[['none','Empty hands',.5],['sword','Longsword'],['swordshield','Sword & shield',1.3],['lance','Lance & pennon'],['banner','Armorial banner'],['heraldwand',"Herald's wand",.8],['scroll','Proclamation',.8],['falcon','Hooded falcon',.8],['goblet','Goblet',.8]],
+    marks:[['none','None',5],['scar','Scar'],['patch','Eyepatch',.6],['pox','Pox scars',.4]],
+    cloth:[['Scarlet','#8e1f24'],['Royal blue','#24407a'],['Emerald','#2c5a3a'],['Murrey','#5c2340'],['Black','#201c1e'],['Ivory','#d9cfb5'],['Saffron','#b8862a']],
+    tone:[['Bright steel','#a9aeb6'],['Steel','#868a92'],['Gilt','#9c7a3c'],['Blackened','#3a3a40']],
+    bgs:[['hall','',3],['storm','',.6],['dusk','',.5],['solid','',1],['clear','',.4]]}
+};
+/* heraldry: divisions only, in the traditional tinctures (two metals, five colours) */
+const DIVISIONS=[['pale','Per pale'],['fess','Per fess'],['quarterly','Quarterly'],['bend','Per bend'],['chevron','Per chevron'],['saltire','Per saltire'],['paly','Paly of six'],['barry','Barry of six'],['gyronny','Gyronny of eight',.6]];
+const TINCT=[['Or','#d4a72c'],['Argent','#e6e2d6'],['Gules','#b0262a'],['Azure','#2b4f9a'],['Vert','#2e6b3a'],['Purpure','#6a3577'],['Sable','#1f1c1e']];
+const GOLD='#d4a72c';
+
+/* ---------- utilities ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function shade(hex,f){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;const m=f<0?0:255,a=Math.abs(f);
+  r=Math.round(r+(m-r)*a);g=Math.round(g+(m-g)*a);b=Math.round(b+(m-b)*a);return '#'+((1<<24)|(r<<16)|(g<<8)|b).toString(16).slice(1)}
+function mix(a,b,t){const p=h=>{const n=parseInt(h.slice(1),16);return[n>>16,n>>8&255,n&255]};const A=p(a),B=p(b);
+  const c=A.map((v,i)=>Math.round(v+(B[i]-v)*t));return '#'+((1<<24)|(c[0]<<16)|(c[1]<<8)|c[2]).toString(16).slice(1)}
+const w=o=>o[2]===undefined?1:o[2];
+function wpick(r,list){let t=r()*list.reduce((s,o)=>s+w(o),0);for(const o of list){t-=w(o);if(t<0)return o[0]}return list[0][0]}
+function spick(r,list){return list[Math.floor(r()*list.length)][1]}
+const avail=(list,sex)=>list.filter(o=>!o[3]||o[3]===sex);
+const N=48,OUT='#140e0b';
+function painter(){
+  const G=new Array(N*N).fill(null);
+  const px=(x,y,c)=>{if(c&&x>=0&&x<N&&y>=0&&y<N)G[y*N+x]=c};
+  const get=(x,y)=>(x>=0&&x<N&&y>=0&&y<N)?G[y*N+x]:null;
+  const rect=(x0,y0,x1,y1,c)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)px(x,y,typeof c==='function'?c(x,y):c)};
+  const row=(y,x0,x1,c)=>rect(x0,y,x1,y,c);
+  const col=(x,y0,y1,c)=>rect(x,y0,x,y1,c);
+  const tint=(x0,y0,x1,y1,f,test)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const v=get(x,y);if(v&&(!test||test(v,x,y)))px(x,y,shade(v,f))}};
+  return {G,px,get,rect,row,col,tint};
 }
+const PELT='#8a7a66',LINEN='#a99877',LEATHER='#5f3e24',WOAD='#3a5d8f',PATCH='#16110e',WOOD='#6b4a2a',STEEL='#b9bec6',GLASS='#cfd6c8',MASK='#7a6248',HATBLK='#211c19',STRAW='#c8a85a',WHITE='#ece6d6';
+
+/* ---------- hair under headwear ----------
+   Hair the headwear doesn't paint over is removed when it would show through it:
+   full coverings hide all such hair; hats and helms hide it at or above their rim row
+   (portrait rows / body rows), so hair can only hang out from underneath. */
+const FULL_COVER=new Set(['greathelm','plague','coif','hood','cowl','wimple','crestedhelm','bascinet','hennin']);
+const RIM_P={nasal:13,kettle:12,feltcap:11,widebrim:11,kerchief:12,straw:11,veil:11,chaperon:11};
+const RIM_B={nasal:5,kettle:6,feltcap:5,widebrim:6,kerchief:6,straw:6,veil:4,chaperon:5};
+
+/* coat of arms: tincture at a point (u,v in 0..1) of an area, for a character's division */
+function armsAt(a,u,v){
+  const A=a.tinct1,B=a.tinct2;
+  switch(a.division){
+    case 'pale':return u<.5?A:B;
+    case 'fess':return v<.5?A:B;
+    case 'quarterly':return (u<.5)===(v<.5)?A:B;
+    case 'bend':return v<u?A:B;
+    case 'chevron':return v>.38+Math.abs(u-.5)*1.25?B:A;
+    case 'saltire':return ((v-u)>0)===((v-(1-u))>0)?A:B;
+    case 'paly':return Math.floor(u*6)%2?B:A;
+    case 'barry':return Math.floor(v*6)%2?B:A;
+    case 'gyronny':{const s=Math.floor((Math.atan2(v-.5,u-.5)+Math.PI)/(Math.PI/4));return s%2?B:A}
+  }
+  return A;
+}
+const armsBox=(a,x,y,x0,y0,x1,y1)=>armsAt(a,(x-x0+.5)/(x1-x0+1),(y-y0+.5)/(y1-y0+1));
+function hairGuard(G,pre,post,hg,rims){
+  const full=FULL_COVER.has(hg),rim=rims[hg];
+  if(!full&&rim===undefined)return;
+  for(let i=0;i<G.length;i++){
+    if(pre[i]===post[i]||G[i]!==post[i])continue;
+    if(full||Math.floor(i/N)<=rim)G[i]=pre[i];
+  }
+}
+
+/* ---------- backgrounds ---------- */
+function drawBg(c){
+  if(c.bg==='clear')return null;
+  const d=painter(),{px,rect,row,col}=d,r=mulberry32(c.bgSeed),F=Math.floor;
+  if(c.bg==='solid'){rect(0,0,47,47,c.bgTint);return d.G}
+  if(c.bg==='hall'){
+    /* castle hall: coursed ashlar, flagstone floor, two hanging banners (the character's arms and a guest house's) */
+    const ST=mix(c.bgTint,'#8a7f70',.6),M=shade(ST,-.38);
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){const off=(Math.floor(y/4)%2)*3;let k=shade(ST,-.24+y/N*.14);
+      if(y%4===3||(x+off)%7===0)k=M;else if(r()<.07)k=shade(k,-.08);px(x,y,k)}
+    for(let y=40;y<N;y++)for(let x=0;x<N;x++)px(x,y,y===40?shade(ST,-.55):((x+(y>44?4:0))%9===0||y===44)?shade(ST,-.48):shade(ST,-.32));
+    const guest={division:DIVISIONS[Math.floor(r()*DIVISIONS.length)][0],tinct1:TINCT[Math.floor(r()*2)][1],tinct2:TINCT[2+Math.floor(r()*5)][1]};
+    const banner=(x0,ar)=>{const x1=x0+7;row(2,x0-1,x1+1,'#3a2a1c');px(x0-2,2,GOLD);px(x1+2,2,GOLD);
+      for(let y=3;y<=27;y++)for(let x=x0;x<=x1;x++){
+        if(y>=25){const n=y-24;if(x>=x0+4-n&&x<=x0+3+n)continue}
+        let k=armsAt(ar,(x-x0+.5)/8,(y-3+.5)/22);if(x===x1)k=shade(k,-.18);if(y===3)k=GOLD;px(x,y,k)}};
+    const own=r()<.5;banner(4,own?c:guest);banner(36,own?guest:c);
+    return d.G;
+  }
+  if(c.bg==='storm'){
+    const K=c.bgTint;
+    for(let y=0;y<N;y++)row(y,0,47,shade(K,y/N*.24-.14));
+    for(let i=0;i<8;i++){const cx=F(r()*56)-6,cy=F(r()*24),wd=6+F(r()*12),h=1+F(r()*3),lt=r()<.5;
+      rect(cx,cy,cx+wd,cy+h,shade(K,lt?.22:-.24));if(lt)row(cy,cx+1,cx+wd-1,shade(K,.32))}
+    for(let i=0;i<22;i++){const x=F(r()*48),y=F(r()*40),rc=shade(K,.36);px(x,y,rc);px(x-1,y+1,rc);if(r()<.5)px(x-2,y+2,rc)}
+    if(r()<.4){let bx=r()<.5?3+F(r()*6):38+F(r()*6);const L='#ece6c6',Ld=shade(L,-.45);
+      for(let y=0;y<22;y++){px(bx,y,L);px(bx+1,y,Ld);if(r()<.4)bx+=r()<.5?-1:1}}
+    return d.G;
+  }
+  /* dusk over the hamlet: violet to ember sky, moon, rooftops and a spire */
+  const top='#262033',mid='#5a3448',low='#b0663a',SIL='#1a1416',LIT='#e8b84a';
+  for(let y=0;y<N;y++){const t=y/34;row(y,0,47,t<.6?mix(top,mid,t/.6):mix(mid,low,Math.min(1,(t-.6)/.4)))}
+  for(let i=0;i<14;i++)px(F(r()*48),F(r()*16),'#d9d2c0');
+  const mx=r()<.5?7:39,my=6+F(r()*4);
+  for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++)if(dx*dx+dy*dy<=10)px(mx+dx,my+dy,'#e9e2c6');
+  px(mx-1,my,'#cfc6a6');px(mx+1,my+1,'#cfc6a6');
+  rect(0,41,47,47,SIL);
+  let x=-2;
+  while(x<48){const wd=6+F(r()*6),h=3+F(r()*5),topY=41-h;rect(x,topY,x+wd-1,41,SIL);
+    for(let k=1;k<=Math.ceil(wd/2);k++)row(topY-k,x+k-1,x+wd-k,SIL);
+    if(r()<.65)px(x+2+F(r()*Math.max(1,wd-4)),topY+2,LIT);x+=wd+F(r()*3)}
+  const sx=r()<.5?3+F(r()*7):35+F(r()*7);
+  rect(sx,28,sx+3,41,SIL);for(let k=1;k<=6;k++)row(28-k,sx+(k>3?1:0),sx+3-(k>3?1:0),SIL);col(sx+1,17,21,SIL);row(18,sx,sx+2,SIL);px(sx+1,32,LIT);px(sx+2,32,LIT);
+  return d.G;
+}
+
+/* ---------- portrait (bust) ---------- */
+function drawPortrait(c){
+  const d=painter(),{px,get,rect,row,col,tint}=d,R=mulberry32(c.seed^0x51ed);
+  const S=c.skin,sD=shade(S,-.16),sDD=shade(S,-.34),sL=shade(S,.14),E=c.eyes;
+  const H=c.hair,HD=shade(H,-.28),HL=shade(H,.22);
+  const T=c.tone,C=c.cloth,A=c.accent,broad=c.build==='broad';
+  const hx0=broad?16:17,hx1=broad?31:30,cx0=23,cx1=24;
+  const inset=y=>y<=9?3:y===10?1:y<=21?0:y===22?(broad?0:1):y===23?1:y===24?(broad?1:2):y===25?(broad?2:3):y===26?(broad?3:4):(broad?4:5);
+  const inFace=(x,y)=>y>=9&&y<=27&&x>=hx0+inset(y)&&x<=hx1-inset(y);
+  const fem=c.sex==='f';
+  const sh=y=>{const r=y<=32?[13,34]:y===33?[10,37]:y===34?[8,39]:[6,41];const q=broad?[r[0]-1,r[1]+1]:r;return fem?[q[0]+2,q[1]-2]:q};
+  const isSkin=v=>v===S||v===sD||v===sL;
+
+  /* neck */
+  const nw=(broad?3:2)-(fem?1:0);
+  rect(cx0-nw,28,cx1+nw,33,sD);row(28,cx0-nw,cx1+nw,sDD);
+
+  /* torso and garb */
+  const fill=f=>{for(let y=32;y<N;y++){const[a,b]=sh(y);for(let x=a;x<=b;x++){let k=f(x,y,a,b);if(k&&x>=b-1)k=shade(k,-.12);px(x,y,k)}}};
+  switch(c.garb){
+    case 'mail':
+      fill((x,y)=>{let k=(x+y)%2?shade(T,-.2):T;return y<35?shade(k,.12):k});
+      for(let y=28;y<=33;y++){const a=y===28?cx0-4:cx0-6,b=y===28?cx1+4:cx1+6;for(let x=a;x<=b;x++)px(x,y,(x+y)%2?shade(T,-.12):shade(T,.06))}
+      break;
+    case 'plate':
+      fill((x,y,a,b)=>{const pa=x<a+8||x>b-8;if(pa&&y<=38)return y===38?shade(T,-.32):shade(T,.14);if(x>=cx0&&x<=cx1&&y>=36)return shade(T,.28);if(y===44)return shade(T,-.22);return T});
+      px(sh(35)[0]+3,35,A);px(sh(35)[1]-3,35,A);
+      rect(cx0-5,29,cx1+5,33,shade(T,.05));row(33,cx0-5,cx1+5,shade(T,-.3));row(30,cx0-4,cx0-1,shade(T,.3));
+      break;
+    case 'gambeson':
+      fill((x,y)=>{if(x>=cx0-8&&x<=cx1+8&&y>=35){if((x>=cx0&&x<=cx1&&y>=37)||(y>=40&&y<=41&&x>=cx0-5&&x<=cx1+5))return A;return x===cx0-8?shade(C,-.2):C}return y%3===0?shade(LINEN,-.15):LINEN});
+      rect(cx0-4,31,cx1+4,33,shade(LINEN,.1));
+      break;
+    case 'fur':
+      fill((x,y,a)=>{const k=x-a-4-(y-32);return(k===0||k===1)?shade(LEATHER,-.1):C});
+      for(let y=29;y<=37;y++){const[a,b]=sh(Math.max(32,y));for(let x=a;x<=b;x++){if(y>=35&&R()<.5)continue;px(x,y,(x*7+y*3)%5===0?shade(PELT,-.25):(x+y)%4===0?shade(PELT,.15):PELT)}}
+      px(cx0,34,A);px(cx1,34,A);
+      break;
+    case 'robes':
+      fill((x,y)=>{const v=Math.abs(x-23.5),lim=(43-y)*.6;if(v<lim)return shade(C,-.45);if(v<lim+1&&y<=43)return shade(A,-.1);return C});
+      px(cx0-2,34,A);px(cx1+2,34,A);
+      break;
+    case 'smock':
+      fill((x,y,a)=>(x-a)%6===0?shade(C,-.1):C);
+      rect(cx0-4,31,cx1+4,33,shade(C,.15));rect(cx0,34,cx1,39,shade(C,-.35));
+      px(cx0,35,A);px(cx1,36,A);px(cx0,37,A);px(cx1,38,A);
+      break;
+    case 'cassock':
+      fill((x,y)=>x===cx1+1&&y>=34?shade(C,-.25):C);
+      for(let y=35;y<N;y+=3){px(cx0,y,A);px(cx1,y,shade(A,-.3))}
+      rect(cx0-4,29,cx1+4,33,C);rect(cx0,29,cx1,32,WHITE);
+      break;
+    case 'hunter':
+      fill((x,y,a,b)=>{if(x<a+5||x>b-5)return C;const k=x-(a+5)-Math.round((y-32)*1.2);if(k===0||k===1)return y===40?A:shade(T,-.38);return T});
+      rect(cx0-3,31,cx1+3,33,C);col(cx0,32,33,shade(C,-.35));
+      break;
+    case 'merchant':
+      fill((x,y,a,b)=>{if((x<a+8||x>b-8)&&y<=39)return x%3===0?A:T;return C});
+      for(let y=34;y<N;y+=3)px(cx0,y,A);
+      for(let y=28;y<=31;y++)for(let x=cx0-7+(y===28?1:0);x<=cx1+7-(y===28?1:0);x++)px(x,y,(x+y)%2?WHITE:'#cfc6b0');
+      break;
+    case 'mourning':
+      fill((x,y)=>(x===cx0-6||x===cx1+6)?shade(C,-.2):C);
+      rect(cx0-3,28,cx1+3,33,C);for(let x=cx0-3;x<=cx1+3;x++)px(x,28,x%2?'#d9d2c0':shade(C,.2));
+      rect(cx0-1,34,cx1+1,36,A);px(cx0,35,shade(A,.35));
+      break;
+    case 'apron':
+      fill((x,y)=>{let k=C;if((x>=cx0-8&&x<=cx1+8&&y>=37)||(x>=cx0-5&&x<=cx1+5&&y>=33))k=T;if(y<37&&y>=32&&(x===cx0-5||x===cx1+5))k=shade(T,-.2);return R()<.06?shade(k,-.4):k});
+      rect(cx0-3,31,cx1+3,32,shade(C,.1));
+      break;
+    case 'kirtle':{const U=mix(C,'#e2d8c0',.55);
+      fill((x,y,a,b)=>(x===a+6||x===b-6)?A:(x<a+6||x>b-6)?(y%4===0?shade(U,-.12):U):C);
+      rect(cx0-4,32,cx1+4,34,S);row(34,cx0-4,cx1+4,sD);row(35,cx0-5,cx1+5,A);
+      break}
+    case 'dress':{const CH='#d9cdb0',LC='#e6dcc4';
+      fill((x,y)=>{if(y>=36&&x>=cx0-7&&x<=cx1+7)return(x===cx0-7||x===cx1+7)?shade(C,-.25):C;return y%3===0?shade(CH,-.1):CH});
+      rect(cx0-4,32,cx1+4,33,S);for(let x=cx0-5;x<=cx1+5;x++)px(x,34,x%2?CH:shade(CH,-.2));
+      rect(cx0,37,cx1,47,shade(C,-.4));for(let y=37;y<=46;y+=2){px(cx0-1,y,LC);px(cx0,y+1,LC);px(cx1,y+1,LC);px(cx1+1,y,LC)}
+      break}
+    case 'surcoat':{const[q0,q1]=sh(40);
+      fill((x,y,a,b)=>{if(x<a+6||x>b-6){let k=(x+y)%2?shade(T,-.2):T;return y<35?shade(k,.12):k}return armsBox(c,x,y,q0+6,32,q1-6,55)});
+      for(let y=28;y<=33;y++){const a=y===28?cx0-4:cx0-6,b=y===28?cx1+4:cx1+6;for(let x=a;x<=b;x++)px(x,y,(x+y)%2?shade(T,-.12):shade(T,.06))}
+      break}
+    case 'jupon':{const[q0,q1]=sh(40);
+      fill((x,y,a,b)=>{const pa=x<a+8||x>b-8;if(pa&&y<=38)return y===38?shade(T,-.32):shade(T,.14);if(pa)return T;return armsBox(c,x,y,q0+8,32,q1-8,55)});
+      px(sh(35)[0]+3,35,GOLD);px(sh(35)[1]-3,35,GOLD);
+      rect(cx0-5,29,cx1+5,33,shade(T,.05));row(33,cx0-5,cx1+5,shade(T,-.3));row(30,cx0-4,cx0-1,shade(T,.3));
+      break}
+    case 'tabard':{const[q0,q1]=sh(40);
+      fill((x,y,a,b)=>{
+        if(x>=cx0-8&&x<=cx1+8)return(x===cx0-8||x===cx1+8)?GOLD:armsBox(c,x,y,cx0-7,32,cx1+7,55);
+        if((x<a+7||x>b-7)&&y<=40){if(y===40)return GOLD;return x<cx0?armsBox(c,x,y,q0,32,q0+6,39):armsBox(c,x,y,q1-6,32,q1,39)}
+        return C});
+      rect(cx0-3,31,cx1+3,33,C);
+      break}
+    case 'livery':
+      fill((x)=>x<=cx0?c.tinct1:c.tinct2);
+      for(let x=cx0-4;x<=cx1+4;x++){px(x,31,x<=cx0?c.tinct2:c.tinct1);px(x,32,x<=cx0?c.tinct2:c.tinct1)}
+      rect(cx1+6,38,cx1+7,39,A);
+      break;
+    case 'houppelande':
+      fill((x,y,a)=>(x-a)%4===0?shade(C,-.18):C);
+      for(let y=26;y<=33;y++){const a=cx0-6+(y<28?2:0),b=cx1+6-(y<28?2:0);for(let x=a;x<=b;x++)px(x,y,y<=27?shade(PELT,.2):(x===b?shade(C,-.15):C))}
+      for(let x=cx0-10;x<=cx1+10;x++){const t=(x-23.5)/10.5,y=34+Math.round(6*(1-t*t));px(x,y,x%2?GOLD:shade(GOLD,-.3))}
+      rect(cx0,41,cx1,42,GOLD);px(cx0,43,shade(GOLD,-.3));
+      break;
+    case 'gown':
+      fill((x,y,a,b)=>(x===a+3||x===b-3)&&y>=36?shade(C,-.2):C);
+      for(const[y,hw]of[[32,7],[33,7],[34,6],[35,5],[36,3]]){row(y,cx0-hw+1,cx1+hw-1,S);px(cx0-hw,y,A);px(cx1+hw,y,A)}
+      row(37,cx0-2,cx1+2,A);
+      for(const[x,y]of[[cx0-4,33],[cx0-2,34],[cx0-1,34],[cx1+1,34],[cx1+2,34],[cx1+4,33]])px(x,y,GOLD);px(cx0,35,'#a02a2a');px(cx1,35,'#a02a2a');
+      break;
+  }
+  /* bust: a soft shadow under each side, a touch of light above */
+  if(fem){const ns=v=>!isSkin(v);for(const bx of[cx0-5,cx1+5]){for(let dx=-3;dx<=3;dx++){const y=Math.abs(dx)<=2?44:43;tint(bx+dx,y,bx+dx,y,-.25,ns)}tint(bx-1,40,bx,40,.12,ns)}}
+
+  /* head */
+  for(let y=9;y<=27;y++){const a=hx0+inset(y),b=hx1-inset(y);row(y,a,b,S);px(b,y,sD);if(y>=24)px(b-1,y,sD)}
+  row(27,hx0+inset(27),hx1-inset(27),sD);
+  col(hx0-1,16,20,S);col(hx1+1,16,20,sD);px(hx0-1,18,sD);px(hx1+1,18,sDD);
+  row(16,hx0+3,hx0+4,sD);row(16,hx1-4,hx1-3,sD);
+  px(hx0+3,17,WHITE);px(hx0+4,17,E);px(hx1-4,17,E);px(hx1-3,17,WHITE);
+  row(15,hx0+2,hx0+5,HD);row(15,hx1-5,hx1-2,HD);
+  col(cx1,18,20,sD);row(21,cx0-1,cx1+1,sD);px(cx1,21,sDD);
+  px(hx0+2,20,sL);px(hx0+3,20,sL);
+  row(24,cx0-2,cx1+2,shade(S,-.45));row(25,cx0-1,cx1+1,sD);
+
+  /* marks */
+  switch(c.mark){
+    case 'scar':for(let i=0;i<7;i++){px(hx1-7+i,13+i,shade(S,-.38));px(hx1-6+i,13+i,sL)}break;
+    case 'patch':rect(hx0+2,16,hx0+5,18,PATCH);row(13,hx0-1,hx1+1,PATCH);break;
+    case 'paint':tint(hx0+1,16,hx1-1,16,0,isSkin);for(const y of[16,18])for(let x=hx0+1;x<=hx1-1;x++)if(isSkin(get(x,y)))px(x,y,WOAD);col(hx0+2,19,21,WOAD);col(hx1-2,19,21,WOAD);break;
+    case 'soot':for(let k=0;k<10;k++){const x=hx0+1+Math.floor(R()*(hx1-hx0-1)),y=10+Math.floor(R()*16);if(inFace(x,y)&&isSkin(get(x,y))){px(x,y,shade(S,-.42));if(isSkin(get(x+1,y)))px(x+1,y,shade(S,-.25))}}break;
+    case 'pox':for(const[x,y]of[[hx0+2,21],[hx0+4,23],[hx1-3,20],[hx1-2,22],[hx0+5,12],[hx1-5,13],[cx0-3,26]])if(isSkin(get(x,y)))px(x,y,shade(S,-.28));break;
+    case 'hollow':row(16,hx0+3,hx0+4,sDD);row(16,hx1-4,hx1-3,sDD);row(18,hx0+3,hx0+4,sDD);row(18,hx1-4,hx1-3,sDD);col(hx0+1,21,22,sDD);col(hx1-1,21,22,sDD);break;
+  }
+
+  /* beard */
+  const beardCell=(x,y)=>(x+y)%3===0?HD:H;
+  const mouthDark=shade(S,-.58);
+  switch(c.beard){
+    case 'stubble':for(let y=20;y<=27;y++)for(let x=hx0;x<=hx1;x++){if(!inFace(x,y))continue;if(y<22&&x>hx0+1&&x<hx1-1)continue;if(y===24&&x>=cx0-2&&x<=cx1+2)continue;if((x+y)%2===0)px(x,y,mix(S,H,.45))}break;
+    case 'mustache':row(23,cx0-3,cx1+3,H);px(cx0-3,24,H);px(cx1+3,24,H);break;
+    case 'goatee':row(23,cx0-3,cx1+3,H);rect(cx0-1,25,cx1+1,29,beardCell);break;
+    case 'short':case 'long':
+      for(let y=14;y<=27;y++)for(let x=hx0-1;x<=hx1+1;x++){if(!inFace(x,y)&&!((x===hx0-1||x===hx1+1)&&y<=21))continue;if(y<22&&x>hx0&&x<hx1)continue;px(x,y,beardCell(x,y))}
+      row(23,cx0-3,cx1+3,H);row(24,cx0-1,cx1+1,mouthDark);row(28,hx0+5,hx1-5,beardCell);
+      if(c.beard==='long')for(let y=28;y<=40;y++){const half=7-Math.floor((y-28)/2);if(half<0)break;for(let x=cx0-half;x<=cx1+half;x++)px(x,y,x%5===0?HL:beardCell(x,y))}
+      break;
+  }
+
+  /* hair */
+  const preHair=d.G.slice();
+  const st=c.hairStyle;
+  const cap=fringe=>{row(6,hx0+3,hx1-3,H);row(7,hx0+1,hx1-1,H);rect(hx0-1,8,hx1+1,11,H);col(hx1+1,8,11,HD);
+    col(hx0-1,12,16,H);col(hx1+1,12,16,HD);col(hx0,12,13,H);col(hx1,12,13,HD);
+    row(7,hx0+3,hx0+6,HL);px(hx0+1,8,HL);if(fringe)for(let x=hx0+1;x<=hx1-1;x++)if(R()<fringe)px(x,12,H)};
+  if(c.headgear==='wimple'){/* hair is hidden under the wimple */}
+  else if(st==='bald'){px(hx0+3,10,sL);px(hx0+4,10,sL);px(hx0+4,11,sL)}
+  else if(st==='cropped'){row(8,hx0+3,hx1-3,H);row(9,hx0+1,hx1-1,H);row(10,hx0,hx1,H);for(let x=hx0;x<=hx1;x+=2)px(x,11,H);col(hx0-1,12,15,shade(H,.1));col(hx1+1,12,15,HD)}
+  else if(st==='tonsure'){row(9,hx0+4,hx1-4,sL);rect(hx0,10,hx1,12,H);row(12,hx0+2,hx1-2,null);for(let x=hx0+1;x<=hx1-1;x++)if(R()<.5)px(x,12,H);col(hx0-1,10,16,H);col(hx1+1,10,16,HD)}
+  else{
+    cap(st==='tied'||st==='bun'||st==='crown'?0:st==='wild'?.7:.45);
+    if(st==='tied'){row(9,hx0+2,hx1-4,HL);rect(hx1+1,14,hx1+3,28,(x,y)=>(y%3===0)?HD:H);row(15,hx1+1,hx1+3,A)}
+    if(st==='wild'){for(let x=hx0-2;x<=hx1+2;x++){if(R()<.55)px(x,5,H);if(R()<.25)px(x,4,H)}for(let y=8;y<=20;y++){if(R()<.5)px(hx0-2,y,H);if(R()<.5)px(hx1+2,y,HD)}for(let x=hx0+1;x<=hx1-1;x++)if(R()<.25)px(x,13,H)}
+    if(st==='long')for(let y=12;y<=39;y++){const t=y>=37?1:0;rect(hx0-3+t,y,hx0-1,y,(x)=>(x+y)%4===0?HD:H);rect(hx1+1,y,hx1+3-t,y,(x)=>(x+y)%4===0?shade(HD,-.1):HD)}
+    if(st==='braids'){for(let y=12;y<=38;y++){const k=Math.floor(y/2)%2?H:HD;row(y,hx0-2,hx0-1,k);row(y,hx1+1,hx1+2,k===H?HD:H)}row(36,hx0-2,hx0-1,A);row(36,hx1+1,hx1+2,A)}
+    if(st==='wavy'){for(let x=hx0+1;x<=cx0;x++)px(x,12,H);
+      for(let y=12;y<=41;y++){const o=Math.round(Math.sin(y/2.3)*1.2),t=y>=39?1:0;
+        rect(hx0-4+o+t,y,hx0-1,y,(x)=>(x+y)%4===0?HD:(x===hx0-3+o?HL:H));rect(hx1+1,y,hx1+4-o-t,y,(x)=>(x+y)%4===0?shade(HD,-.1):HD)}}
+    if(st==='curls'){const cu=(x,y,b)=>((x*3+y*5)%7<2)?shade(b,-.28):((x+y*2)%5===0?shade(b,.2):b);
+      for(let y=5;y<=12;y++)for(let x=hx0-1;x<=hx1+1;x++){const v=get(x,y);if(v===H||v===HD||v===HL)px(x,y,cu(x,y,x>hx1-2?HD:H))}
+      for(let x=hx0-1;x<=hx1+1;x++){px(x,5,cu(x,5,H));if(R()<.6)px(x,4,cu(x,4,H))}
+      for(let y=6;y<=36;y++){const ww=y<9?2+(y-6):y<=30?5:5-(y-30);
+        for(let x=hx0-ww;x<=hx0-1;x++){if(x===hx0-ww&&R()<.4)continue;px(x,y,cu(x,y,H))}
+        for(let x=hx1+1;x<=hx1+ww;x++){if(x===hx1+ww&&R()<.4)continue;px(x,y,cu(x,y,HD))}}}
+    if(st==='bun'){for(let y=0;y<=6;y++)for(let x=19;x<=28;x++){const dd=(x-23.5)**2+(y-3)**2;if(dd<=10.5)px(x,y,(x<23&&y<3)?HL:(x>24||y>4)?HD:H)}row(6,cx0-3,cx1+3,A);col(cx0,7,9,HD)}
+    if(st==='crown'){for(let y=7;y<=9;y++)for(let x=hx0-1+(y===7?1:0);x<=hx1+1-(y===7?1:0);x++){const k=(x+y)%3;px(x,y,k===0?HL:k===1?H:HD)}row(10,hx0-1,hx1+1,HD)}
+    if(st==='ponytail'){rect(cx0-1,3,cx1+1,5,H);px(cx0-1,3,HL);row(5,cx0-1,cx1+1,A);
+      for(let y=6;y<=34;y++){const a=hx1+1+(y>22?1:0),b=hx1+3+(y>12&&y<28?1:0);rect(a,y,b,y,(x)=>(x+y)%3===0?HD:H)}}
+    if(st==='plait')for(let y=14;y<=44;y++){const bx=y<=27?hx0-3:hx0-3+Math.floor((y-27)/3),tw=y>=42?1:3;for(let x=bx;x<bx+tw;x++){const k=(x-bx+y)%3;px(x,y,y===41?A:k===0?HL:k===1?H:HD)}}
+  }
+
+  const postHair=d.G.slice();
+  /* headgear */
+  const faceTint=(y0,y1,f)=>{for(let y=y0;y<=y1;y++)for(let x=hx0;x<=hx1;x++)if(inFace(x,y)){const v=get(x,y);if(v)px(x,y,shade(v,f))}};
+  const hood=(depth,K)=>{
+    for(let y=3;y<=35;y++){
+      let a,b;
+      if(y<=4){a=y===3?cx0:cx0-2;b=y===3?cx1:cx1+2}
+      else if(y<=29){const ins=y===5?5:y===6?3:y===7?1:0;a=hx0-3+ins;b=hx1+3-ins}
+      else{a=Math.max(sh(Math.max(32,y))[0],hx0-3-(y-29)*3);b=Math.min(sh(Math.max(32,y))[1],hx1+3+(y-29)*3)}
+      for(let x=a;x<=b;x++){
+        if(y>=11&&y<=27&&x>=hx0+1+inset(y)&&x<=hx1-1-inset(y)){if(y<11+depth){const v=get(x,y);if(v)px(x,y,shade(v,-.45))}continue}
+        if(y>=28&&y<=31&&x>=cx0-2&&x<=cx1+2)continue;
+        px(x,y,y===35?shade(K,-.3):(x===a+1||x===b-1)?shade(K,-.22):(x===b?shade(K,-.12):K));
+      }
+    }
+  };
+  switch(c.headgear){
+    case 'coif':
+      for(let y=6;y<=33;y++){const ins=y===6?4:y===7?2:y===8?1:0,wide=y>=28,a=(wide?hx0-4:hx0-2)+ins,b=(wide?hx1+4:hx1+2)-ins;
+        for(let x=a;x<=b;x++){if(y>=12&&y<=26&&x>=hx0+1+inset(y)&&x<=hx1-1-inset(y))continue;let k=(x+y)%2?shade(T,-.2):T;if(x>=b-1)k=shade(k,-.15);px(x,y,k)}}
+      break;
+    case 'hood':hood(3,C);break;
+    case 'cowl':hood(5,shade(C,-.08));break;
+    case 'nasal':
+      for(let y=5;y<=13;y++){const ins=y===5?4:y===6?2:y===7?1:0;row(y,hx0-1+ins,hx1+1-ins,y===13?shade(T,-.25):T);px(hx1+1-ins,y,shade(T,-.2))}
+      col(hx0+1,7,11,shade(T,.35));rect(cx0,14,cx1,21,T);col(cx1,14,21,shade(T,-.18));
+      break;
+    case 'kettle':
+      for(let y=4;y<=10;y++){const ins=y===4?2:y===5?1:0;row(y,hx0+1+ins,hx1-1-ins,T);px(hx1-1-ins,y,shade(T,-.2))}
+      col(hx0+2,6,9,shade(T,.32));row(11,hx0-3,hx1+3,T);row(12,hx0-5,hx0-2,shade(T,-.3));row(12,hx1+2,hx1+5,shade(T,-.3));px(hx0-6,13,shade(T,-.3));px(hx1+6,13,shade(T,-.3));faceTint(12,14,-.25);
+      break;
+    case 'greathelm':case 'crestedhelm':
+      for(let y=5;y<=31;y++){const ins=y===5?3:y===6?1:0,fl=y>=29?1:0;row(y,hx0-2+ins-fl,hx1+2-ins+fl,T);px(hx0-2+ins-fl,y,shade(T,-.1));px(hx1+2-ins+fl,y,shade(T,-.28))}
+      col(hx0,7,26,shade(T,.32));rect(cx0,6,cx1,31,shade(T,.15));
+      row(16,hx0,cx0-1,'#0e0e12');row(16,cx1+1,hx1,'#0e0e12');row(17,hx0+1,cx0-2,'#0e0e12');row(17,cx1+2,hx1-1,'#0e0e12');
+      for(let y=21;y<=27;y+=2){px(hx1-2,y,'#0e0e12');px(hx1-4,y,'#0e0e12')}
+      rect(cx0,1,cx1,4,A);row(1,cx0-1,cx1+1,shade(A,.2));
+      break;
+    case 'plague':{
+      for(let y=9;y<=27;y++)for(let x=hx0;x<=hx1;x++)if(inFace(x,y))px(x,y,x>=hx1-1?shade(MASK,-.15):MASK);
+      col(hx0-1,9,30,HATBLK);col(hx0-2,12,30,HATBLK);col(hx1+1,9,30,HATBLK);col(hx1+2,12,30,HATBLK);
+      for(const ex of[hx0+2,hx1-4]){rect(ex,15,ex+2,17,shade(MASK,-.45));px(ex+1,16,GLASS);px(ex+2,15,'#ffffff')}
+      for(let y=19;y<=33;y++){const hw=y<=22?2:y<=26?1:y<=31?0:-1;if(hw<0){px(cx0,y,shade(MASK,-.2));continue}row(y,cx0-hw,cx1+hw,shade(MASK,.1));px(cx1+hw,y,shade(MASK,-.2))}
+      rect(hx0,0,hx1,6,HATBLK);row(5,hx0,hx1,A);row(7,hx0-6,hx1+6,HATBLK);row(8,hx0-5,hx1+5,shade(HATBLK,-.3));col(hx0+1,1,4,shade(HATBLK,.15));
+      break}
+    case 'circlet':
+      row(11,hx0,hx1,A);for(const x of[hx0+2,cx0,cx1,hx1-2])px(x,10,A);row(11,cx0,cx1,A===ACCENT[3][1]?WHITE:'#a02a2a');
+      break;
+    case 'feltcap':
+      for(let y=5;y<=11;y++){const ins=y===5?3:y===6?1:0;row(y,hx0-1+ins,hx1+1-ins,y===11?shade(T,-.25):T)}
+      rect(hx0-4,6,hx0-1,9,T);px(hx0-5,10,T);px(hx0-4,10,shade(T,-.2));col(hx1,6,10,shade(T,-.2));
+      break;
+    case 'widebrim':{
+      const K=shade(T,-.35);for(let y=1;y<=9;y++){const ins=y===1?1:0;row(y,hx0+1+ins,hx1-1-ins,K);px(hx1-1-ins,y,shade(K,-.2))}
+      row(8,hx0+1,hx1-1,A);row(8,cx0,cx1,shade(A,.35));
+      row(10,hx0-7,hx1+7,K);row(11,hx0-6,hx1+6,shade(K,-.3));faceTint(12,15,-.3);
+      break}
+    case 'kerchief':
+      for(let y=6;y<=12;y++){const ins=y===6?3:y===7?1:0;row(y,hx0-1+ins,hx1+1-ins,y===12?shade(C,.15):C)}
+      rect(hx0-2,13,hx0,24,C);rect(hx1,13,hx1+2,24,shade(C,-.15));rect(hx1+1,25,hx1+3,28,shade(C,-.1));px(hx1+4,29,C);
+      for(let x=hx0+1;x<=hx1-1;x+=3)px(x,9,shade(C,.25));
+      break;
+    case 'straw':
+      for(let y=3;y<=9;y++){const ins=y===3?1:0;row(y,hx0+1+ins,hx1-1-ins,(x)=>(x+y)%3===0?shade(STRAW,-.2):STRAW)}
+      row(8,hx0+1,hx1-1,C);row(10,hx0-6,hx1+6,(x)=>(x+10)%3===0?shade(STRAW,-.2):STRAW);row(11,hx0-5,hx1+5,shade(STRAW,-.32));faceTint(12,13,-.2);
+      break;
+    case 'wimple':
+      for(let y=4;y<=40;y++){let a,b;
+        if(y===4){a=hx0+2;b=hx1-2}else if(y===5){a=hx0;b=hx1}else if(y<=28){a=hx0-4;b=hx1+4}
+        else{const q=sh(Math.max(32,y));a=Math.max(q[0],hx0-4-(y-28)*2);b=Math.min(q[1],hx1+4+(y-28)*2)}
+        for(let x=a;x<=b;x++){if(y>=11&&y<=24&&x>=hx0+1+inset(y)&&x<=hx1-1-inset(y))continue;px(x,y,x>=b-1?shade(C,-.22):(x<=a+1?shade(C,.08):(y===40?shade(C,-.15):C)))}}
+      for(let y=7;y<=34;y++){const e=y>=27?Math.floor((y-25)/2):0,a=(y===7?hx0+1:y===8?hx0-1:hx0-2)-e,b=(y===7?hx1-1:y===8?hx1+1:hx1+2)+e;
+        for(let x=a;x<=b;x++){if(y>=11&&y<=24&&x>=hx0+1+inset(y)&&x<=hx1-1-inset(y))continue;px(x,y,(y===27||y===30||y===33)?shade(WHITE,-.14):(x>=b-1?shade(WHITE,-.1):WHITE))}}
+      break;
+    case 'veil':{const V=mix(C,WHITE,.3),sheer=(x,y,f)=>{const v=get(x,y);px(x,y,shade(v?mix(v,V,isSkin(v)?.3:.6):V,f||0))};
+      for(let y=5;y<=11;y++){const a=y===5?hx0+1:y===6?hx0-1:hx0-2,b=y===5?hx1-1:y===6?hx1+1:hx1+2;for(let x=a;x<=b;x++)sheer(x,y,y===11?-.2:(x>=b-1?-.12:0))}
+      for(let y=12;y<=38;y++){const e=y>=28?Math.floor((y-28)*1.5):0,q=y>=32?sh(y):[0,47];
+        for(let x=Math.max(q[0],hx0-4-e);x<=hx0-1;x++)sheer(x,y,x===hx0-1?-.1:0);
+        for(let x=hx1+1;x<=Math.min(q[1],hx1+4+e);x++)sheer(x,y,-.12)}
+      break}
+    case 'bascinet':
+      for(let y=11;y<=34;y++){const e=y>=27?Math.floor((y-25)*1.2):0,a=hx0-2-e,b=hx1+2+e;
+        for(let x=a;x<=b;x++){if(y<=24&&x>=hx0+1+inset(y)&&x<=hx1-1-inset(y))continue;let k=(x+y)%2?shade(T,-.2):T;if(x>=b-1)k=shade(k,-.15);px(x,y,k)}}
+      for(let y=1;y<=12;y++){const hw=y<=2?1:y<=4?3:y<=6?6:y<=8?8:9,a=cx0-hw+1,b=cx1+hw-1;
+        for(let x=a;x<=b;x++)px(x,y,y===12?shade(T,-.3):x>=b-1?shade(T,-.22):(x===a+2?shade(T,.35):T))}
+      break;
+    case 'coronet':{const G2=shade(GOLD,-.3);
+      row(11,hx0,hx1,GOLD);row(12,hx0,hx1,G2);
+      for(const x of[hx0+1,cx0,cx1,hx1-1])col(x,8,10,GOLD);
+      for(const x of[cx0-4,cx1+4])px(x,10,GOLD);
+      px(cx0-4,11,'#a02a2a');px(cx1+4,11,'#2b4f9a');px(cx0,11,'#2e6b3a');px(cx1,11,'#2e6b3a');
+      break}
+    case 'chaperon':{const KL=shade(C,.18),KD=shade(C,-.3);
+      for(let y=2;y<=6;y++){const ins=y===2?4:y===3?2:0;row(y,hx0-1+ins,hx1+1-ins,C)}
+      for(let y=6;y<=11;y++){const ins=y===6||y===11?1:0;for(let x=hx0-4+ins;x<=hx1+4-ins;x++)px(x,y,y<=7?KL:y>=10?KD:((x+y)%5===0?KD:C))}
+      for(let y=12;y<=32;y++)rect(hx1+2,y,hx1+4-(y>28?1:0),y,(x)=>x===hx1+4?KD:C);
+      faceTint(12,13,-.25);
+      break}
+    case 'hennin':{const V='#efeadc';
+      for(let y=0;y<=10;y++){const hw=Math.round(3+y*.6),a=cx0-hw+1,b=cx1+hw-1;for(let x=a;x<=b;x++)px(x,y,x>=b-1?shade(C,-.25):(x===a+1?shade(C,.2):C))}
+      row(10,cx0-8,cx1+8,'#1d1a1c');row(11,hx0,hx1,'#1d1a1c');px(cx0,12,'#1d1a1c');px(cx1,12,'#1d1a1c');
+      for(let y=0;y<=32;y++){const x0=cx1+Math.round(3+y*.3);for(let x=x0;x<=x0+3;x++){const v=get(x,y);if(v)px(x,y,mix(v,V,x===x0?.45:.28))}}
+      break}
+  }
+  if(c.headgear==='crestedhelm'){
+    /* mantling behind the helm, a twisted torse, and a plume in the arms' tinctures */
+    for(let y=6;y<=28;y++){const w=2+((y>>2)%2);for(let k=0;k<w;k++){px(hx0-3-k,y,k===w-1?c.tinct2:c.tinct1);px(hx1+3+k,y,k===w-1?c.tinct2:shade(c.tinct1,-.15))}}
+    for(let y=0;y<=4;y++){const hw=y===0?2:y===1?4:5;for(let x=cx0-hw;x<=cx1+hw;x++)px(x,y,Math.floor(x/2)%2?c.tinct1:c.tinct2)}
+    row(5,hx0+2,hx1-2,(x)=>x%2?c.tinct1:c.tinct2);
+  }
+
+  hairGuard(d.G,preHair,postHair,c.headgear,RIM_P);
+
+  /* familiar on the shoulder */
+  famPortrait(c,d,fem?2:0);
+  return d.G;
+}
+function famPortrait(c,d0,ox){
+  const px=(x,y,k)=>d0.px(x-ox,y,k),rect=(a,b,e,f,k)=>d0.rect(a-ox,b,e-ox,f,k),row=(y,a,b,k)=>d0.row(y,a-ox,b-ox,k);
+  if(c.familiar==='raven'){const K='#1d1c24';rect(35,27,42,33,K);rect(33,23,37,27,K);px(32,25,'#4a4640');px(31,25,'#4a4640');px(32,26,'#3a3632');px(34,24,'#d8d2bf');row(29,37,41,'#2e2c3a');row(31,38,41,'#2e2c3a');rect(43,30,45,32,K);px(46,32,K);px(37,34,'#8a6a3a');px(40,34,'#8a6a3a')}
+  if(c.familiar==='rat'){const K='#6f6052',KD=shade(K,-.3);rect(34,30,41,34,K);row(34,34,41,KD);rect(31,30,34,33,K);px(30,32,'#c98f92');px(33,29,KD);px(34,29,KD);px(32,31,'#120d0a');rect(42,33,43,34,'#c98f92');px(44,35,'#c98f92');px(44,36,'#c98f92');px(43,37,'#c98f92')}
+  if(c.familiar==='cat'){const K=c.petColor,KD=shade(K,-.3);rect(35,28,42,34,K);rect(33,22,38,27,K);px(33,21,K);px(38,21,K);px(33,20,KD);px(38,20,KD);px(34,24,'#e8d34a');px(37,24,'#e8d34a');px(35,26,'#c98f92');px(36,26,'#c98f92');row(27,34,37,shade(K,.15));rect(43,30,43,38,K);px(44,38,K);px(44,39,KD)}
+}
+
+/* ---------- full body ---------- */
+function drawBody(c){
+  const d=painter(),{px,get,rect,row,col,tint}=d,R=mulberry32(c.seed^0x2b1d);
+  const S=c.skin,sD=shade(S,-.16),sDD=shade(S,-.34),sL=shade(S,.14),E=c.eyes;
+  const H=c.hair,HD=shade(H,-.28),HL=shade(H,.22);
+  const T=c.tone,C=c.cloth,A=c.accent,broad=c.build==='broad';
+  const fem=c.sex==='f',tx0=broad?18:19,tx1=broad?29:28;
+  const isSkin=v=>v===S||v===sD||v===sL;
+
+  /* garb palette for each body region */
+  const chk=(k,x,y)=>(x+y)%2?shade(k,-.2):k;
+  let G={torso:()=>C,arm:()=>C,leg:()=>shade(C,-.4),boot:'#2c2622',skirt:0,skirtW:0,hand:null};
+  switch(c.garb){
+    case 'mail':G={torso:(x,y)=>chk(T,x,y),arm:(x,y)=>chk(T,x,y),leg:(x,y)=>chk(shade(T,-.05),x,y),boot:'#2c2622',skirt:31,skirtW:0};break;
+    case 'plate':G={torso:(x,y)=>x>=23&&x<=24?shade(T,.25):y===26?shade(T,-.3):T,arm:(x,y)=>y===21?shade(T,-.3):T,leg:(x,y)=>y===34?shade(T,.25):T,boot:shade(T,-.22),skirt:30,skirtW:0,hand:shade(T,-.1)};break;
+    case 'gambeson':G={torso:(x,y)=>y%3===0?shade(LINEN,-.15):LINEN,arm:(x,y)=>y%3===0?shade(LINEN,-.15):LINEN,leg:()=>'#3d342a',boot:'#2c2622',skirt:0};break;
+    case 'fur':G={torso:(x,y)=>(x-y===tx0-14||x-y===tx0-13)?shade(LEATHER,-.3):LEATHER,arm:(x,y)=>y>=23?LEATHER:C,leg:()=>shade(C,-.4),boot:'#3a2c22',skirt:0};break;
+    case 'robes':G={torso:(x,y)=>Math.abs(x-23.5)<(21-y)*.5?shade(C,-.45):C,arm:()=>C,leg:()=>C,boot:'#2c2622',skirt:44,skirtW:3};break;
+    case 'smock':G={torso:(x)=>(x-tx0)%4===0?shade(C,-.1):C,arm:()=>C,leg:()=>'#5a4a3a',boot:shade(T,-.2),skirt:31,skirtW:1};break;
+    case 'cassock':G={torso:()=>C,arm:()=>C,leg:()=>C,boot:'#1e1a17',skirt:43,skirtW:1};break;
+    case 'hunter':G={torso:()=>T,arm:()=>C,leg:()=>shade(T,-.25),boot:shade(T,-.45),bootTop:34,skirt:0};break;
+    case 'merchant':G={torso:()=>C,arm:()=>C,leg:()=>T,boot:'#2a2220',skirt:0};break;
+    case 'mourning':G={torso:()=>C,arm:()=>C,leg:()=>C,boot:'#1e1a17',skirt:44,skirtW:4};break;
+    case 'apron':G={torso:()=>C,arm:(x,y)=>y>=20?S:C,leg:()=>'#4a3c30',boot:'#2c2622',skirt:0};break;
+    case 'kirtle':G={torso:()=>C,arm:()=>mix(C,'#e2d8c0',.55),leg:()=>C,boot:'#2c2622',skirt:44,skirtW:4};break;
+    case 'dress':G={torso:(x,y)=>y<=16?'#d9cdb0':C,arm:()=>'#d9cdb0',leg:()=>C,boot:shade(T,-.2),skirt:44,skirtW:3};break;
+    case 'surcoat':G={torso:(x,y)=>armsBox(c,x,y,tx0,14,tx1,33),arm:(x,y)=>chk(T,x,y),leg:(x,y)=>chk(shade(T,-.05),x,y),boot:shade(T,-.25),skirt:33,skirtW:1};break;
+    case 'jupon':G={torso:(x,y)=>armsBox(c,x,y,tx0,14,tx1,29),arm:(x,y)=>y===21?shade(T,-.3):T,leg:(x,y)=>y===34?shade(T,.25):T,boot:shade(T,-.22),skirt:29,skirtW:0,hand:shade(T,-.1)};break;
+    case 'tabard':G={torso:()=>C,arm:()=>C,leg:()=>shade(C,-.4),boot:'#2c2622',skirt:0};break;
+    case 'livery':G={torso:(x)=>x<=23?c.tinct1:c.tinct2,arm:(x)=>x<=23?c.tinct1:c.tinct2,leg:(x)=>x<=23?c.tinct2:c.tinct1,boot:'#2c2622',skirt:28,skirtW:1};break;
+    case 'houppelande':G={torso:(x)=>(x-tx0)%3===0?shade(C,-.15):C,arm:()=>C,leg:()=>C,boot:'#1e1a17',skirt:44,skirtW:3};break;
+    case 'gown':G={torso:()=>C,arm:()=>C,leg:()=>C,boot:'#1e1a17',skirt:44,skirtW:5};break;
+  }
+  const shadeRight=(k,x,xr)=>x>=xr?shade(k,-.14):k;
+
+  /* legs and boots */
+  for(let y=27;y<=42;y++){if(y<=29)row(y,20,27,G.leg);rect(20,y,22,y,(x)=>G.leg(x,y));rect(25,y,27,y,(x)=>shadeRight(G.leg(x,y),x,27))}
+  const bt=G.bootTop||39;
+  rect(19,bt,22,44,G.boot);rect(25,bt,28,44,shade(G.boot,-.08));px(18,43,G.boot);px(18,44,G.boot);px(29,43,G.boot);px(29,44,G.boot);
+  row(bt,19,22,shade(G.boot,.18));row(bt,25,28,shade(G.boot,.18));
+  if(c.garb==='fur'){row(39,19,22,PELT);row(39,25,28,PELT)}
+
+  /* torso */
+  /* a woman's torso pulls in at the waist (rows 20-22) and fills out at the hips */
+  const FINS=[1,0,0,0,0,1,2,2,2,1,0,0,0,0,1];
+  for(let y=14;y<=(fem?28:26);y++){const ins=fem?FINS[y-14]:(y===14?1:0);for(let x=tx0+ins;x<=tx1-ins;x++)px(x,y,shadeRight(G.torso(x,y),x,tx1-ins))}
+  if(G.skirt){for(let y=27;y<=G.skirt;y++){const sp=G.skirtW?Math.round((y-27)/(G.skirt-27)*G.skirtW):0;for(let x=tx0-sp;x<=tx1+sp;x++){let k=G.leg===G.torso?C:G.torso(x,y);if(c.garb==='mail')k=chk(T,x,y);if(c.garb==='plate')k=(y===28||y===30)?shade(T,-.3):T;if(c.garb==='mourning'&&(x-tx0)%3===0)k=shade(C,-.15);px(x,y,shadeRight(k,x,tx1+sp))}}}
+
+  /* arms */
+  const armL=fem?[tx0-2,tx0]:[tx0-3,tx0-1],armR=fem?[tx1,tx1+2]:[tx1+1,tx1+3],hX=armR[0]+1;
+  row(14,armL[0]+1,armL[1],G.arm(armL[1],15));row(14,armR[0],armR[1]-1,G.arm(armR[0],15));
+  for(let y=15;y<=26;y++){rect(armL[0],y,armL[1],y,(x)=>G.arm(x,y));rect(armR[0],y,armR[1],y,(x)=>shadeRight(G.arm(x,y),x,armR[1]))}
+  if(c.garb==='robes'){for(let y=22;y<=27;y++){px(armL[0]-1,y,C);px(armR[1]+1,y,shade(C,-.14))}}
+
+  /* garb details */
+  switch(c.garb){
+    case 'mail':row(24,tx0,tx1,'#3a2a1c');row(24,23,24,A);break;
+    case 'plate':rect(tx0-3,14,tx0,17,shade(T,.15));rect(tx1,14,tx1+3,17,shade(T,.05));row(17,tx0-3,tx0,shade(T,-.3));row(17,tx1,tx1+3,shade(T,-.35));break;
+    case 'gambeson':rect(20,14,27,32,C);col(27,14,32,shade(C,-.14));rect(23,16,24,30,A);row(19,21,26,A);row(24,tx0,19,'#3a2a1c');row(24,28,tx1,'#3a2a1c');break;
+    case 'fur':for(let y=13;y<=17;y++)for(let x=16;x<=31;x++){if(y===17&&R()<.5)continue;px(x,y,(x*7+y*3)%5===0?shade(PELT,-.25):(x+y)%4===0?shade(PELT,.15):PELT)}row(24,tx0,tx1,'#2e2018');break;
+    case 'robes':row(24,tx0,tx1,A);px(23,25,A);px(23,26,A);break;
+    case 'smock':row(14,21,26,shade(C,.15));col(23,15,18,shade(C,-.35));px(23,16,A);px(24,17,A);row(26,tx0,tx1,shade(T,-.2));break;
+    case 'cassock':rect(23,13,24,14,WHITE);for(let y=16;y<=42;y+=3)px(23,y,A);break;
+    case 'hunter':for(let i=0;i<=12;i++){px(tx0+1+Math.round(i*.7),14+i,shade(T,-.45))}px(tx0+5,20,A);row(25,tx0,tx1,shade(T,-.45));row(25,23,24,A);row(14,21,26,C);break;
+    case 'merchant':
+      for(const[a,b]of[[tx0-3,tx0-1],[tx1+1,tx1+3]])for(let y=14;y<=17;y++)for(let x=a;x<=b;x++)px(x,y,x%2?A:T);
+      for(let y=27;y<=31;y++)for(let x=19;x<=28;x++)px(x,y,x%2?A:C);
+      for(let y=16;y<=25;y+=3)px(23,y,A);break;
+    case 'mourning':rect(23,15,24,16,A);break;
+    case 'apron':rect(20,16,27,36,T);col(27,16,36,shade(T,-.14));px(20,14,shade(T,-.2));px(20,15,shade(T,-.2));px(27,14,shade(T,-.2));px(27,15,shade(T,-.2));for(let k=0;k<6;k++)px(20+Math.floor(R()*8),17+Math.floor(R()*18),shade(T,-.4));break;
+    case 'kirtle':rect(21,14,26,15,S);row(16,21,26,A);row(22,tx0+(fem?2:0),tx1-(fem?2:0),A);col(23,23,28,A);break;
+    case 'dress':rect(21,14,26,14,S);row(15,21,26,shade('#d9cdb0',-.2));rect(23,17,24,24,shade(C,-.4));
+      for(let y=17;y<=24;y+=2){px(23,y,'#e6dcc4');px(24,y+1,'#e6dcc4')}row(25,tx0+1,tx1-1,shade(T,-.2));break;
+    case 'surcoat':row(24,tx0+(fem?1:0),tx1-(fem?1:0),'#3a2a1c');row(24,23,24,GOLD);break;
+    case 'jupon':rect(tx0-3,14,tx0,17,shade(T,.15));rect(tx1,14,tx1+3,17,shade(T,.05));row(17,tx0-3,tx0,shade(T,-.3));row(17,tx1,tx1+3,shade(T,-.35));row(27,tx0,tx1,GOLD);break;
+    case 'tabard':
+      for(let y=14;y<=31;y++)for(let x=20;x<=27;x++)px(x,y,y===31?GOLD:armsBox(c,x,y,20,14,27,30));
+      for(let y=14;y<=18;y++){for(let x=armL[0];x<=armL[1];x++)px(x,y,y===18?GOLD:armsBox(c,x,y,armL[0],14,armL[1],17));for(let x=armR[0];x<=armR[1];x++)px(x,y,y===18?GOLD:armsBox(c,x,y,armR[0],14,armR[1],17))}
+      break;
+    case 'livery':row(25,tx0,tx1,'#3a2a1c');px(26,17,A);break;
+    case 'houppelande':
+      for(let y=21;y<=27;y++){px(armL[0]-1,y,C);px(armR[1]+1,y,shade(C,-.14));if(y>=24){px(armL[0]-2,y,C);px(armR[1]+2,y,shade(C,-.14))}}
+      row(26,armL[0]-2,armL[1],PELT);row(26,armR[0],armR[1]+2,PELT);row(13,20,27,shade(PELT,.2));row(14,21,26,PELT);
+      {const hw=(tx1-tx0)/2-1;for(let x=tx0+1;x<=tx1-1;x++){const t=(x-23.5)/hw;px(x,15+Math.round(4*(1-t*t)),x%2?GOLD:shade(GOLD,-.3))}px(23,20,GOLD);px(24,20,GOLD)}
+      break;
+    case 'gown':rect(21,14,26,15,S);row(16,21,26,A);row(25,tx0,tx1,A);col(23,26,33,A);
+      for(let y=22;y<=31;y++){px(armL[0]-1,y,shade(C,-.15));px(armR[1]+1,y,shade(C,-.25))}
+      break;
+  }
+  if(fem){const ns=v=>!isSkin(v);tint(tx0+2,19,22,19,-.22,ns);tint(25,19,tx1-2,19,-.22,ns);tint(tx0+3,17,tx0+3,17,.12,ns);tint(tx1-3,17,tx1-3,17,.12,ns)}
+
+  /* neck and head */
+  row(13,22,25,sD);
+  for(let y=3;y<=12;y++){const ins=y===3?2:y===4?1:y===11?1:y===12?2:0;row(y,20+ins,27-ins,S);px(27-ins,y,sD)}
+  col(19,7,9,S);col(28,7,9,sD);
+  px(21,8,WHITE);px(22,8,E);px(25,8,E);px(26,8,WHITE);
+  row(7,21,22,HD);row(7,25,26,HD);
+  px(24,9,sD);px(24,10,sDD);row(11,23,24,shade(S,-.45));px(21,10,sL);
+
+  /* marks */
+  switch(c.mark){
+    case 'scar':px(26,9,sDD);px(25,10,sDD);px(27,8,sDD);break;
+    case 'patch':rect(21,7,22,9,PATCH);row(6,20,27,PATCH);break;
+    case 'paint':for(let y=7;y<=9;y++)for(let x=20;x<=27;x++)if(isSkin(get(x,y)))px(x,y,WOAD);break;
+    case 'soot':for(let k=0;k<4;k++){const x=20+Math.floor(R()*8),y=5+Math.floor(R()*7);if(isSkin(get(x,y)))px(x,y,shade(S,-.4))}break;
+    case 'pox':for(const[x,y]of[[21,10],[26,10],[22,5],[25,11]])if(isSkin(get(x,y)))px(x,y,shade(S,-.28));break;
+    case 'hollow':px(21,9,sDD);px(22,9,sDD);px(25,9,sDD);px(26,9,sDD);break;
+  }
+
+  /* beard */
+  switch(c.beard){
+    case 'stubble':for(let y=9;y<=12;y++)for(let x=20;x<=27;x++){if(y<=10&&x>=22&&x<=25)continue;if(y===11&&(x===23||x===24))continue;if(isSkin(get(x,y))&&(x+y)%2===0)px(x,y,mix(S,H,.45))}break;
+    case 'mustache':row(10,22,25,H);break;
+    case 'goatee':row(10,22,25,H);rect(23,12,24,13,H);break;
+    case 'short':case 'long':
+      px(20,9,H);px(27,9,HD);row(10,20,27,H);row(11,20,27,H);row(11,23,24,shade(S,-.58));row(12,21,26,HD);row(13,22,25,H);
+      if(c.beard==='long'){rect(21,13,26,15,(x,y)=>(x+y)%3===0?HD:H);rect(22,16,25,17,H);rect(23,18,24,19,HD)}
+      break;
+  }
+
+  /* hair */
+  const preHair=d.G.slice();
+  const st=c.hairStyle;
+  const cap=fr=>{row(1,22,25,H);row(2,20,27,H);rect(19,3,28,4,H);col(28,3,4,HD);col(19,5,8,H);col(28,5,8,HD);px(21,2,HL);px(22,2,HL);px(20,3,HL);if(fr)for(let x=20;x<=27;x++)if(R()<fr)px(x,5,H)};
+  if(c.headgear==='wimple'){/* hidden under the wimple */}
+  else if(st==='bald'){px(21,4,sL);px(22,4,sL)}
+  else if(st==='cropped'){row(2,21,26,H);row(3,20,27,H);for(let x=20;x<=27;x+=2)px(x,4,H)}
+  else if(st==='tonsure'){row(3,22,25,sL);rect(19,4,28,5,H);col(19,6,8,H);col(28,6,8,HD)}
+  else{
+    cap(st==='tied'||st==='bun'||st==='crown'?0:st==='wild'?.7:.45);
+    if(st==='long'){rect(18,5,19,17,H);rect(28,5,29,17,HD);px(18,17,null)}
+    if(st==='tied'){rect(28,6,29,13,(x,y)=>y%3===0?HD:H);row(7,28,29,A)}
+    if(st==='wild'){for(let x=19;x<=28;x++)if(R()<.55)px(x,0,H);for(let y=3;y<=10;y++){if(R()<.5)px(18,y,H);if(R()<.5)px(29,y,HD)}}
+    if(st==='braids'){for(let y=5;y<=19;y++){const k=Math.floor(y/2)%2?H:HD;px(18,y,k);px(19,y,k);px(28,y,k===H?HD:H);px(29,y,k===H?HD:H)}row(18,18,19,A);row(18,28,29,A)}
+    if(st==='wavy')for(let y=5;y<=19;y++){const o=Math.round(Math.sin(y/1.6));rect(18-(o>0?1:0),y,19,y,(x)=>(x+y)%3===0?HD:H);rect(28,y,29+(o<0?1:0),y,(x)=>(x+y)%3===0?shade(HD,-.1):HD)}
+    if(st==='curls'){const cu=(x,y,b)=>((x*3+y*5)%7<2)?shade(b,-.28):((x+y*2)%5===0?shade(b,.2):b);
+      for(let x=20;x<=27;x++)if(R()<.6)px(x,0,cu(x,0,H));
+      for(let y=2;y<=16;y++){const ww=y===2?1:y===3?2:y<=13?3:y===14?2:y===15?1:0;
+        for(let x=19-ww;x<=19;x++)if(!(x===19-ww&&R()<.35))px(x,y,cu(x,y,H));
+        for(let x=28;x<=28+ww;x++)if(!(x===28+ww&&R()<.35))px(x,y,cu(x,y,HD))}}
+    if(st==='bun'){row(0,22,25,H);px(22,0,HL);row(1,21,26,H);row(2,22,25,A)}
+    if(st==='crown')for(let x=19;x<=28;x++){const k=x%3,k2=(x+1)%3;px(x,3,k===0?HL:k===1?H:HD);px(x,4,k2===0?HL:k2===1?H:HD)}
+    if(st==='ponytail'){row(0,23,24,H);row(1,22,25,A);for(let y=3;y<=15;y++)rect(28,y,29+(y>5&&y<12?1:0),y,(x)=>(x+y)%3===0?HD:H)}
+    if(st==='plait')for(let y=9;y<=24;y++){const bx=y<=15?18:18+Math.floor((y-13)/3),tw=y>=23?1:2;for(let x=bx;x<bx+tw;x++){const k=(x-bx+y)%3;px(x,y,y===22?A:k===0?HL:k===1?H:HD)}}
+  }
+
+  const postHair=d.G.slice();
+  /* headgear */
+  const faceRows=(y0,y1,f)=>{for(let y=y0;y<=y1;y++)for(let x=20;x<=27;x++){const v=get(x,y);if(v&&y>=3&&y<=12)px(x,y,shade(v,f))}};
+  const faceOpen=(x,y)=>y>=5&&y<=12&&x>=21-(y<=10?1:0)+(y===12?1:0)&&x<=26+(y<=10?1:0)-(y===12?1:0);
+  const hoodB=(depth,K)=>{for(let y=0;y<=16;y++){let a,b;if(y===0){a=22;b=25}else if(y===1){a=20;b=27}else if(y<=12){a=18;b=29}else{a=17;b=30}
+    for(let x=a;x<=b;x++){if(faceOpen(x,y)){if(y<5+depth){const v=get(x,y);if(v)px(x,y,shade(v,-.45))}continue}
+      if(y>=13&&x>=22&&x<=25)continue;px(x,y,x===b?shade(K,-.2):(x===a+1||x===b-1)?shade(K,-.12):K)}}};
+  switch(c.headgear){
+    case 'coif':for(let y=1;y<=15;y++){let a=19,b=28;if(y===1){a=21;b=26}else if(y===2){a=20;b=27}else if(y>=13){a=18;b=29}
+      for(let x=a;x<=b;x++){if(faceOpen(x,y)&&x>=21&&x<=26)continue;if(y>=13&&x>=22&&x<=25&&y<=13)continue;px(x,y,(x+y)%2?shade(T,-.2):T)}}break;
+    case 'hood':hoodB(1,C);break;
+    case 'cowl':hoodB(2,shade(C,-.08));break;
+    case 'nasal':row(1,21,26,T);row(2,20,27,T);rect(19,3,28,4,T);row(5,19,28,shade(T,-.28));px(20,2,shade(T,.35));px(20,3,shade(T,.35));col(28,2,5,shade(T,-.2));rect(23,6,24,8,T);break;
+    case 'kettle':row(0,21,26,T);rect(20,1,27,4,T);col(21,1,3,shade(T,.32));col(27,1,4,shade(T,-.2));row(5,17,30,T);row(6,15,18,shade(T,-.3));row(6,29,32,shade(T,-.3));faceRows(6,7,-.25);break;
+    case 'greathelm':case 'crestedhelm':row(1,21,26,T);row(2,20,27,T);rect(19,3,28,13,T);row(13,18,29,T);col(20,3,12,shade(T,.3));col(28,3,13,shade(T,-.25));rect(23,2,24,13,shade(T,.15));
+      row(7,20,22,'#0e0e12');row(7,25,27,'#0e0e12');px(26,10,'#0e0e12');px(26,12,'#0e0e12');px(25,11,'#0e0e12');break;
+    case 'plague':for(let y=5;y<=12;y++)for(let x=20;x<=27;x++)if(get(x,y)&&!(y>=12&&(x<22||x>25)))px(x,y,x>=27?shade(MASK,-.15):MASK);
+      rect(21,7,22,8,shade(MASK,-.45));rect(25,7,26,8,shade(MASK,-.45));px(22,7,GLASS);px(25,7,GLASS);
+      rect(23,9,24,13,shade(MASK,.1));col(24,9,13,shade(MASK,-.15));col(23,14,16,shade(MASK,-.1));
+      col(19,4,13,HATBLK);col(28,4,13,HATBLK);rect(21,0,26,2,HATBLK);row(2,21,26,A);row(3,15,32,HATBLK);row(4,17,30,shade(HATBLK,-.3));break;
+    case 'circlet':row(5,20,27,A);px(21,4,A);px(26,4,A);row(5,23,24,A===ACCENT[3][1]?WHITE:'#a02a2a');break;
+    case 'feltcap':row(1,21,26,T);rect(19,2,28,5,T);row(5,19,28,shade(T,-.25));rect(16,2,18,4,T);px(15,5,T);px(16,5,shade(T,-.2));col(28,2,4,shade(T,-.2));break;
+    case 'widebrim':{const K=shade(T,-.35);row(0,22,25,K);rect(21,1,26,4,K);row(3,21,26,A);row(3,23,24,shade(A,.35));row(5,14,33,K);row(6,16,31,shade(K,-.3));faceRows(7,8,-.3);break}
+    case 'kerchief':row(1,21,26,C);rect(19,2,28,6,C);row(6,19,28,shade(C,.15));col(19,7,11,C);col(28,7,11,shade(C,-.15));px(29,11,C);px(30,12,C);px(29,12,shade(C,-.15));break;
+    case 'straw':row(1,22,25,STRAW);rect(21,2,26,4,(x,y)=>(x+y)%3===0?shade(STRAW,-.2):STRAW);row(4,21,26,C);row(5,15,32,(x)=>(x+5)%3===0?shade(STRAW,-.2):STRAW);row(6,16,31,shade(STRAW,-.32));faceRows(7,7,-.2);break;
+    case 'wimple':
+      for(let y=0;y<=16;y++){const a=y===0?21:y===1?19:y<=12?18:17,b=47-a;for(let x=a;x<=b;x++){if(y>=5&&y<=11&&x>=21+(y===11?1:0)&&x<=26-(y===11?1:0))continue;px(x,y,x===b?shade(C,-.22):C)}}
+      for(let y=1;y<=15;y++){const a=y===1?20:y<=12?19:18,b=47-a;
+        for(let x=a;x<=b;x++){if(y>=5&&y<=11&&x>=21+(y===11?1:0)&&x<=26-(y===11?1:0))continue;px(x,y,(y===13||y===15)?shade(WHITE,-.14):(x===b?shade(WHITE,-.1):WHITE))}}
+      break;
+    case 'veil':{const V=mix(C,WHITE,.3),sheer=(x,y,f)=>{const v=get(x,y);px(x,y,shade(v?mix(v,V,isSkin(v)?.3:.6):V,f||0))};
+      for(let y=1;y<=4;y++){const a=y===1?21:y===2?20:19,b=47-a;for(let x=a;x<=b;x++)sheer(x,y,y===4?-.2:0)}
+      for(let y=5;y<=16;y++){for(const x of y>=13?[17,18,19]:[18,19])sheer(x,y,0);for(const x of y>=13?[28,29,30]:[28,29])sheer(x,y,-.12)}
+      break}
+    case 'bascinet':
+      for(let y=4;y<=15;y++){const a=y>=12?18:19,b=47-a;for(let x=a;x<=b;x++){if(y>=5&&y<=11&&x>=21&&x<=26)continue;px(x,y,(x+y)%2?shade(T,-.2):T)}}
+      row(0,23,24,T);row(1,22,25,T);row(2,21,26,T);rect(20,3,27,4,T);row(4,19,28,shade(T,-.3));col(26,1,3,shade(T,-.2));px(22,2,shade(T,.35));
+      break;
+    case 'coronet':row(4,19,28,GOLD);row(5,20,27,shade(GOLD,-.3));for(const x of[20,23,24,27])px(x,3,GOLD);px(23,4,'#a02a2a');break;
+    case 'chaperon':row(0,21,26,C);rect(20,1,27,2,C);
+      for(let y=2;y<=5;y++){const ins=y===2||y===5?1:0;row(y,17+ins,30-ins,y<=2?shade(C,.18):y===5?shade(C,-.3):C)}
+      for(let y=6;y<=17;y++)rect(30,y,31,y,(x)=>x===31?shade(C,-.3):C);faceRows(6,6,-.25);
+      break;
+    case 'hennin':{const V='#efeadc';row(0,21,26,C);row(1,20,27,C);rect(19,2,28,3,C);col(28,0,3,shade(C,-.25));row(4,19,28,'#1d1a1c');
+      for(let y=0;y<=14;y++){const x0=29+Math.floor(y/4);for(let x=x0;x<=x0+1;x++){const v=get(x,y);if(v)px(x,y,mix(v,V,x===x0?.45:.28))}}
+      break}
+  }
+  if(c.headgear==='crestedhelm'){
+    for(let y=3;y<=13;y++){const w=1+((y>>1)%2);for(let k=0;k<w;k++){px(17-k,y,k===w-1?c.tinct2:c.tinct1);px(30+k,y,k===w-1?c.tinct2:shade(c.tinct1,-.15))}}
+    row(1,21,26,(x)=>x%2?c.tinct1:c.tinct2);row(0,20,27,(x)=>Math.floor(x/2)%2?c.tinct1:c.tinct2);
+  }
+  hairGuard(d.G,preHair,postHair,c.headgear,RIM_B);
+  if(c.garb==='merchant'){for(let x=19;x<=28;x++)px(x,13,x%2?WHITE:'#cfc6b0');px(20,12,WHITE);px(27,12,'#cfc6b0')}
+  if(c.garb==='mourning'){rect(21,12,26,13,C);for(let x=21;x<=26;x++)px(x,12,x%2?'#d9d2c0':shade(C,.2))}
+
+  /* held item, then the hands over it */
+  drawItem(c,d,hX,tx0);
+  const hand=G.hand||S;
+  rect(armL[0],27,armL[1],28,hand);rect(armR[0],27,armR[1],28,hand);px(armR[1],28,shade(hand,-.16));px(armL[1],28,shade(hand,-.16));
+  if(['book','scroll','goblet','falcon'].includes(c.item))drawItem(c,d,hX,tx0,true);
+  if(c.item==='swordshield')drawShield(c,d,tx0);
+
+  famBody(c,d,tx0);
+  return d.G;
+}
+function drawItem(c,d,hX,tx0,front){
+  const {px,rect,row,col}=d,A=c.accent,T=c.tone,SD=shade(STEEL,-.25),SDD=shade(STEEL,-.45);
+  switch(c.item){
+    case 'sword':case 'swordshield':px(hX,25,A);col(hX,26,28,'#3a2a1c');row(29,hX-2,hX+2,SD);col(hX,30,43,STEEL);col(hX+1,30,43,SD);px(hX,44,STEEL);break;
+    case 'axe':col(hX,13,40,WOOD);for(let y=14;y<=20;y++){const e=(y===14||y===20)?3:5;row(y,hX+1,hX+e,y===14?STEEL:SD);px(hX+e,y,STEEL)}px(hX-1,16,SDD);px(hX-1,17,SDD);px(hX-2,16,SDD);break;
+    case 'spear':col(hX,3,44,WOOD);px(hX,0,STEEL);rect(hX-1,1,hX+1,3,SD);col(hX,1,3,STEEL);break;
+    case 'mace':col(hX,20,30,WOOD);rect(hX-1,15,hX+1,20,SD);col(hX-2,16,19,SDD);col(hX+2,16,19,SDD);px(hX,14,SD);px(hX-1,16,STEEL);break;
+    case 'longbow':case 'huntbow':{const y0=c.item==='longbow'?5:14,y1=c.item==='longbow'?44:40,amp=c.item==='longbow'?3:2;
+      for(let y=y0;y<=y1;y++){const o=Math.round(amp*Math.sin(Math.PI*(y-y0)/(y1-y0)));px(hX+1+o,y,y%4===0?shade(WOOD,-.25):WOOD)}col(hX,y0+1,y1-1,'#d9d2c0');break}
+    case 'torch':col(hX,18,30,WOOD);rect(hX-1,14,hX+1,17,'#e8922a');col(hX,12,13,'#f2c84a');col(hX,15,16,'#f6e7a0');px(hX+1,13,'#e8922a');row(18,hX-1,hX+1,'#3a2a1c');break;
+    case 'lantern':col(hX,29,30,'#2a2220');rect(hX-2,31,hX+2,38,'#8a6a2a');rect(hX-1,32,hX+1,37,'#f2c84a');col(hX,33,36,'#fbe9a8');row(31,hX-2,hX+2,'#3a2e1e');row(38,hX-2,hX+2,'#3a2e1e');break;
+    case 'pitchfork':col(hX,6,44,WOOD);row(6,hX-2,hX+2,SDD);for(const x of[hX-2,hX,hX+2])col(x,1,5,SD);break;
+    case 'scythe':col(hX,4,44,WOOD);row(4,hX+1,hX+7,SD);row(5,hX+1,hX+9,STEEL);row(6,hX+7,hX+10,STEEL);px(hX+11,7,STEEL);break;
+    case 'book':if(front){rect(hX-2,28,hX+2,33,'#3a2a20');col(hX+2,29,33,'#e6dfcb');col(hX-1,29,32,A);row(30,hX-2,hX,A)}break;
+    case 'staff':for(let y=8;y<=44;y++)px(hX+((y%9===0)?1:0),y,y%6===0?shade(WOOD,-.25):WOOD);rect(hX-1,5,hX+1,7,shade(WOOD,.1));px(hX,4,WOOD);break;
+    case 'cleaver':col(hX,29,30,WOOD);rect(hX-1,31,hX+3,35,SD);row(35,hX-1,hX+3,STEEL);break;
+    case 'hammer':col(hX,26,38,WOOD);rect(hX-2,38,hX+3,41,'#4a4a4e');row(38,hX-2,hX+3,'#6a6a70');break;
+    case 'lance':
+      for(let y=0;y<=44;y++)px(hX,y,y<4?STEEL:(Math.floor(y/3)%2?c.tinct1:c.tinct2));
+      rect(hX-1,22,hX+1,24,SD);row(25,hX-2,hX+2,SD);
+      for(let y=4;y<=8;y++){const len=y===6?4:6;for(let x=hX+1;x<=hX+len;x++)px(x,y,y<=6?c.tinct1:c.tinct2)}
+      break;
+    case 'banner':
+      col(hX,1,44,WOOD);px(hX,0,GOLD);row(2,hX,hX+9,shade(WOOD,-.2));
+      for(let y=3;y<=15;y++)for(let x=hX+1;x<=hX+9;x++){if(y>=14&&x>=hX+5-(y-13)&&x<=hX+5+(y-14))continue;
+        const k=armsBox(c,x,y,hX+1,3,hX+9,13);px(x,y,x===hX+9?shade(k,-.15):k)}
+      break;
+    case 'heraldwand':col(hX,19,33,WHITE);px(hX,18,GOLD);px(hX,34,GOLD);break;
+    case 'scroll':if(front){rect(hX-1,28,hX+2,32,'#e6dcc4');row(28,hX-2,hX+3,'#c9bc98');row(32,hX-2,hX+3,'#c9bc98');px(hX,33,'#a02a2a')}break;
+    case 'goblet':if(front){row(23,hX-2,hX+2,GOLD);rect(hX-1,24,hX+1,25,GOLD);px(hX+1,24,shade(GOLD,-.3));px(hX,26,GOLD);px(hX,27,shade(GOLD,-.3))}break;
+    case 'falcon':if(front){const F='#6a4a2e',FL='#e6dcc4';rect(hX-1,21,hX+1,25,F);px(hX-1,22,FL);px(hX,23,FL);px(hX-1,24,FL);px(hX+2,23,F);px(hX+2,24,shade(F,-.3));
+      rect(hX-1,19,hX,20,'#8e2a22');px(hX,18,GOLD);px(hX-2,20,'#3a3632');px(hX-1,26,'#c9a23a');px(hX+1,26,'#c9a23a')}break;
+  }
+}
+function drawShield(c,d,tx0){
+  const {px,rect,row,col}=d,C=c.cloth,A=c.accent,T=c.tone,a=tx0-7,b=tx0;
+  const mid=(a+b)/2;
+  for(let y=15;y<=33;y++){const ins=y<=26?0:Math.ceil((y-26)*.55);const x0=a+ins,x1=b-ins;if(x0>x1)break;
+    for(let x=x0;x<=x1;x++){const edge=x===x0||x===x1||y===15;px(x,y,edge?T:c.setting==='heraldic'?armsBox(c,x,y,a+1,16,b-1,31):(Math.abs(x-mid)<1?A:(y===19?A:C)))}}
+}
+function famBody(c,d,tx0){
+  const {px,rect,row,col}=d;
+  if(c.familiar==='raven'){const K='#1d1c24';rect(tx0-6,8,tx0-4,10,K);px(tx0-7,9,'#4a4640');px(tx0-8,9,'#4a4640');px(tx0-5,8,'#d8d2bf');rect(tx0-5,10,tx0-1,13,K);row(11,tx0-4,tx0-2,'#2e2c3a');rect(tx0-1,12,tx0,13,K);px(tx0-4,14,'#8a6a3a');px(tx0-2,14,'#8a6a3a')}
+  if(c.familiar==='rat'){const K='#6f6052';rect(32,41,36,43,K);row(43,32,36,shade(K,-.3));rect(30,42,31,43,K);px(29,43,'#c98f92');px(31,41,shade(K,-.3));px(30,42,'#120d0a');row(43,37,39,'#c98f92');px(40,42,'#c98f92')}
+  if(c.familiar==='cat'){const K=c.petColor,KD=shade(K,-.3);rect(35,38,40,44,K);col(40,38,44,KD);rect(34,33,39,37,K);px(34,32,K);px(39,32,K);px(35,35,'#e8d34a');px(38,35,'#e8d34a');px(36,36,'#c98f92');row(38,36,38,shade(K,.15));col(41,40,44,K);px(42,40,K)}
+}
+
+/* ---------- compose ---------- */
+function compose(fig,bg,shadow){
+  const cv=document.createElement('canvas');cv.width=cv.height=N;const x=cv.getContext('2d');
+  if(bg)for(let i=0;i<N*N;i++)if(bg[i]){x.fillStyle=bg[i];x.fillRect(i%N,(i/N)|0,1,1)}
+  if(shadow){x.fillStyle='rgba(10,6,4,.38)';for(const[y,a,b]of shadow)x.fillRect(a,y,b-a+1,1)}
+  x.fillStyle=OUT;
+  for(let y=0;y<N;y++)for(let i=0;i<N;i++){if(fig[y*N+i])continue;
+    if((i>0&&fig[y*N+i-1])||(i<N-1&&fig[y*N+i+1])||(y>0&&fig[(y-1)*N+i])||(y<N-1&&fig[(y+1)*N+i]))x.fillRect(i,y,1,1)}
+  for(let i=0;i<N*N;i++)if(fig[i]){x.fillStyle=fig[i];x.fillRect(i%N,(i/N)|0,1,1)}
+  return cv.toDataURL();
+}
+
+/* ---------- character state ---------- */
+function roll(seed,setting){
+  const r=mulberry32(seed),S=SETS[setting],c={seed,setting,bgSeed:Math.floor(r()*1e9)};
+  c.sex=r()<.5?'f':'m';const av=l=>avail(l,c.sex);
+  c.build=wpick(r,BUILD);c.skin=spick(r,SKIN);c.eyes=spick(r,EYES);c.hairStyle=wpick(r,av(HAIRSTYLE));c.hair=spick(r,HAIR);c.beard=c.sex==='f'?'none':wpick(r,BEARD);
+  c.headgear=wpick(r,av(S.headgear));c.garb=wpick(r,av(S.garb));
+  c.cloth=(DARK_GARB.includes(c.garb)&&r()<.6)?S.cloth.find(o=>o[0]==='Black')[1]:spick(r,S.cloth);
+  c.tone=spick(r,S.tone);c.accent=spick(r,ACCENT);c.mark=wpick(r,av(S.marks));c.item=wpick(r,av(S.item));
+  c.familiar=wpick(r,FAMILIAR);c.petColor=CATS[Math.floor(r()*CATS.length)];c.bg=wpick(r,S.bgs);c.bgTint=spick(r,BGTINT);
+  rollArms(c,r);
+  return c;
+}
+/* arms follow the rule of tincture: one metal (Or, Argent) and one colour */
+function rollArms(c,r){
+  c.division=wpick(r,DIVISIONS);
+  const m=TINCT[Math.floor(r()*2)][1],k=TINCT[2+Math.floor(r()*5)][1];
+  if(r()<.5){c.tinct1=m;c.tinct2=k}else{c.tinct1=k;c.tinct2=m}
+}
+const newSeed=()=>Math.floor(Math.random()*900000)+100000;
+
+/* roll a look for a fixed sex: same tables as Sprite Forge's roll, but the sex is given */
+function rollFor(seed,setting,sex){
+  const r=mulberry32(seed),S=SETS[setting],c={seed,setting,bgSeed:Math.floor(r()*1e9)};r();
+  c.sex=sex;const av=l=>avail(l,c.sex);
+  c.build=wpick(r,BUILD);c.skin=spick(r,SKIN);c.eyes=spick(r,EYES);c.hairStyle=wpick(r,av(HAIRSTYLE));c.hair=spick(r,HAIR);c.beard=c.sex==='f'?'none':wpick(r,BEARD);
+  c.headgear=wpick(r,av(S.headgear));c.garb=wpick(r,av(S.garb));
+  c.cloth=(DARK_GARB.includes(c.garb)&&r()<.6)?S.cloth.find(o=>o[0]==='Black')[1]:spick(r,S.cloth);
+  c.tone=spick(r,S.tone);c.accent=spick(r,ACCENT);c.mark=wpick(r,av(S.marks));c.item=wpick(r,av(S.item));
+  c.familiar=wpick(r,FAMILIAR);c.petColor=CATS[Math.floor(r()*CATS.length)];c.bg=wpick(r,S.bgs);c.bgTint=spick(r,BGTINT);
+  rollArms(c,r);
+  return c;
+}
+return {rollFor,drawPortrait,drawBody,drawBg,compose,TINCT};
+})();
+const SF_TINCT={or:'#d4a72c',argent:'#e6e2d6',gules:'#b0262a',azure:'#2b4f9a',vert:'#2e6b3a',purpure:'#6a3577',sable:'#1f1c1e'};
+const SF_DIV={plain:'pale',pale:'pale',perpale:'pale',fess:'fess',chief:'fess',bend:'bend',chevron:'chevron',quarterly:'quarterly'};
+const SF_METAL_TRIM={or:'#c19a2e',argent:'#c9cbcf'};
+/* whose colors a member wears: their birth house if they married in, otherwise this house */
+function wearsSigil(m){
+  if(m.origin==='married'&&m.from){
+    const r=H.rivals&&H.rivals.find(x=>x.name===m.from);if(r)return r.sigil;
+    if(H.realm&&H.realm.royal&&H.realm.royal.name===m.from)return H.realm.royal.sigil;
+    return null;
+  }
+  return H.house.sigil;
+}
+/* heraldic dress for the ruling pair and the heir; grimdark medieval for everyone else */
+function spriteSetting(m){
+  const r=H.members.find(x=>x.ruler&&!x.dead);
+  if(m.ruler||(r&&r.spouse===m.id))return 'heraldic';
+  try{const h=heirOf();if(h&&h.id===m.id)return 'heraldic'}catch(e){}
+  return 'medieval';
+}
+function spriteFor(m){
+  const setting=spriteSetting(m),c=SF.rollFor(m.look>>>0||1,setting,m.sex==='f'?'f':'m');
+  const sg=wearsSigil(m);
+  if(sg){
+    const metal=METALS.includes(sg.field)?sg.field:METALS.includes(sg.ordC)?sg.ordC:'or';
+    const color=!METALS.includes(sg.field)?sg.field:!METALS.includes(sg.ordC)?sg.ordC:!METALS.includes(sg.chargeC)?sg.chargeC:'sable';
+    c.division=SF_DIV[sg.ord]||'pale';
+    c.tinct1=SF_TINCT[sg.field];c.tinct2=SF_TINCT[sg.ord==='plain'?sg.chargeC:sg.ordC];
+    if(c.tinct1===c.tinct2)c.tinct2=SF_TINCT[metal===sg.field?color:metal];
+    c.cloth=setting==='heraldic'?SF_TINCT[color]:shade(SF_TINCT[color],-.22);
+    c.accent=SF_METAL_TRIM[metal];
+  }
+  if(m.age<COME_OF_AGE){c.beard='none';c.headgear='bare';c.item='none';c.mark='none';if(setting==='medieval')c.garb=m.sex==='f'?'kirtle':'gambeson'}
+  if(m.age>=58)c.hair=m.age>=68?'#e2dccb':'#8a8680';
+  return c;
+}
+const SF_CACHE=new Map();
+function spriteKey(m,c){return [c.seed,c.setting,c.sex,c.division,c.tinct1,c.tinct2,c.cloth,c.accent,c.hair,c.headgear,c.garb,c.item,c.beard].join('|')}
+function spriteImages(m){
+  const c=spriteFor(m),k=spriteKey(m,c);
+  if(SF_CACHE.has(k))return SF_CACHE.get(k);
+  const bg=SF.drawBg(c);
+  const out={portrait:SF.compose(SF.drawPortrait(c),bg),body:SF.compose(SF.drawBody(c),bg,c.bg==='clear'?null:[[45,16,31],[46,18,29]]),c};
+  SF_CACHE.set(k,out);return out;
+}
+
+function portraitURL(m){return spriteImages(m).portrait}
+function bodyURL(m){return spriteImages(m).body}
 function portrait(m,size){return '<img class="pf" src="'+portraitURL(m)+'" width="'+size+'" height="'+size+'" alt="">'}
 
 /* ---------- house generator ---------- */
@@ -487,11 +1333,58 @@ function generate(seed){
 }
 
 /* ---------- state + saving ---------- */
-const KEY='wrathOfKings.v1';
-let planning=null,planTeam=[],leverage=null;
-let H=null,sel=0,section='house',lastRoll=null,pendingConfirm=null;
-function save(){try{localStorage.setItem(KEY,JSON.stringify({H,sel,section}));$('saveNote').textContent='Saved in this browser.'}catch(e){$('saveNote').textContent='This browser isn’t keeping saves, so changes last until you close the page.'}}
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.H&&Array.isArray(s.H.members)){H=s.H;sel=s.sel||0;section=s.section||'house';return true}}catch(e){}return false}
+/* ---------- save slots ---------- */
+const KEY='wrathOfKings.v1',SLOTS_KEY='wrathOfKings.slots',SLOT_KEY=id=>'wrathOfKings.slot.'+id,MAX_SLOTS=6;
+let H=null,sel=0,section='house',lastRoll=null,pendingConfirm=null,activeSlot=null,savesOpen=false,pendingDelete=null;
+function readMeta(){try{const m=JSON.parse(localStorage.getItem(SLOTS_KEY)||'null');if(m&&Array.isArray(m.slots))return m}catch(e){}return {active:null,slots:[]}}
+function writeMeta(m){try{localStorage.setItem(SLOTS_KEY,JSON.stringify(m))}catch(e){}}
+const newSlotId=()=>Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);
+function slotSummary(){return {house:H.house.name,season:seasonOf(H.cycle),year:yearOf(H.cycle),members:H.members.filter(m=>!m.dead).length,updated:Date.now()}}
+function save(){
+  if(!H)return;
+  try{
+    const meta=readMeta();
+    if(!activeSlot||!meta.slots.some(s=>s.id===activeSlot)){activeSlot=activeSlot||newSlotId();meta.slots.push({id:activeSlot,name:'House '+H.house.name})}
+    localStorage.setItem(SLOT_KEY(activeSlot),JSON.stringify({H,sel,section}));
+    const s=meta.slots.find(x=>x.id===activeSlot);Object.assign(s,slotSummary());meta.active=activeSlot;writeMeta(meta);
+    $('saveNote').textContent=`Saved to “${s.name}”.`;
+  }catch(e){$('saveNote').textContent='This browser isn’t keeping saves, so changes last until you close the page.'}
+}
+function loadSlot(id){
+  try{const s=JSON.parse(localStorage.getItem(SLOT_KEY(id))||'null');if(s&&s.H&&Array.isArray(s.H.members)){H=s.H;sel=s.sel||0;section=s.section||'house';activeSlot=id;return true}}catch(e){}
+  return false;
+}
+function load(){
+  const meta=readMeta();
+  /* a save from before slots existed becomes the first slot */
+  if(!meta.slots.length){try{const old=JSON.parse(localStorage.getItem(KEY)||'null');if(old&&old.H&&Array.isArray(old.H.members)){const id=newSlotId();localStorage.setItem(SLOT_KEY(id),JSON.stringify(old));meta.slots.push({id,name:'House '+old.H.house.name});meta.active=id;writeMeta(meta)}}catch(e){}}
+  if(meta.active&&loadSlot(meta.active))return true;
+  for(const s of meta.slots)if(loadSlot(s.id))return true;
+  return false;
+}
+function resetView(){planning=null;planTeam=[];leverage=null;lastRoll=null;pendingConfirm=null;$('confirmBox').innerHTML=''}
+function switchSlot(id){if(id===activeSlot)return;save();if(loadSlot(id)){ensureState();resetView();if(!mem(sel)){const r=H.members.find(m=>m.ruler&&!m.dead);sel=r?r.id:H.members[0].id}render()}}
+function newGameSlot(){
+  const meta=readMeta();if(meta.slots.length>=MAX_SLOTS)return;save();
+  H=generate((Math.random()*4294967295)>>>0);activeSlot=newSlotId();ensureState();resetView();section='house';sel=H.members.find(m=>m.ruler).id;render();
+}
+function deleteSlot(id){
+  if(id===activeSlot)return;const meta=readMeta();meta.slots=meta.slots.filter(s=>s.id!==id);writeMeta(meta);
+  try{localStorage.removeItem(SLOT_KEY(id))}catch(e){}pendingDelete=null;renderSaves();
+}
+function renameSlot(id,name){const meta=readMeta(),s=meta.slots.find(x=>x.id===id);if(!s)return;s.name=name.trim()||s.name;writeMeta(meta);if(id===activeSlot)$('saveNote').textContent=`Saved to “${s.name}”.`}
+function renderSaves(){
+  const box=$('savesBox');if(!savesOpen){box.innerHTML='';return}
+  const meta=readMeta(),full=meta.slots.length>=MAX_SLOTS;
+  const when=t=>{if(!t)return '';const d=new Date(t);return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})};
+  box.innerHTML=`<section class="pane saves"><div class="boardhead"><h2>Saves</h2><span class="muted" style="font-size:15px">${meta.slots.length} of ${MAX_SLOTS} slots. The game you’re playing saves itself to its slot as you go.</span></div>
+    <ul class="slots-list">${meta.slots.map(s=>{const act=s.id===activeSlot;return `<li class="${act?'act':''}">
+      <span style="flex:1;min-width:0"><input class="slotname" id="slot-${s.id}" data-rename="${s.id}" value="${esc(s.name)}" aria-label="Save name"><br>
+      <span class="muted" style="font-size:14px">${s.house?'House '+esc(s.house)+' · '+esc(s.season)+', year '+s.year+' · '+s.members+' living · '+when(s.updated):''}</span></span>
+      ${act?'<span class="status ok">Playing</span>':pendingDelete===s.id?`<span class="acts"><button class="sm danger" data-delslot-yes="${s.id}">Delete for good</button><button class="sm" data-delslot-no="1">Keep</button></span>`:`<span class="acts"><button class="sm" data-loadslot="${s.id}">Play</button><button class="sm" data-delslot="${s.id}">Delete</button></span>`}</li>`}).join('')}</ul>
+    <div class="acts" style="margin-top:10px"><button class="main" data-newslot="1" ${full?'disabled':''}>Start a new House in a new slot</button>${full?'<span class="muted" style="font-size:14px">All slots are full. Delete one to start another.</span>':''}<button data-closesaves="1">Close</button></div></section>`;
+}
+
 const mem=id=>H.members.find(m=>m.id===id);
 const surname=m=>m.origin==='married'?m.from:H.house.name;
 const fullName=m=>m.given+' '+surname(m);
@@ -526,7 +1419,7 @@ function renderHeader(){
   const alive=H.members.filter(m=>!m.dead),adults=alive.filter(m=>m.age>=COME_OF_AGE);
   $('readout').innerHTML=`<div>Year ${yearOf(H.cycle)}<b>${seasonOf(H.cycle)}</b></div><div>Members<b>${alive.length}</b></div><div>Gold<b>${H.gold}</b></div><div>Influence<b>${H.influence}</b></div><div>Favor<b>${H.realm?H.realm.favor:0}</b></div>`;
 }
-const SECTIONS=[['house','The House'],['tree','Family Tree'],['ops','Operations'],['realm','The Realm'],['blood','Bloodlines']];
+const SECTIONS=[['house','The House'],['tree','Family Tree'],['ops','Operations'],['market','Market'],['realm','The Realm'],['blood','Bloodlines']];
 function renderNav(){
   $('sect').innerHTML=SECTIONS.map(([k,l,ph])=>`<button data-sec="${k}" ${section===k?'aria-current="page"':''}>${l}${ph?`<span class="soon">Phase ${ph}</span>`:''}</button>`).join('');
 }
@@ -538,6 +1431,7 @@ function render(){
   else if(section==='tree')main.innerHTML=treeView();
   else if(section==='ops')main.innerHTML=opsView();
   else if(section==='realm')main.innerHTML=realmView();
+  else if(section==='market')main.innerHTML=marketView();
   else if(section==='blood')main.innerHTML=bloodView();
   else main.innerHTML=laterView(section);
   save();
@@ -547,7 +1441,7 @@ function houseView(){
   const byGroup={};H.members.forEach(m=>{(byGroup[groupOf(m)]=byGroup[groupOf(m)]||[]).push(m)});
   const list=GROUPS.filter(g=>byGroup[g]).map(g=>`<li class="ghead">${g}</li>`+byGroup[g].sort((a,b)=>b.age-a.age).map(m=>{
     const hp0=heirOf();const hurt=(hp0&&hp0.id===m.id?' · heir':'')+(m.returned?` · returned home`:m.dead?` · <span class="hot">fallen</span>`:m.captive?` · <span class="hot">captive</span>`:m.onOp===H.cycle?` · away`:m.wounds>0?` · <span class="hot">${m.wounds} wound${m.wounds>1?'s':''}</span>`:'');
-    return `<li><button data-sel="${m.id}" ${m.id===sel?'aria-current="true"':''}>${portrait(m,40)}<span style="min-width:0"><span class="rn">${esc(m.given)}</span><span class="rj">${esc(m.title||'—')} · ${m.age}${hurt}</span></span></button></li>`}).join('')).join('');
+    return `<li><button data-sel="${m.id}" ${m.id===sel?'aria-current="true"':''}>${portrait(m,48)}<span style="min-width:0"><span class="rn">${esc(m.given)}</span><span class="rj">${esc(m.title||'—')} · ${m.age}${hurt}</span></span></button></li>`}).join('')).join('');
   return `<div class="grid"><section class="pane"><h2>Members</h2><ul class="roster">${list}</ul></section><section class="pane d">${dossier(mem(sel))}</section></div>`;
 }
 function origLine(m){
@@ -566,25 +1460,24 @@ function dossier(m){
   else pills.push('<span class="status ok">Hale</span>');
   if(!m.dead&&heirOf()===m)pills.push('<span class="status young">Heir apparent</span>');
   if(!m.dead&&H.regency&&H.regency.regent===m.id)pills.push('<span class="status young">Regent</span>');
-  if(m.hostage&&!m.dead)pills.push(`<span class="status kin">Hostage of House ${esc(m.hostage)}</span>`);
+  if(m.hostage&&!m.dead)pills.push(`<span class="status kin">Hostage of House ${esc(m.hostage)}</span>`,`<button class="sm" data-adopt="${m.id}">Adopt into House ${esc(H.house.name)} · House ${esc(m.hostage)} will be outraged</button>`);
   if(!m.dead&&m.onOp===H.cycle)pills.push('<span class="status young">On an operation this cycle</span>');
   if(young)pills.push(`<span class="status young">Too young for operations · of age in ${COME_OF_AGE-m.age}</span>`);
   if(m.origin!=='born')pills.push(`<span class="status kin">${m.origin==='married'?'By marriage':'By adoption'}</span>`);
   const stats=STATS.map(k=>{
-    const v=m.st[k],bonus=k==='Might'?wVal(m.gear.weapon):0;
+    const v=m.st[k],bonus=(k==='Might'?wVal(m.gear.weapon):0)+gearBonus(m,k);
     const skills=SKILLS[k].map(s=>`<button data-roll="${k}|${s}">${s}<b>${v+bonus}</b></button>`).join('');
     return `<span class="sn">${k}</span><span class="pips" aria-label="${k} ${v} of 10">${Array.from({length:10},(_,i)=>`<i class="${i<v?'on':''}"></i>`).join('')}</span><span class="sv">${v}</span>
       <p class="help">${STAT_HELP[k]}</p><div class="skills">${skills}</div>`}).join('');
   let roll='';
   if(lastRoll&&lastRoll.id===m.id){const L=lastRoll;
-    roll=`<p class="rolled ${L.ok?'hit':'miss'}" role="status">${esc(L.skill)} (${L.stat} ${L.base}${L.bonus?' + '+L.bonus+' weapon':''}): rolled <b>${L.roll}</b> against ${L.target}. <span class="${L.ok?'hit':'miss'}">${L.ok?(L.roll===1?'A perfect success.':'Success by '+(L.target-L.roll)+'.'):(L.roll===10?'Disaster.':'Failure by '+(L.roll-L.target)+'.')}</span></p>`}
+    roll=`<p class="rolled ${L.ok?'hit':'miss'}" role="status">${esc(L.skill)} (${L.stat} ${L.base}${L.bonus?' + '+L.bonus+' gear':''}): rolled <b>${L.roll}</b> against ${L.target}. <span class="${L.ok?'hit':'miss'}">${L.ok?(L.roll===1?'A perfect success.':'Success by '+(L.target-L.roll)+'.'):(L.roll===10?'Disaster.':'Failure by '+(L.roll-L.target)+'.')}</span></p>`}
   else roll='<p class="rolled" role="status">Pick a skill to roll a d10. At or under the number succeeds.</p>';
-  const hp=Array.from({length:mw},(_,i)=>`<i class="${i<m.wounds?'on':''} ${i>=m.st.Grit?'armor':''}" title="${i>=m.st.Grit?'From armor':'From Grit'}"></i>`).join('');
+  const hp=Array.from({length:mw},(_,i)=>`<i class="${i<m.wounds?'on':''} ${i>=m.st.Grit?'armor':''}" title="${i>=m.st.Grit?'From armor or heirloom':'From Grit'}"></i>`).join('');
   const kin=kinOf(m).map(([rel,k])=>`<li><span class="tk">${rel}</span><button data-sel="${k.id}">${esc(fullName(k))}</button> <span class="muted">· ${k.age}</span></li>`).join('')||'<li class="muted">No kin within the house.</li>';
-  const wOpts=WEAPONS.map(([n,v])=>`<option ${m.gear.weapon===n?'selected':''} value="${esc(n)}">${n}${v?' (+'+v+')':''}</option>`).join('');
-  const aOpts=ARMORS.map(([n,v])=>`<option ${m.gear.armor===n?'selected':''} value="${esc(n)}">${n}${v?' (+'+v+')':''}</option>`).join('');
   return `<div class="dhead">
-      <figure class="cam">${portrait(m,136)}<figcaption>${m.sex==='m'?'He':'She'} · age ${m.age}</figcaption></figure>
+      <div class="figs"><figure class="cam">${portrait(m,144)}<figcaption>${m.sex==='m'?'He':'She'} · age ${m.age}</figcaption></figure><figure class="cam"><img class="pf" src="${bodyURL(m)}" width="144" height="144" alt=""><figcaption>${spriteSetting(m)==='heraldic'?'In heraldry':'Ready for war'}</figcaption></figure>
+        ${m.dead?'':`<button class="sm" data-relook="${m.id}">Redraw look</button>`}</div>
       <div style="min-width:0">
         <input class="given" id="given-${m.id}" data-edit="given" value="${esc(m.given)}" aria-label="Given name">
         <input class="mtitle" id="title-${m.id}" data-edit="title" value="${esc(m.title)}" aria-label="Title" placeholder="Title">
@@ -596,67 +1489,86 @@ function dossier(m){
     ${roll}
     <h3>Health</h3>
     <div class="health"><span class="hp" aria-label="${m.wounds} of ${mw} wounds taken">${hp}</span>
-      <span class="muted">${m.wounds} of ${mw} wounds · Grit ${m.st.Grit}${aVal(m.gear.armor)?' + armor '+aVal(m.gear.armor):''}</span>
+      <span class="muted">${m.wounds} of ${mw} wounds · Grit ${m.st.Grit}${aVal(m.gear.armor)?' + armor '+aVal(m.gear.armor):''}${fxH(m).wounds?' + mantle '+fxH(m).wounds:''}</span>
       <span style="display:flex;gap:6px"><button data-wound="1" ${m.wounds>=mw?'disabled':''}>Take a wound</button><button data-wound="-1" ${m.wounds<=0?'disabled':''}>Heal one</button></span></div>
     <h3>Gear</h3>
     <div class="slots">
-      <div class="slot"><label for="w-${m.id}">Weapon</label><select id="w-${m.id}" data-gear="weapon">${wOpts}</select><small>Adds to Might rolls.</small></div>
-      <div class="slot"><label for="a-${m.id}">Armor</label><select id="a-${m.id}" data-gear="armor">${aOpts}</select><small>Adds to wounds the member can take.</small></div>
-      <div class="slot"><label for="h-${m.id}">Heirloom</label><textarea id="h-${m.id}" data-gear="heirloom" rows="2" placeholder="A ring, a blade, a letter of patent">${esc(m.gear.heirloom)}</textarea></div>
-      <div class="slot"><label for="s-${m.id}">Specialty</label><textarea id="s-${m.id}" data-gear="specialty" rows="2" placeholder="Contacts, tools, a hidden talent">${esc(m.gear.specialty)}</textarea></div>
+      ${['weapon','armor','heirloom','specialty'].map(k=>`<div class="slot"><label for="g${k}-${m.id}">${ITEM_SLOTS[k]}</label><select id="g${k}-${m.id}" data-gear="${k}" ${m.dead?'disabled':''}>${gearOptions(m,k)}</select><small>${m.gear[k]&&m.gear[k]!=='None'?esc(itemDesc(k,m.gear[k])):'Buy more at the market.'}</small></div>`).join('')}
     </div>
     <h3>Kin</h3><ul class="kinlist">${kin}</ul>
     <h3>Marks of character</h3><ul class="quirks">${m.traits.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`;
 }
 
 /* ---------- family tree ---------- */
+/* hostage wards (and wards sent home) stay off the tree; adopted members are on it */
+const onTree=m=>!m.hostage&&!m.returned;
+const treeMembers=()=>H.members.filter(onTree);
 function treeLayout(){
   const gen={};
   const calc=m=>{if(gen[m.id]!=null)return gen[m.id];gen[m.id]=0;let v=0;
-    const ps=m.parents.map(mem).filter(Boolean);
+    const ps=m.parents.map(mem).filter(p=>p&&onTree(p));
     if(ps.length)v=Math.max(...ps.map(calc))+1;
     else if(m.origin==='married'&&m.spouse!=null&&mem(m.spouse))v=calc(mem(m.spouse));
     return gen[m.id]=v};
-  H.members.forEach(calc);
+  treeMembers().forEach(calc);
   /* a unit is one member, or a member with the spouse who married in */
   const units=[],inUnit=new Set();
-  H.members.forEach(m=>{if(inUnit.has(m.id))return;if(m.origin==='married'&&m.spouse!=null&&mem(m.spouse))return;
-    const u=[m];inUnit.add(m.id);const sp=m.spouse!=null&&mem(m.spouse);if(sp&&!inUnit.has(sp.id)){u.push(sp);inUnit.add(sp.id)}units.push({g:gen[m.id],ms:u})});
-  H.members.forEach(m=>{if(!inUnit.has(m.id)){units.push({g:gen[m.id],ms:[m]});inUnit.add(m.id)}});
-  const CW=158,CH=60,GAP=22,ROW=92,PAD=16;
-  const rows={};units.forEach(u=>(rows[u.g]=rows[u.g]||[]).push(u));
-  const pos={};const gs=Object.keys(rows).map(Number).sort((a,b)=>a-b);
+  treeMembers().forEach(m=>{if(inUnit.has(m.id))return;if(m.origin==='married'&&m.spouse!=null&&mem(m.spouse)&&onTree(mem(m.spouse)))return;
+    const u=[m];inUnit.add(m.id);const sp=m.spouse!=null&&mem(m.spouse)&&onTree(mem(m.spouse))&&mem(m.spouse);if(sp&&!inUnit.has(sp.id)){u.push(sp);inUnit.add(sp.id)}units.push({g:gen[m.id],ms:u})});
+  treeMembers().forEach(m=>{if(!inUnit.has(m.id)){units.push({g:gen[m.id],ms:[m]});inUnit.add(m.id)}});
+  const CW=158,CH=60,GAP=18,UGAP=20,FGAP=36,LINK=56,PAD=16,BP=10,LAB=24;
   const uw=u=>u.ms.length*CW+(u.ms.length-1)*GAP;
-  let W=0;gs.forEach(g=>{W=Math.max(W,rows[g].reduce((a,u)=>a+uw(u),0)+(rows[g].length-1)*GAP*2)});W+=PAD*2;
-  gs.forEach((g,gi)=>{
-    const row=rows[g];
-    row.forEach(u=>{const m=u.ms[0];const ps=m.parents.filter(p=>pos[p]);u.key=ps.length?ps.reduce((a,p)=>a+pos[p].cx,0)/ps.length:0;u.adopt=m.origin==='adopted'?1:0});
-    row.sort((a,b)=>a.key-b.key||a.adopt-b.adopt||b.ms[0].age-a.ms[0].age);
-    const rw=row.reduce((a,u)=>a+uw(u),0)+(row.length-1)*GAP*2;let x=(W-rw)/2;const y=PAD+gi*(CH+ROW);
-    row.forEach(u=>{u.ms.forEach((m,i)=>{pos[m.id]={x:x+i*(CW+GAP),y,cx:x+i*(CW+GAP)+CW/2}});x+=uw(u)+GAP*2});
+  const famKey=u=>u.ms[0].parents.filter(p=>mem(p)&&onTree(mem(p))).slice().sort((a,b)=>a-b).join('-')||'root';
+  const pos={},boxes=[];let y=PAD,W=0;
+  const gs=[...new Set(units.map(u=>u.g))].sort((a,b)=>a-b);
+  gs.forEach(g=>{
+    const fams=new Map();units.filter(u=>u.g===g).forEach(u=>{const k=famKey(u);if(!fams.has(k))fams.set(k,[]);fams.get(k).push(u)});
+    const list=[...fams.entries()].map(([k,us])=>{
+      us.sort((a,b)=>(a.ms[0].origin==='adopted')-(b.ms[0].origin==='adopted')||b.ms[0].age-a.ms[0].age);
+      const parents=k==='root'?[]:k.split('-').map(Number).filter(p=>pos[p]);
+      const pc=parents.length?parents.reduce((a,p)=>a+pos[p].cx,0)/parents.length:null;
+      const boxed=k!=='root';
+      const w=us.reduce((a,u)=>a+uw(u),0)+(us.length-1)*UGAP+(boxed?BP*2:0);
+      return {k,us,parents,pc,boxed,w};
+    }).sort((a,b)=>(a.pc==null?-1:a.pc)-(b.pc==null?-1:b.pc));
+    const anyBox=list.some(f=>f.boxed),top=y;
+    let cur=PAD;
+    list.forEach(f=>{
+      const x0=Math.max(f.pc!=null?f.pc-f.w/2:cur,cur);
+      let x=x0+(f.boxed?BP:0);const cy=top+(anyBox?LAB:0);
+      f.us.forEach(u=>{u.ms.forEach((m,i)=>{pos[m.id]={x:x+i*(CW+GAP),y:cy,cx:x+i*(CW+GAP)+CW/2}});x+=uw(u)+UGAP});
+      if(f.boxed){
+        const ps=f.parents.map(mem),names=ps.map(p=>p.given).join(' & ');
+        const wards=f.us.some(u=>u.ms[0].origin==='adopted'),kids=f.us.some(u=>u.ms[0].origin!=='adopted');
+        boxes.push({x:x0,y:top,w:f.w,h:CH+LAB+BP,parents:f.parents,label:(kids&&wards?'Children & adopted children of ':wards?'Adopted children of ':'Children of ')+names});
+      }
+      cur=x0+f.w+FGAP;W=Math.max(W,x0+f.w);
+    });
+    y=top+(anyBox?LAB+BP:0)+CH+LINK;
   });
-  const Ht=PAD*2+gs.length*CH+(gs.length-1)*ROW;
-  return {pos,W,Ht,CW,CH,ROW,units};
+  return {pos,boxes,W:W+PAD,Ht:y-LINK+PAD,CW,CH,LINK,units};
 }
 function treeView(){
-  const L=treeLayout(),{pos,CW,CH,ROW}=L;let lines='',nodes='';
-  /* marriage bars */
+  const L=treeLayout(),{pos,CW,CH,LINK}=L;let lines='',boxes='',nodes='';
+  /* family boxes, and one line from each couple down to their family */
+  L.boxes.forEach(b=>{
+    boxes+=`<rect class="fam" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="6"/><text class="fl" x="${b.x+10}" y="${b.y+16}">${esc(b.label)}</text>`;
+    const ps=b.parents.map(id=>pos[id]).filter(Boolean);if(!ps.length)return;
+    const sx=ps.reduce((a,p)=>a+p.cx,0)/ps.length,sy=ps.length>1&&ps[0].y===ps[1].y?ps[0].y+CH/2:ps[0].y+CH,tx=b.x+b.w/2,my=b.y-LINK/2;
+    lines+=`<path class="blood" d="M${sx} ${sy} V${my} H${tx} V${b.y}"/>`;
+  });
   L.units.forEach(u=>{if(u.ms.length===2){const a=pos[u.ms[0].id],b=pos[u.ms[1].id];lines+=`<line class="wed" x1="${a.x+CW}" y1="${a.y+CH/2}" x2="${b.x}" y2="${b.y+CH/2}"/>`}});
-  /* parent to child elbows: from under the couple's marriage bar, or under a lone parent */
-  H.members.forEach(c=>{const ps=c.parents.map(id=>pos[id]).filter(Boolean);if(!ps.length)return;
-    const sx=ps.reduce((a,p)=>a+p.cx,0)/ps.length,sy=ps.length>1?ps[0].y+CH/2:ps[0].y+CH,cp=pos[c.id],my=cp.y-ROW/2;
-    lines+=`<path class="${c.origin==='adopted'?'adopt':'blood'}" d="M${sx} ${sy} V${my} H${cp.cx} V${cp.y}"/>`});
-  H.members.forEach(m=>{const p=pos[m.id];const tag=m.origin==='married'?'House '+m.from:m.origin==='adopted'?'Ward · '+m.from:'';
-    nodes+=`<g class="node ${m.id===sel?'sel':''} ${m.dead?'dead':''}" data-sel="${m.id}" data-go="house" tabindex="0" role="button" aria-label="${esc(fullName(m))}, ${esc(m.title)}">
+  treeMembers().forEach(m=>{const p=pos[m.id];const tag=m.origin==='married'?'Wed in · House '+m.from:m.origin==='adopted'?'Adopted · House '+m.from:'';
+    nodes+=`<g class="node ${m.id===sel?'sel':''} ${m.dead?'dead':''} ${m.origin==='married'?'inlaw':''} ${m.origin==='adopted'?'ward':''}" data-sel="${m.id}" data-go="house" tabindex="0" role="button" aria-label="${esc(fullName(m))}, ${esc(m.title)}">
       <rect class="card" x="${p.x}" y="${p.y}" width="${CW}" height="${CH}" rx="3"/>
-      <image href="${portraitURL(m)}" x="${p.x+8}" y="${p.y+8}" width="44" height="44" style="image-rendering:pixelated"/>
+      <image href="${portraitURL(m)}" x="${p.x+6}" y="${p.y+6}" width="48" height="48" style="image-rendering:pixelated"/>
       <text class="nm" x="${p.x+60}" y="${p.y+22}">${esc(m.given)}</text>
       <text class="tt" x="${p.x+60}" y="${p.y+39}">${esc((m.title||'').length>15?m.title.slice(0,14)+'…':m.title)}${m.title?' · ':''}${m.age}</text>
-      ${tag?`<text class="og" x="${p.x+60}" y="${p.y+53}">${esc(tag)}</text>`:''}</g>`});
+      ${tag?`<text class="og" x="${p.x+60}" y="${p.y+53}">${esc(tag.length>20?tag.slice(0,19)+'…':tag)}</text>`:''}</g>`});
   return `<section class="pane"><h2>The Family Tree of House ${esc(H.house.name)}</h2>
-    <p class="muted" style="margin:0 0 12px">Choose anyone to open their dossier. ${esc(H.house.founderNote)}.</p>
-    <div class="treewrap"><svg class="tree" width="${L.W}" height="${L.Ht}" viewBox="0 0 ${L.W} ${L.Ht}">${lines}${nodes}</svg></div>
-    <div class="legend"><span><i class="b"></i>By blood</span><span><i class="a"></i>By adoption</span><span><i class="w"></i>By marriage</span></div></section>`;
+    <p class="muted" style="margin:0 0 12px">Each box holds one couple’s children. Choose anyone to open their dossier. ${esc(H.house.founderNote)}.</p>
+    <div class="treewrap"><svg class="tree" width="${L.W}" height="${L.Ht}" viewBox="0 0 ${L.W} ${L.Ht}">${boxes}${lines}${nodes}</svg></div>
+    <div class="legend"><span><i class="b"></i>Parents to their children</span><span><i class="w"></i>Married</span><span><i class="f"></i>One family’s children</span><span><i class="d"></i>Married in or adopted</span></div></section>`;
 }
 function laterView(k){
   const T={
@@ -709,17 +1621,103 @@ function genOp(type,objPick){
   if(type==='Intrigue'){op.inf=kind==='standing'?2*diff:diff;if(kind==='trade')op.income=diff}
   return op;
 }
-function genBoard(){const t=SEASON_OP[seasonOf(H.cycle)],objs=shuffle(OPS[t].objs).slice(0,3);if(t==='Conquest')objs.sort((a,b)=>a[1]-b[1]);return objs.map(o=>genOp(t,o))}
+function genBoard(){const t=SEASON_OP[seasonOf(H.cycle)];
+  if(t==='Battle'||t==='Conquest'){const hos=shuffle(OPS[t].objs),pe=shuffle(PEACE[t]);const ops=[genOp(t,hos[0]),genPeaceOp(t,pe[0]),Math.random()<.5?genOp(t,hos[1]):genPeaceOp(t,pe[1])];if(t==='Conquest')ops.sort((a,b)=>a.diff-b.diff);return ops}
+  const objs=shuffle(OPS[t].objs).slice(0,3);if(t==='Conquest')objs.sort((a,b)=>a[1]-b[1]);return objs.map(o=>genOp(t,o))}
 function ensureState(){
   if(H.influence==null)H.influence=0;
   ['lands','captives','secrets','plans','pacts','offers','log'].forEach(k=>{if(!Array.isArray(H[k]))H[k]=[]});
   if(!Array.isArray(H.rivals))H.rivals=genRivals();
   if(!H.ops)H.ops={nextOp:1,board:[],underway:[]};
+  if(!Array.isArray(H.ops.defense))H.ops.defense=[];
   if(!H.ops.board.length&&!H.ops.underway.length&&H.ops.season!==H.cycle)H.ops.board=genBoard();
   ensureRealm();
   ensureBlood();
+  ensureMarket();
 }
+/* ---------- peaceful operations: tourneys, hunts, bandits, wilds ---------- */
+const PEACE={
+  Battle:[['Joust at the royal tourney','tourney'],['Hunt the great boar of {L}','hunt'],['Fight in the melee at the {L} fair','melee'],['Hunt the white stag of {L}','hunt']],
+  Conquest:[['Clear the bandits from {L}','bandit'],['Settle the unclaimed wilds of {L}','wild'],['Drive the outlaws from {L} and claim it','bandit']]
+};
+const PEACE_STAGES={
+  tourney:['Ride in the lists','Break a lance','Unhorse the favorite','Ride the final pass'],
+  melee:['Hold your ground in the press','Disarm a hedge knight','Stand last in the melee'],
+  hunt:['Track it through the brakes','Hold it at spear-point','Make the kill','Bring the trophy home'],
+  bandit:['Find their camp','Rout the outlaws'],
+  holdBandit:['Hold the land: hang the ringleaders','Hold the land: win back the villagers'],
+  holdWild:['Hold the land: clear the forest','Hold the land: raise a palisade'],
+  defend:['Meet the outlaws at the ford','Drive them back into the forest','Burn their camp']
+};
+const PRIZES={tourney:[['weapon','Lance'],['armor','Brigandine'],['weapon','Longsword'],['armor','Plate harness']],hunt:[['heirloom','Wolf-pelt mantle'],['specialty','A war-hound']],melee:[['weapon','Warhammer'],['armor','Mail hauberk']]};
+const BANDIT_RETURN=.15;
+function genPeaceOp(type,obj){
+  const [objT,kind]=obj||pick(PEACE[type]),L=pick(LAND_A)+pick(LAND_B);
+  const diff=kind==='tourney'?ri(2,3):kind==='wild'?1:ri(1,2);let stages;
+  if(type==='Battle')stages=PEACE_STAGES[kind].slice(0,diff+1).map(s=>({name:s,stat:'Might'}));
+  else if(kind==='bandit'){stages=PEACE_STAGES.bandit.slice(0,diff).map(s=>({name:s,stat:'Might'}));stages.push({name:pick(PEACE_STAGES.holdBandit),stat:'Ability'})}
+  else stages=[{name:'Drive off the wolves',stat:'Might'}].concat(PEACE_STAGES.holdWild.map(s=>({name:s,stat:'Ability'})));
+  const op={id:H.ops.nextOp++,type,kind,diff,target:null,peaceful:true,place:L,title:objT.replace('{L}',L),stages};
+  if(type==='Battle'){
+    op.gold=kind==='tourney'?4+4*diff:kind==='melee'?3+3*diff:2+3*diff;op.favor=kind==='tourney'?1:0;op.inf=kind==='tourney'?0:1;
+    const pz=pick(PRIZES[kind]);op.prize={slot:pz[0],name:pz[1]};
+  }else op.land=kind==='wild'?{name:L,tier:'Wild clearing',income:1,peasants:ri(15,30)}:diff===1?{name:L,tier:'Outlaw hamlet',income:1,peasants:ri(25,45)}:{name:L,tier:'Outlaw holdfast',income:2,peasants:ri(60,90)};
+  return op;
+}
+const SIEGE_STAGES=['Man the walls','Break their assault','Sally out against the siege camp','Burn their siege engines'];
+function genSiege(r,L){
+  const diff=clamp(r.power,1,3);
+  return {id:H.ops.nextOp++,type:'Battle',kind:'defend',siege:true,diff,target:r.name,peaceful:true,place:L.name,landName:L.name,created:H.cycle,
+    title:`Hold the ${L.tier.toLowerCase()} of ${L.name} against House ${r.name}`,stages:SIEGE_STAGES.slice(0,diff+1).map(s=>({name:s,stat:'Might'})),gold:2*diff};
+}
+function genDefense(L){
+  const diff=L.tier==='Outlaw holdfast'?2:1;
+  return {id:H.ops.nextOp++,type:'Battle',kind:'defend',diff,target:null,peaceful:true,place:L.name,landName:L.name,created:H.cycle,
+    title:`Defend ${L.tier.toLowerCase()} of ${L.name} from returning bandits`,stages:PEACE_STAGES.defend.slice(0,diff+1).map(s=>({name:s,stat:'Might'})),gold:2*diff};
+}
+function peaceRewardText(op){
+  if(op.kind==='defend')return op.siege?`Keep ${op.place}, and on a complete success take one of their knights captive. Fail, and House ${op.target} takes the land`:`Keep the ${op.place} and take ${op.gold} gold in loot. Fail, and the land is lost`;
+  if(op.type==='Battle')return [op.gold+' gold purse',op.favor?'royal favor':'',op.inf?'+1 influence':''].filter(Boolean).join(', ')+`. Complete success also wins ${op.prize.name}`;
+  return `${op.land.tier} of ${op.land.name}: ${op.land.income} gold each season, ${op.land.peasants} peasants`;
+}
+function finishPeace(ms,grade,out){
+  const op=ms.op;
+  if(op.kind==='defend'){
+    const i=H.lands.findIndex(l=>l.name===op.landName);
+    if(op.siege){const r=rival(op.target);
+      if(grade==='fail'){if(i>=0){const L=H.lands.splice(i,1)[0];if(r)r.lands++;out.push(`House ${op.target} seizes your ${L.tier.toLowerCase()} of ${L.name}.`)}}
+      else{out.push(`${op.place} holds against House ${op.target}.`);if(grade==='full'){const cap={name:pick(MALE.concat(FEMALE))+' '+op.target,rank:pick(CAPTIVE_RANKS),house:op.target,ransom:4+3*op.diff+ri(0,3)};H.captives.push(cap);out.push(`Captured ${cap.name}, ${cap.rank}`)}}
+      return;}
+    if(grade==='fail'){if(i>=0){const L=H.lands.splice(i,1)[0];out.push(`The outlaws take back the ${L.tier.toLowerCase()} of ${L.name}.`)}}
+    else{const g=grade==='full'?op.gold:Math.ceil(op.gold/2);H.gold+=g;out.push(`The ${op.place} holds. +${g} gold in loot.`)}
+    return;
+  }
+  if(grade==='fail'){out.push('Nothing gained.');return}
+  if(op.type==='Battle'){
+    const g=grade==='full'?op.gold:Math.ceil(op.gold/2);H.gold+=g;out.push('+'+g+' gold');
+    if(op.inf){H.influence+=op.inf;out.push('+'+op.inf+' influence')}
+    if(grade==='full'){
+      if(op.favor&&H.realm&&!H.realm.yours){H.realm.favor=Math.min(10,H.realm.favor+op.favor);out.push('Royal favor rises')}
+      H.armory.push({slot:op.prize.slot,name:op.prize.name});out.push(`Prize: ${op.prize.name}, now in the armory`);
+    }
+    return;
+  }
+  const L=Object.assign({},op.land,{from:op.kind==='wild'?'the wilds':'outlaws',wild:true,cycle:H.cycle});
+  if(grade==='partial'){L.restless=true;L.peasants=Math.round(L.peasants/2);out.push('Taken, but restless: half the settlers stayed away.')}
+  H.lands.push(L);out.unshift(`${L.tier} of ${L.name} claimed: +${L.income} gold each season, ${L.peasants} peasants. No house is angered.`);
+}
+/* between seasons: unanswered bandit raids cost the land; outlaws may return to other wild holdings */
+function banditTurn(say){
+  const old=(H.ops.defense||[]).filter(op=>op.created!==H.cycle);
+  old.forEach(op=>{const i=H.lands.findIndex(l=>l.name===op.landName);if(i<0)return;const L=H.lands.splice(i,1)[0];
+    if(op.siege){const r=rival(op.target);if(r)r.lands++;say(`No one rode out, and House ${op.target} seizes your ${L.tier.toLowerCase()} of ${L.name}.`,'bad')}
+    else say(`No one rode out, and the outlaws take back the ${L.tier.toLowerCase()} of ${L.name}.`,'bad')});
+  H.ops.defense=(H.ops.defense||[]).filter(op=>op.created===H.cycle);
+  H.lands.filter(l=>l.wild&&!H.ops.defense.some(d=>d.landName===l.name)).forEach(L=>{if(Math.random()<BANDIT_RETURN){H.ops.defense.push(genDefense(L));say(`Bandits return to the ${L.tier.toLowerCase()} of ${L.name}. Defend it this season or lose it.`,'warn')}});
+}
+
 function rewardText(op){
+  if(op.peaceful)return peaceRewardText(op);
   switch(op.type){
     case 'Battle':return [op.gold+' gold',op.caps?op.caps+' captive'+(op.caps>1?'s':'')+' to ransom':''].filter(Boolean).join(' and ');
     case 'Espionage':return op.kind==='secret'?'A secret of House '+op.target:op.kind==='plans'?'Battle plans: +2 on your next Battle or Conquest against them':'A secret and their battle plans';
@@ -735,14 +1733,14 @@ function stageTarget(ms,m){
   const op=ms.op,st=op.stages[ms.stage]||op.stages[op.stages.length-1];
   const base=m.st[st.stat],wb=st.stat==='Might'?wVal(m.gear.weapon):0,assist=Math.min(2,activeTeam(ms).length-1);
   const plans=(op.type==='Battle'||op.type==='Conquest')&&st.stat==='Might'&&H.plans.some(p=>p.house===op.target)?2:0;
-  const off=st.stat==='Ability'&&op.type==='Conquest'?0:officeBonus(op.type);
-  return {base,wb,assist,plans,off,pen:op.diff-1,t:base+wb+assist+plans+off-(op.diff-1),stat:st.stat};
+  const off=st.stat==='Ability'&&op.type==='Conquest'?0:officeBonus(op.type),gb=gearBonus(m,st.stat,op.type);
+  return {base,wb,assist,plans,off,gb,pen:op.diff-1,t:base+wb+assist+plans+off+gb-(op.diff-1),stat:st.stat};
 }
 function hurt(m,n){
   m.wounds+=n;
   if(m.wounds<maxWounds(m))return `takes ${n} wound${n>1?'s':''}`;
   m.wounds=maxWounds(m);const g=1+Math.floor(Math.random()*10);
-  if(g===1||(g!==10&&g<=m.st.Grit))return `falls, gravely wounded, and survives on Grit (rolled ${g})`;
+  if(g===1||(g!==10&&g<=m.st.Grit+(fxH(m).fallGrit||0)+gearBonus(m,'Grit')))return `falls, gravely wounded, and survives on Grit (rolled ${g})`;
   m.dead=true;m.fell='Fell in cycle '+H.cycle;return `falls and does not rise. Grit failed (rolled ${g})`;
 }
 function rollStage(msId,memId){
@@ -751,7 +1749,7 @@ function rollStage(msId,memId){
   const ok=roll===1||(roll!==10&&roll<=T.t);let note='';
   if(!ok){
     const r=rival(op.target);
-    if(st.stat==='Might'){note=m.given+' '+hurt(m,Math.max(1,op.diff+(roll===10?1:0)-Math.floor(aVal(m.gear.armor)/2)))+'.'}
+    if(st.stat==='Might'){const wn=op.peaceful&&!op.siege?(op.kind==='tourney'||op.kind==='melee'?1:Math.max(1,op.diff-1+(roll===10?1:0)-Math.floor(aVal(m.gear.armor)/2))):Math.max(1,op.diff+(roll===10?1:0)-Math.floor(aVal(m.gear.armor)/2));note=m.given+' '+hurt(m,wn)+'.'}
     else if(op.type==='Conquest'){note='The peasants will not bend.'}
     else if(op.type==='Espionage'){
       if(roll===10){m.captive={house:op.target,ransom:8*op.diff+4};note=m.given+' is caught and taken captive by House '+op.target+'.'}
@@ -774,6 +1772,7 @@ function rollStage(msId,memId){
 function finishOp(ms){
   const op=ms.op,n=op.stages.length,s=ms.results.filter(r=>r.ok).length;
   const grade=s===n?'full':s*2>=n?'partial':'fail';const out=[],r=rival(op.target);
+  if(op.peaceful){finishPeace(ms,grade,out);ms.done=true;ms.grade=grade;ms.gains=out;return}
   const capName=()=>pick(MALE.concat(FEMALE))+' '+op.target;
   if(op.type==='Battle'||op.type==='Conquest'){if(r)r.hostility=clamp(r.hostility+1,0,5);
     const pi=H.plans.findIndex(p=>p.house===op.target);if(pi>=0){H.plans.splice(pi,1);out.push('The stolen battle plans are spent.')}}
@@ -816,15 +1815,16 @@ function opsView(){
       <div style="min-width:0"><span class="eyebrow">${sea}, year ${yearOf(H.cycle)} · the season of ${type}</span><p style="margin:4px 0 0">${SEASON_WHY[sea]} Your house may run <b>one</b> ${type} operation this season.</p>
         <p class="muted" style="margin:2px 0 0;font-size:15px">${avail.length} member${avail.length===1?'':'s'} free · income at season’s end <b>${inc} gold</b></p></div>
       <button class="main" id="endCycle" ${busy?'disabled':''}>End the season</button></div>
+      ${H.news.length?`<details class="ravens" ${ravensOpen?'open':''}><summary><span class="eyebrow" style="color:var(--gold)">Ravens of ${sea}, year ${yearOf(H.cycle)}</span><span class="muted">${H.news.length} message${H.news.length>1?'s':''}</span></summary><ul class="news">${H.news.map(n=>`<li class="${n.tone}">${esc(n.t)}</li>`).join('')}</ul></details>`:`<p class="muted ravens-none">No ravens yet this ${sea.toLowerCase()}.</p>`}
       <ol class="seasons" aria-label="The year">${SEASONS.map(x=>`<li class="${x===sea?'now':''}"><b>${x}</b> ${SEASON_OP[x]}</li>`).join('')}</ol>
       ${busy?'<p class="muted" style="margin:6px 0 0;font-size:15px">Finish the operation underway before ending the season.</p>':''}
       ${H.realm&&H.realm.crisis?'<p class="hot" style="margin:6px 0 0">The throne is contested. See The Realm before the season ends.</p>':''}
     </section>
     ${under?`<section class="pane"><h2>Underway</h2><div class="opgrid">${under}</div></section>`:''}
+    ${H.ops.defense&&H.ops.defense.length?`<section class="pane crisis"><div class="boardhead"><h2>Your lands under attack</h2><span class="muted" style="font-size:15px">Defending does not use this season’s operation. Leave it, and the land is lost when the season ends.</span></div><div class="opgrid">${H.ops.defense.map(opCard).join('')}</div></section>`:''}
     <section class="pane"><div class="boardhead"><h2>${type} this ${sea.toLowerCase()}</h2><span class="muted" style="font-size:15px">Choose one. The others are gone once you commit.</span></div>
       <div class="opgrid">${board}</div></section>
     <div class="two">${holdingsPane()}${rivalsPane()}</div>
-    ${H.news.length?`<section class="pane"><h2>Ravens this season</h2><ul class="news">${H.news.map(n=>`<li class="${n.tone}">${esc(n.t)}</li>`).join('')}</ul></section>`:''}
     ${H.log.length?`<section class="pane"><h2>Chronicle</h2><ul class="chron">${H.log.slice(-12).reverse().map(l=>`<li><span class="cy">${seasonOf(l.cycle)}, yr ${yearOf(l.cycle)}</span> ${esc(l.text)}</li>`).join('')}</ul></section>`:''}`;
 }
 function miniSigil(name){const r=rival(name);return r?`<svg class="mini" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'r'+name)}</svg>`:''}
@@ -833,15 +1833,16 @@ function opCard(op){
   const stages=op.stages.map(s=>`${esc(s.name)}${op.type==='Conquest'?' <span class="muted">('+s.stat+')</span>':''}`).join(' · ');
   let pickHtml='';
   if(planningThis){
-    const opts=H.members.filter(available);
-    pickHtml=opts.length?`<div class="teampick" role="group" aria-label="Choose the team">${opts.map(m=>{const v=m.st[T.stat]+(T.stat==='Might'?wVal(m.gear.weapon):0);
-      return `<button data-pick="${m.id}" aria-pressed="${planTeam.includes(m.id)}">${portrait(m,32)}<span>${esc(m.given)} <span class="muted">· ${esc(m.title||'')}</span></span><b>${T.stat} ${v}${op.type==='Conquest'?' · Ability '+m.st.Ability:''}</b></button>`}).join('')}</div>
+    const apt=m=>m.st[T.stat]+(T.stat==='Might'?wVal(m.gear.weapon):0)+gearBonus(m,T.stat,op.type),hold=m=>op.type==='Conquest'?m.st.Ability+gearBonus(m,'Ability',op.type):0;
+    const opts=H.members.filter(available).sort((a,b)=>apt(b)-apt(a)||hold(b)-hold(a)||b.age-a.age);
+    pickHtml=opts.length?`<div class="teampick" role="group" aria-label="Choose the team">${opts.map(m=>{const v=m.st[T.stat]+(T.stat==='Might'?wVal(m.gear.weapon):0)+gearBonus(m,T.stat,op.type);
+      return `<button data-pick="${m.id}" aria-pressed="${planTeam.includes(m.id)}">${portrait(m,48)}<span>${esc(m.given)} <span class="muted">· ${esc(m.title||'')}</span></span><b>${T.stat} ${v}${op.type==='Conquest'?' · Ability '+m.st.Ability:''}</b></button>`}).join('')}</div>
       <p class="muted" style="margin:0;font-size:14px">Each extra member adds +1 to every roll, up to +2.</p>`:'<p class="muted">No one is free. Members heal and return next cycle.</p>';
   }
   return `<article class="opcard t-${op.type} ${planningThis?'planning':''}">
-    <div class="optype">${op.type} · rolls ${T.stat}${op.type==='Conquest'?', then Ability':''}</div>
+    <div class="optype">${op.type}${op.kind==='defend'?' · defense':op.peaceful?' · peaceful':''} · rolls ${T.stat}${op.type==='Conquest'?', then Ability':''}</div>
     <h3>${esc(op.title)}</h3>
-    <dl class="opdl"><dt>Target</dt><dd>${miniSigil(op.target)} House ${esc(op.target)}</dd>
+    <dl class="opdl">${op.target?`<dt>${op.siege?'Attacker':'Target'}</dt><dd>${miniSigil(op.target)} House ${esc(op.target)}</dd>`:`<dt>Where</dt><dd>${esc(op.kind==='defend'?'Your land at '+op.place:op.kind==='tourney'?'The royal lists':op.place)} <span class="okc">· no house is angered</span></dd>`}
       <dt>Danger</dt><dd><span class="dpip">${'◆'.repeat(op.diff)}${'◇'.repeat(3-op.diff)}</span> ${DIFF_NAME[op.diff]}${op.diff>1?' · −'+(op.diff-1)+' to rolls':''}</dd>
       <dt>Stages</dt><dd>${stages}</dd><dt>Reward</dt><dd>${esc(rewardText(op))}</dd></dl>
     ${pickHtml}
@@ -856,8 +1857,8 @@ function missionCard(ms){
   if(!ms.done){
     const st=op.stages[ms.stage],act=activeTeam(ms);
     body=`<p style="margin:0"><b>Stage ${ms.stage+1} of ${op.stages.length}:</b> ${esc(st.name)} <span class="muted">· rolls ${st.stat}</span></p>
-      <div class="teampick">${act.map(m=>{const T=stageTarget(ms,m);const parts=[T.stat+' '+T.base];if(T.wb)parts.push('weapon +'+T.wb);if(T.assist)parts.push('team +'+T.assist);if(T.plans)parts.push('plans +2');if(T.off)parts.push('office +1');if(T.pen)parts.push('danger −'+T.pen);
-        return `<button data-stageroll="${ms.id}|${m.id}">${portrait(m,32)}<span>${esc(m.given)} rolls <span class="muted">· ${parts.join(', ')}</span></span><b>${T.t} or under</b></button>`}).join('')}</div>`;
+      <div class="teampick">${act.slice().sort((a,b)=>stageTarget(ms,b).t-stageTarget(ms,a).t).map(m=>{const T=stageTarget(ms,m);const parts=[T.stat+' '+T.base];if(T.wb)parts.push('weapon +'+T.wb);if(T.assist)parts.push('team +'+T.assist);if(T.plans)parts.push('plans +2');if(T.off)parts.push('office +1');if(T.gb)parts.push('gear +'+T.gb);if(T.pen)parts.push('danger −'+T.pen);
+        return `<button data-stageroll="${ms.id}|${m.id}">${portrait(m,48)}<span>${esc(m.given)} rolls <span class="muted">· ${parts.join(', ')}</span></span><b>${T.t} or under</b></button>`}).join('')}</div>`;
   }else{
     const G={full:'Complete success',partial:'Partial success',fail:'Failure'}[ms.grade];
     body=`<p class="outcome ${ms.grade}">${G}</p><ul class="gains">${ms.gains.map(g=>`<li>${esc(g)}</li>`).join('')}</ul>
@@ -869,7 +1870,7 @@ function missionCard(ms){
     ${res?`<ul class="reslist">${res}</ul>`:''}${body}</article>`;
 }
 function holdingsPane(){
-  const lands=H.lands.length?`<ul class="hl">${H.lands.map(l=>`<li><b>${esc(l.tier)} of ${esc(l.name)}</b> <span class="muted">· taken from House ${esc(l.from)}</span><br>+${l.income} gold each cycle · ${l.peasants} peasants${l.restless?' · <span class="hot">restless</span>':''}</li>`).join('')}</ul>`:'<p class="muted">No lands beyond the seat yet. Conquest takes them.</p>';
+  const lands=H.lands.length?`<ul class="hl">${H.lands.map(l=>`<li><b>${esc(l.tier)} of ${esc(l.name)}</b> <span class="muted">· ${l.wild?'claimed from '+esc(l.from):l.from==='the crown'?'granted by the crown':'taken from House '+esc(l.from)}${l.wild&&H.ops.defense&&H.ops.defense.some(d=>d.landName===l.name)?' · <span class="hot">under attack</span>':''}</span><br>+${l.income} gold each cycle · ${l.peasants} peasants${l.restless?' · <span class="hot">restless</span>':''}</li>`).join('')}</ul>`:'<p class="muted">No lands beyond the seat yet. Conquest takes them.</p>';
   const caps=H.captives.length?`<ul class="hl">${H.captives.map((c,i)=>`<li><b>${esc(c.name)}</b>, ${esc(c.rank)} <span class="muted">· House ${esc(c.house)}</span><br><button class="sm" data-ransom="${i}">Ransom for ${c.ransom} gold</button></li>`).join('')}</ul>`:'<p class="muted">None held. Battle takes prisoners.</p>';
   const ours=H.members.filter(m=>m.captive&&!m.dead);
   const held=ours.length?`<h3>Held by rivals</h3><ul class="hl">${ours.map(m=>`<li><b>${esc(fullName(m))}</b> <span class="muted">· held by House ${esc(m.captive.house)}</span><br><button class="sm" data-payransom="${m.id}" ${H.gold<m.captive.ransom?'disabled':''}>Pay ${m.captive.ransom} gold to free them</button></li>`).join('')}</ul>`:'';
@@ -884,13 +1885,13 @@ function holdingsPane(){
 }
 function rivalsPane(){
   return `<section class="pane"><h2>Rival houses</h2><ul class="rivals">${H.rivals.map(r=>`<li><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'rv'+r.name)}</svg>
-    <span style="min-width:0;flex:1"><b>House ${esc(r.name)}</b><br><span class="muted">${esc(r.seat)} · ${r.lands} land${r.lands===1?'':'s'} · power ${'◆'.repeat(r.power)}</span></span>
+    <span style="min-width:0;flex:1"><b>House ${esc(r.name)}</b><br><span class="muted">${esc(r.seat)} · ${r.lands} land${r.lands===1?'':'s'} · ${stanceOf(r)} · ${TENSION[r.hostility]}${guards(r.name).length?' · held in check':''}</span></span>
     <span class="host" aria-label="Hostility ${r.hostility} of 5" title="Hostility">${Array.from({length:5},(_,i)=>`<i class="${i<r.hostility?'on':''}"></i>`).join('')}</span></li>`).join('')}</ul>
     <p class="muted" style="font-size:14px;margin:10px 0 0">Hostility rises when you attack a house or are caught working against it. The Realm (Phase 3) will make them act on it.</p></section>`;
 }
 function launch(opId){
-  const i=H.ops.board.findIndex(o=>o.id===opId);if(i<0||!planTeam.length)return;
-  const op=H.ops.board[i];H.ops.board=[];planTeam.forEach(id=>{mem(id).onOp=H.cycle});
+  let i=H.ops.board.findIndex(o=>o.id===opId),def=false;if(i<0){i=(H.ops.defense||[]).findIndex(o=>o.id===opId);def=true}if(i<0||!planTeam.length)return;
+  const op=def?H.ops.defense.splice(i,1)[0]:H.ops.board[i];if(!def)H.ops.board=[];planTeam.forEach(id=>{mem(id).onOp=H.cycle});
   H.ops.underway.push({id:op.id,op,team:planTeam.slice(),stage:0,results:[],done:false});
   planning=null;planTeam=[];render();
 }
@@ -906,8 +1907,8 @@ function endCycle(){
   const inc=cycleIncome();H.gold+=inc;
   H.members.forEach(m=>{if(!m.dead&&m.wounds>0)m.wounds--});
   H.log.push({cycle:H.cycle,text:`${seasonOf(H.cycle)} ends. Your holdings pay ${inc} gold. The wounded mend.`});
-  H.news=realmTurn();if(seasonOf(H.cycle+1)==='Spring')informantTurn((t,tone)=>H.news.push({t,tone}));if(seasonOf(H.cycle+1)==='Winter')bloodlineTurn((t,tone)=>H.news.push({t,tone}));H.news.forEach(n=>H.log.push({cycle:H.cycle,text:n.t,realm:1}));if(H.log.length>80)H.log=H.log.slice(-80);
-  H.cycle++;H.ops.season=H.cycle;H.ops.board=genBoard();planning=null;planTeam=[];leverage=null;render();
+  H.news=realmTurn();banditTurn((t,tone)=>H.news.push({t,tone}));if(seasonOf(H.cycle+1)==='Spring')informantTurn((t,tone)=>H.news.push({t,tone}));if(seasonOf(H.cycle+1)==='Winter')bloodlineTurn((t,tone)=>H.news.push({t,tone}));H.news.forEach(n=>H.log.push({cycle:H.cycle,text:n.t,realm:1}));if(H.log.length>80)H.log=H.log.slice(-80);
+  H.cycle++;H.ops.season=H.cycle;ensureMarket();H.ops.board=genBoard();planning=null;planTeam=[];leverage=null;render();
 }
 
 /* ---------- seasons ---------- */
@@ -1027,9 +2028,9 @@ const EVENTS=[
 function rivalStrike(r,say){
   if(hasPeace(r.name))return;
   const ag=r.agenda;
-  if(ag==='land'&&H.lands.length&&Math.random()<.45){const L=H.lands.splice(Math.floor(Math.random()*H.lands.length),1)[0];r.lands++;say(`House ${r.name} seizes your ${L.tier.toLowerCase()} of ${L.name}.`,'bad');return}
+  if(ag==='land'&&Math.random()<.45){const free=H.lands.filter(l=>!(H.ops.defense||[]).some(d=>d.landName===l.name));if(free.length){const L=pick(free);H.ops.defense.push(genSiege(r,L));say(`House ${r.name} marches on your ${L.tier.toLowerCase()} of ${L.name}. Defend it this season or lose it.`,'warn');return}}
   if(ag==='revenge'||ag==='land'&&Math.random()<.3){const pool=H.members.filter(m=>!m.dead&&!m.captive&&m.age>=COME_OF_AGE);if(!pool.length)return;const m=pick(pool),roll=1+Math.floor(Math.random()*10);
-    if(roll===1||roll!==10&&roll<=m.st.Insight){say(`An assassin of House ${r.name} comes for ${m.given}, who sees it coming (Insight ${m.st.Insight}, rolled ${roll}).`,'warn');return}
+    const see=m.st.Insight+(fxS(m).taster||0)+gearBonus(m,'Insight');if(roll===1||roll!==10&&roll<=see){say(`An assassin of House ${r.name} comes for ${m.given}, who sees it coming (needed ${see}, rolled ${roll}).`,'warn');return}
     say(`An assassin of House ${r.name} strikes at ${m.given}, who ${hurt(m,2)}.`,'bad');return}
   if(ag==='crown'){H.realm.favor=Math.max(0,H.realm.favor-1);say(`House ${r.name} slanders your house at court. Royal favor falls.`,'bad');return}
   const g=Math.min(H.gold,ri(4,9));H.gold-=g;say(`Raiders in the colors of House ${r.name} burn your storehouses: −${g} gold.`,'bad');
@@ -1076,39 +2077,94 @@ function pressClaim(){const C=H.realm.crisis;if(!C||C.backed||C.own||!canClaim()
   H.rivals.forEach(r=>bump(r,1));H.log.push({cycle:H.cycle,text:`House ${H.house.name} presses its own claim to the throne. Every great house takes note.`});render()}
 const canClaim=()=>H.influence>=10||H.realm.favor>=7;
 
+/* ---------- power rankings and the web of houses ---------- */
+const BINDING=p=>p.kind==='Marriage alliance'||p.kind.startsWith('Pact of peace');
+function playerPower(){const hale=living().filter(m=>m.age>=COME_OF_AGE&&!m.captive).length;return clamp(Math.round(hale/3),1,3)}
+function powerOf(n){return n===H.house.name?playerPower():(rival(n)||{power:1}).power}
+function landsOf(n){return n===H.house.name?H.lands.length+1:(rival(n)||{lands:0}).lands}
+function alliesOf(n){
+  if(n===H.house.name)return [...new Set(H.pacts.filter(BINDING).map(p=>p.house))].filter(x=>rival(x));
+  const a=H.rivals.filter(o=>o.name!==n&&relation(n,o.name)==='ally').map(o=>o.name);
+  if(H.pacts.some(p=>p.house===n&&BINDING(p)))a.push(H.house.name);
+  return a;
+}
+function rankings(){
+  const names=[H.house.name].concat(H.rivals.map(r=>r.name));
+  return names.map(n=>{const allies=alliesOf(n),ap=allies.reduce((a,x)=>a+powerOf(x),0),crown=H.realm&&H.realm.royal.name===n?3:0,pw=powerOf(n),ln=landsOf(n);
+    return {name:n,you:n===H.house.name,power:pw,lands:ln,allies,ap,crown,score:pw*3+ln+ap+crown}})
+    .sort((a,b)=>b.score-a.score||b.power-a.power).map((x,i)=>Object.assign(x,{rank:i+1}));
+}
+function rankingsTable(){
+  const R=rankings(),top=Math.max(...R.map(x=>x.score),1);
+  return `<p class="muted" style="font-size:15px;margin:0 0 10px">Score = power × 3, plus lands held (your seat counts as one), plus the power of every ally, plus 3 for holding the throne. Your house’s power comes from how many members of age are free to fight.</p>
+  <ol class="ranks">${R.map(x=>{const sg=x.you?H.house.sigil:(rival(x.name)||{}).sigil;
+    return `<li class="${x.you?'you':''}"><span class="rk">${x.rank}</span>${sg?`<svg class="mini" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(sg,'rk'+x.name)}</svg>`:''}
+      <span class="rname"><b>House ${esc(x.name)}${x.you?' <span class="muted">(you)</span>':''}</b><span class="muted">Power ${'◆'.repeat(x.power)} · ${x.lands} land${x.lands===1?'':'s'}${x.allies.length?' · allied with '+x.allies.map(esc).join(', '):''}${x.crown?' · holds the throne':''}</span></span>
+      <span class="rbar" aria-hidden="true"><i style="width:${Math.round(x.score/top*100)}%"></i></span><b class="rscore">${x.score}</b></li>`}).join('')}</ol>`;
+}
+function webView(){
+  const R=rankings(),rk=Object.fromEntries(R.map(x=>[x.name,x.rank])),Rz=H.realm;
+  const W=680,Ht=600,cx=W/2,cy=Ht/2,rad=220,names=[H.house.name].concat(H.rivals.map(r=>r.name)),pos={};
+  names.forEach((n,i)=>{const a=-Math.PI/2+i*2*Math.PI/names.length;pos[n]=[cx+rad*Math.cos(a),cy+rad*Math.sin(a)]});
+  const holder=Rz.yours?H.house.name:(pos[Rz.royal.name]?Rz.royal.name:null);
+  const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+  let edges='',labels='',nodes='';
+  /* rival alliances and wars */
+  H.rivals.forEach((a,i)=>H.rivals.slice(i+1).forEach(b=>{const rel=relation(a.name,b.name);if(!rel)return;const [x1,y1]=pos[a.name],[x2,y2]=pos[b.name];
+    edges+=`<line class="e-${rel}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"><title>Houses ${esc(a.name)} and ${esc(b.name)}: ${rel==='war'?'at war':'allied'}</title></line>`}));
+  /* your house and each rival: tension, treaties, marriages, wards */
+  const me=pos[H.house.name];
+  H.rivals.forEach(r=>{const p=pos[r.name],g=guards(r.name).length,ties=[...new Set(tiesWith(r.name).map(t=>t.group))];
+    const cls=g?'e-bound':'e-t'+r.hostility;
+    edges+=`<line class="e-you ${cls}" x1="${me[0]}" y1="${me[1]}" x2="${p[0]}" y2="${p[1]}"><title>${esc(stanceOf(r))}, ${TENSION[r.hostility]}${ties.length?': '+ties.join(', '):''}</title></line>`;
+    const [lx,ly]=lerp(me,p,.6);
+    labels+=`<text class="elab ${cls}" x="${lx}" y="${ly-4}">${esc(TENSION[r.hostility])}</text>${ties.length?`<text class="elab sub" x="${lx}" y="${ly+11}">${esc(ties.join(' · '))}</text>`:''}`});
+  /* the crown at the center */
+  if(holder){const [x,y]=pos[holder];edges+=`<line class="e-throne" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"><title>House ${esc(holder)} holds the throne</title></line>`}
+  if(!Rz.yours){edges+=`<line class="e-favor" x1="${cx}" y1="${cy}" x2="${me[0]}" y2="${me[1]}"><title>Royal favor ${Rz.favor} of 10</title></line>`;
+    const [fx,fy]=lerp([cx,cy],me,.5);labels+=`<text class="elab favor" x="${fx+8}" y="${fy}" text-anchor="start">Favor ${Rz.favor}</text>`}
+  const k=Rz.king;
+  nodes+=`<g class="crownnode"><circle cx="${cx}" cy="${cy}" r="58"/>
+    <path transform="translate(${cx-18} ${cy-44})" d="M0 22 L4 4 L11 14 L18 0 L25 14 L32 4 L36 22 Z"/>
+    ${holder?'':`<svg x="${cx-14}" y="${cy-20}" width="28" height="33" viewBox="0 0 100 118">${sigilSVG(Rz.royal.sigil,'wroyal')}</svg>`}
+    <text class="cn" x="${cx}" y="${holder?cy+2:cy+28}">${k?crownWord(k)+' '+esc(k.given):'Empty throne'}</text>
+    <text class="cs" x="${cx}" y="${holder?cy+18:cy+43}">${holder?'see the gold line':'House '+esc(Rz.royal.name)}</text></g>`;
+  names.forEach(n=>{const [x,y]=pos[n],you=n===H.house.name,sg=you?H.house.sigil:rival(n).sigil,r=you?40:34;
+    nodes+=`<g class="hnode ${you?'you':''}" ${you?'':`data-jump="house-${esc(n)}" tabindex="0" role="button" aria-label="House ${esc(n)}, rank ${rk[n]}"`}>
+      <circle cx="${x}" cy="${y}" r="${r}"/><svg x="${x-r*.5}" y="${y-r*.62}" width="${r}" height="${r*1.18}" viewBox="0 0 100 118">${sigilSVG(sg,'w'+n)}</svg>
+      <text class="hn" x="${x}" y="${y+r+16}">${you?'Your house':'House '+esc(n)}</text><text class="hr" x="${x}" y="${y+r+31}">#${rk[n]} in power</text></g>`});
+  return `<div class="webwrap"><svg class="relweb" viewBox="0 0 ${W} ${Ht}" role="img" aria-label="Web of the great houses">${edges}${labels}${nodes}</svg></div>
+    <div class="legend"><span><i class="l-throne"></i>Holds the throne</span><span><i class="l-favor"></i>Your royal favor</span><span><i class="l-ally"></i>Allied</span><span><i class="l-war"></i>At war</span><span><i class="l-bound"></i>Bound to you by treaty, marriage or ward</span><span><i class="l-calm"></i>Cordial to wary</span><span><i class="l-hot"></i>Hostile to blood feud</span></div>
+    <p class="muted" style="font-size:14px;margin:8px 0 0;text-align:center">Choose a house to jump to its details.</p>`;
+}
+function foldOpen(k){return !(H.ui&&H.ui.folds&&H.ui.folds[k]===false)}
+
 function realmView(){
   const Rz=H.realm,k=Rz.king;
-  const news=H.news.length?`<section class="pane"><h2>Ravens this season</h2><ul class="news">${H.news.map(n=>`<li class="${n.tone}">${esc(n.t)}</li>`).join('')}</ul></section>`:'';
+  const news=H.news.length?`<section class="pane fold "><details data-fold="news" ${foldOpen('news')?'open':''}><summary><h2>Ravens of ${seasonOf(H.cycle)}, year ${yearOf(H.cycle)}</h2><span class="muted">${H.news.length} message${H.news.length>1?'s':''}</span></summary><div class="foldbody"><ul class="news">${H.news.map(n=>`<li class="${n.tone}">${esc(n.t)}</li>`).join('')}</ul></div></details></section>`:'';
   const health=k?['','Ailing','Frail','Hale'][k.health]:'';
-  const crown=`<section class="pane"><h2>The Crown</h2><div class="crownrow"><svg class="rsig big" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(Rz.royal.sigil,'royal')}</svg><div style="min-width:0">
+  const crown=`<section class="pane fold "><details data-fold="crown" ${foldOpen('crown')?'open':''}><summary><h2>The Crown</h2></summary><div class="foldbody"><div class="crownrow"><svg class="rsig big" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(Rz.royal.sigil,'royal')}</svg><div style="min-width:0">
     ${k?`<p class="kname">${crownWord(k)} ${esc(k.given)}</p><p class="muted" style="margin:0">House ${esc(Rz.royal.name)} · age ${k.age} · ${health}</p>
       <p style="margin:6px 0 0">${Rz.yours?'Your house holds the throne. Royal revenues pay 8 gold each season, and every office is yours to fill.':Rz.heir?`Heir: ${heirWord(Rz.heir)} ${esc(Rz.heir.given)}, age ${Rz.heir.age}`:'<span class="hot">No heir. The succession is open.</span>'}</p>`
-    :`<p class="kname hot">The throne is empty</p><p class="muted" style="margin:0">The claimants fight it out below.</p>`}</div></div></section>`;
+    :`<p class="kname hot">The throne is empty</p><p class="muted" style="margin:0">The claimants fight it out below.</p>`}</div></div></div></details></section>`;
   const fav=Rz.favor,offs=Object.entries(OFFICES).map(([key,[n,d]])=>{const held=Rz.office===key;const ok=Rz.yours||H.influence>=6&&fav>=5&&k;
     return `<li><span style="min-width:0;flex:1"><b>${n}</b><br><span class="muted">${d}</span></span>${held?'<span class="status ok">Held</span>':`<button class="sm" data-office="${key}" ${ok?'':'disabled'}>${Rz.yours?'Appoint':'Seek it · 6 influence'}</button>`}</li>`}).join('');
-  const court=`<section class="pane"><h2>Your standing at court</h2>
+  const court=`<section class="pane fold "><details data-fold="court" ${foldOpen('court')?'open':''}><summary><h2>Your standing at court</h2></summary><div class="foldbody">
     <div class="favor"><span class="eyebrow" style="color:var(--gold)">Royal favor</span><span class="fbar" aria-label="Royal favor ${fav} of 10">${Array.from({length:10},(_,i)=>`<i class="${i<fav?'on':''}"></i>`).join('')}</span><b>${fav}</b></div>
     <p class="muted" style="font-size:15px;margin:6px 0 10px">At 7 or more the crown spares you its taxes and grants you lands. Below 3 you lose any office. Seeking an office needs favor 5.</p>
     <div class="acts" style="margin-bottom:10px"><button data-petition="1" ${H.influence>=3&&fav<10&&!Rz.yours&&k?'':'disabled'}>Petition the crown · 3 influence for +1 favor</button></div>
-    <h3>Royal offices</h3><ul class="offices">${offs}</ul></section>`;
+    <h3>Royal offices</h3><ul class="offices">${offs}</ul></div></details></section>`;
   let crisis='';
   if(Rz.crisis){const C=Rz.crisis,tot=C.claimants.reduce((a,c)=>a+c.str,0),done=C.backed||C.own;
-    crisis=`<section class="pane crisis"><h2>Succession crisis</h2><p class="muted" style="margin:0 0 10px">Decided at the end of this season. Each claimant’s chance follows their strength. Back one for 3 influence (+3 strength), or press your own claim with influence 10 or royal favor 7.</p>
+    crisis=`<section class="pane fold crisis"><details data-fold="crisis" ${foldOpen('crisis')?'open':''}><summary><h2>Succession crisis</h2></summary><div class="foldbody"><p class="muted" style="margin:0 0 10px">Decided at the end of this season. Each claimant’s chance follows their strength. Back one for 3 influence (+3 strength), or press your own claim with influence 10 or royal favor 7.</p>
       <ul class="claim">${C.claimants.map(c=>`<li><span style="flex:1;min-width:0"><b>${esc(c.label)}</b>${C.backed===c.key?' <span class="status ok">You back them</span>':''}<br><span class="muted">Strength ${c.str} · about ${Math.round(c.str/tot*100)}%</span></span>${!done&&c.key!=='you'?`<button class="sm" data-back="${esc(c.key)}" ${H.influence>=3?'':'disabled'}>Back them</button>`:''}</li>`).join('')}</ul>
-      ${!done?`<div class="acts" style="margin-top:10px"><button class="main" data-claim="1" ${canClaim()?'':'disabled'}>Press your own claim</button><span class="muted" style="font-size:14px">Every great house grows more hostile. Lose, and the new crown will hate you.</span></div>`:''}</section>`}
-  const houses=H.rivals.map(r=>{
-    const rels=H.rivals.filter(o=>o!==r&&relation(r.name,o.name)).map(o=>`<span class="${relation(r.name,o.name)==='war'?'hot':'okc'}">${relation(r.name,o.name)==='war'?'at war with':'allied with'} ${esc(o.name)}</span>`).join(' · ');
-    const pacts=H.pacts.filter(p=>p.house===r.name).map(p=>esc(p.kind)).join(', ');
-    const secrets=H.secrets.map((s,i)=>[s,i]).filter(([s])=>s.house===r.name);
-    const lev=leverage===r.name;
-    const secretHtml=secrets.length?`<div class="secrets"><span class="eyebrow" style="color:var(--kin)">${secrets.length} secret${secrets.length>1?'s':''} held</span>${lev?secrets.map(([s,i])=>`<div class="sec"><p style="margin:0">${esc(s.text)}.</p><div class="acts"><button class="sm" data-bm="${i}|gold">Blackmail for gold</button><button class="sm" data-bm="${i}|peace">… for peace</button><button class="sm" data-bm="${i}|marriage">… for a marriage</button>${H.members.some(m=>m.hostage===r.name&&!m.dead)||H.hostageClaims.some(c=>c.house===r.name)?'':`<button class="sm" data-bm="${i}|ward">… for a ward</button>`}<button class="sm danger" data-expose="${i}">Expose at court</button></div></div>`).join('')+`<button class="sm" data-lev="">Close</button>`:`<button class="sm" data-lev="${esc(r.name)}">Use a secret</button>`}</div>`:'';
-    return `<article class="hcard"><div class="hhead"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'h'+r.name)}</svg><div style="min-width:0;flex:1"><h3>House ${esc(r.name)}${Rz.royal.name===r.name?' <span class="status young">Royal</span>':''}</h3><p class="muted" style="margin:0;font-size:15px">${r.lord.sex==='f'?'Lady':'Lord'} ${esc(r.lord.given)}, ${r.lord.age} · ${esc(r.seat)}</p></div>
-      <span class="host" aria-label="Hostility ${r.hostility} of 5" title="Hostility">${Array.from({length:5},(_,i)=>`<i class="${i<r.hostility?'on':''}"></i>`).join('')}</span></div>
-      <dl class="opdl"><dt>Agenda</dt><dd>${AGENDAS[r.agenda]}</dd><dt>Power</dt><dd>${'◆'.repeat(r.power)}${'◇'.repeat(3-r.power)} · ${r.lands} land${r.lands===1?'':'s'}</dd>
-      ${rels?`<dt>Realm</dt><dd>${rels}</dd>`:''}${pacts?`<dt>With you</dt><dd>${pacts}</dd>`:''}</dl>
-      <div class="acts"><button class="sm" data-calm="${esc(r.name)}" ${H.influence>=2&&r.hostility?'':'disabled'}>Ease tensions · 2 influence</button></div>${secretHtml}</article>`}).join('');
+      ${!done?`<div class="acts" style="margin-top:10px"><button class="main" data-claim="1" ${canClaim()?'':'disabled'}>Press your own claim</button><span class="muted" style="font-size:14px">Every great house grows more hostile. Lose, and the new crown will hate you.</span></div>`:''}</div></details></section>`}
+  const houses=H.rivals.map(houseCard).join('');
   return `${news}${crisis}<div class="two">${crown}${court}</div>
-    <section class="pane"><div class="boardhead"><h2>The great houses</h2><span class="muted" style="font-size:15px">Hostile houses strike at you between seasons: by raid, assassin, slander or seizure, as their agenda leads them. A pact of peace holds them off.</span></div><div class="hgrid">${houses}</div></section>`;
+    <section class="pane fold"><details data-fold="web" ${foldOpen('web')?'open':''}><summary><h2>The web of houses</h2></summary><div class="foldbody">${webView()}</div></details></section>
+    <section class="pane fold"><details data-fold="rank" ${foldOpen('rank')?'open':''}><summary><h2>Power rankings</h2></summary><div class="foldbody">${rankingsTable()}</div></details></section>
+    <section class="pane fold "><details data-fold="relations" ${foldOpen('relations')?'open':''}><summary><h2>Your house and the great houses</h2></summary><div class="foldbody"><p class="muted" style="font-size:15px;margin:0 0 10px">Tension rises when you attack or are caught scheming, and cools with time, gifts and treaties. A house that is not held in check by a treaty, a marriage or a ward may strike at you between seasons.</p>${relationsOverview()}</div></details></section>
+    <section class="pane fold "><details data-fold="houses" ${foldOpen('houses')?'open':''}><summary><h2>The houses in detail</h2></summary><div class="foldbody"><div class="hgrid">${houses}</div></div></details></section>`;
 }
 
 /* ---------- bloodlines ---------- */
@@ -1217,8 +2273,13 @@ const RETURN_OPTS={
   honor:['Send home with honor','Intrigue','+2 influence, their hostility drops by 2, and a pact of peace with House {H}.'],
   marriage:['Send home with a betrothal','Intrigue','+1 influence and an offer of marriage from House {H}.'],
   spy:['Send home as your spy','Espionage','A secret of House {H} now and their battle plans. Each Spring after, a chance of a new secret, until the spy is caught.'],
-  keep:['Keep them','','They stay as a full member of your house. House {H} is outraged (+2 hostility) and no longer held in check.']
+  keep:['Adopt them','','They are adopted as a full member of your house and join the family tree. House {H} is outraged (+2 hostility) and no longer held in check.']
 };
+function adoptWard(id){
+  const m=mem(id);if(!m||!m.hostage||m.dead)return;const hn=m.hostage,r=rival(hn);
+  m.hostage=null;m.kept=true;m.returnDue=false;bump(r,2);
+  H.log.push({cycle:H.cycle,text:`${m.given}, once a hostage of House ${hn}, is adopted into House ${H.house.name}. House ${hn} is outraged and no longer held in check.`});render();
+}
 function returnWard(id,how){
   const m=mem(id),r=m&&rival(m.hostage);if(!m||!m.returnDue)return;const hn=m.hostage;let t;
   if(how==='keep'){m.returnDue=false;m.kept=true;m.hostage=null;bump(r,2);t=`${m.given} stays with House ${H.house.name}. House ${hn} will not forget it.`}
@@ -1255,20 +2316,208 @@ function bloodView(){
   const claims=H.hostageClaims.length?`<ul class="offices">${H.hostageClaims.map((c,i)=>`<li><span style="flex:1;min-width:0"><b>House ${esc(c.house)}</b><br><span class="muted">${esc(c.why||'Defeated in the field')}</span></span><button class="sm" data-ward="${i}">Demand a ward</button></li>`).join('')}</ul>`:'<p class="muted">None. A complete victory in Battle or Conquest, or blackmail, lets you demand a child of the defeated house.</p>';
   const wards=living().filter(m=>m.hostage);
   const due=wards.filter(m=>m.returnDue);
-  const dueHtml=due.length?`<section class="pane crisis"><h2>A ward comes of age</h2><div class="hgrid">${due.map(m=>`<article class="hcard"><div class="hhead">${portrait(m,40)}<div style="min-width:0;flex:1"><h3>${esc(m.given)} of House ${esc(m.hostage)}</h3><p class="muted" style="margin:0;font-size:15px">Age ${m.age} · Might ${m.st.Might}, Ability ${m.st.Ability}, Grit ${m.st.Grit}, Insight ${m.st.Insight}</p></div></div>
+  const dueHtml=due.length?`<section class="pane crisis"><h2>A ward comes of age</h2><div class="hgrid">${due.map(m=>`<article class="hcard"><div class="hhead">${portrait(m,48)}<div style="min-width:0;flex:1"><h3>${esc(m.given)} of House ${esc(m.hostage)}</h3><p class="muted" style="margin:0;font-size:15px">Age ${m.age} · Might ${m.st.Might}, Ability ${m.st.Ability}, Grit ${m.st.Grit}, Insight ${m.st.Insight}</p></div></div>
       <ul class="offices">${Object.entries(RETURN_OPTS).map(([k,[l,ty,d]])=>`<li><span style="flex:1;min-width:0">${ty?`<span class="optype t-${ty}" style="font-size:11px">${ty}</span>`:''}<b>${l}</b><br><span class="muted" style="font-size:15px">${esc(d.split('{H}').join(m.hostage))}</span></span><button class="sm${k==='keep'?' danger':''}" data-return="${m.id}|${k}">${k==='keep'?'Keep':'Choose'}</button></li>`).join('')}</ul></article>`).join('')}</div></section>`:'';
   return `${dueHtml}<div class="two">${succ}<section class="pane"><h2>Hostage wards</h2><p class="muted" style="font-size:15px;margin:0 0 10px">A ward taken from a rival lives as one of your house. While they live with you, their family will not strike at you. At ${COME_OF_AGE} you decide whether to send them home, and on what terms.</p>
-      ${wards.length?`<ul class="offices">${wards.map(w=>`<li>${portrait(w,32)}<span style="flex:1;min-width:0"><button class="linkish" data-sel="${w.id}" data-go="house">${esc(w.given)}</button> <span class="muted">· ${w.age} · of House ${esc(w.hostage)}${w.returnDue?' · decision due':' · home at '+COME_OF_AGE}</span></span></li>`).join('')}</ul><h3>Claims</h3>`:''}${claims}${H.informants.length?`<h3>Spies placed</h3><ul class="offices">${H.informants.map(i=>`<li>${esc(i.name)} <span class="muted">· inside House ${esc(i.house)}</span></li>`).join('')}</ul>`:''}</section></div>
+      ${wards.length?`<ul class="offices">${wards.map(w=>`<li>${portrait(w,48)}<span style="flex:1;min-width:0"><button class="linkish" data-sel="${w.id}" data-go="house">${esc(w.given)}</button> <span class="muted">· ${w.age} · of House ${esc(w.hostage)}${w.returnDue?' · decision due':' · home at '+COME_OF_AGE}</span></span></li>`).join('')}</ul><h3>Claims</h3>`:''}${claims}${H.informants.length?`<h3>Spies placed</h3><ul class="offices">${H.informants.map(i=>`<li>${esc(i.name)} <span class="muted">· inside House ${esc(i.house)}</span></li>`).join('')}</ul>`:''}</section></div>
     <section class="pane"><h2>Marriage offers</h2><div class="hgrid">${offers}</div></section>`;
+}
+
+/* ---------- market ---------- */
+const PRICES={
+  weapon:{'Dagger':2,'Spear':6,'Mace':7,'Arming sword':8,'Longbow':8,'Longsword':14,'Lance':14,'Warhammer':15,'Greatsword':20,'Poleaxe':19},
+  armor:{'Padded gambeson':4,'Boiled leather':5,'Mail hauberk':12,'Brigandine':13,'Plate harness':22,'Gothic plate':26}
+};
+const HEIRLOOMS={
+  'Signet of a dead king':{price:20,stat:'Insight',d:'+1 to every Insight roll'},
+  'Grandsire’s warhorn':{price:18,stat:'Might',d:'+1 to every Might roll'},
+  'Steward’s iron key':{price:16,stat:'Ability',d:'+1 to every Ability roll'},
+  'Saint’s reliquary':{price:22,stat:'Grit',fallGrit:2,d:'+1 to Grit rolls, and +2 to survive a fall'},
+  'Wolf-pelt mantle':{price:16,wounds:1,d:'Can take 1 more wound before falling'},
+  'Banner of the first lord':{price:24,op:'Battle',d:'+1 to every Battle roll'},
+  'Deed to the old marches':{price:20,op:'Conquest',d:'+1 to every Conquest roll'},
+  'Ring of the queen’s favor':{price:24,op:'Intrigue',d:'+1 to every Intrigue roll'}
+};
+const SPECIALTIES={
+  'Lockpicks and a dark cloak':{price:10,op:'Espionage',d:'+1 to every Espionage roll'},
+  'Map of the old tunnels':{price:12,op:'Espionage',d:'+1 to every Espionage roll'},
+  'A purse of forged seals':{price:12,op:'Espionage',d:'+1 to every Espionage roll'},
+  'A network of chambermaids':{price:12,op:'Intrigue',d:'+1 to every Intrigue roll'},
+  'Letters from a foreign court':{price:12,op:'Intrigue',d:'+1 to every Intrigue roll'},
+  'The ear of a royal steward':{price:14,op:'Intrigue',d:'+1 to every Intrigue roll'},
+  'A gift for poetry':{price:8,op:'Intrigue',d:'+1 to every Intrigue roll'},
+  'A veteran sergeant':{price:12,op:'Battle',d:'+1 to every Battle roll'},
+  'A war-hound':{price:9,op:'Battle',d:'+1 to every Battle roll'},
+  'A siege engineer':{price:14,op:'Conquest',d:'+1 to every Conquest roll'},
+  'The household ledgers':{price:10,op:'Conquest',d:'+1 to every Conquest roll'},
+  'A food taster':{price:8,taster:2,d:'+2 to see an assassin coming'}
+};
+const ITEM_SLOTS={weapon:'Weapon',armor:'Armor',heirloom:'Heirloom',specialty:'Specialty'};
+const itemInfo=(slot,n)=>slot==='heirloom'?HEIRLOOMS[n]:slot==='specialty'?SPECIALTIES[n]:null;
+function itemDesc(slot,n){
+  if(slot==='weapon')return '+'+wVal(n)+' to Might rolls';
+  if(slot==='armor')return '+'+aVal(n)+' wound'+(aVal(n)>1?'s':'')+' before falling';
+  const i=itemInfo(slot,n);return i?i.d:'No effect in play';
+}
+const fxH=m=>HEIRLOOMS[m.gear.heirloom]||{},fxS=m=>SPECIALTIES[m.gear.specialty]||{};
+/* bonus from heirloom and specialty to a roll of `stat`, during an operation of `type` (or none) */
+function gearBonus(m,stat,type){
+  const h=fxH(m),s=fxS(m);let b=0;
+  if(h.stat===stat)b++;
+  if(type&&h.op===type)b++;
+  if(type&&s.op===type)b++;
+  return b;
+}
+function sellPrice(slot,n){const p=slot==='weapon'||slot==='armor'?PRICES[slot][n]:(itemInfo(slot,n)||{}).price;return p?Math.floor(p/2):0}
+/* three pieces each season, each rolled +1 to +3, then a ware of that value (no repeats where possible) */
+function smithStock(slot){
+  const val=slot==='weapon'?wVal:aVal,pool=Object.keys(PRICES[slot]).filter(n=>val(n)>=1&&val(n)<=3),out=[];
+  for(let i=0;i<3;i++){const v=1+Math.floor(Math.random()*3);let c=pool.filter(n=>val(n)===v&&!out.includes(n));if(!c.length)c=pool.filter(n=>!out.includes(n));if(c.length)out.push(pick(c))}
+  return out.sort((a,b)=>val(a)-val(b));
+}
+function ensureMarket(){
+  if(!Array.isArray(H.armory))H.armory=[];
+  if(!H.market||H.market.cycle!==H.cycle||!H.market.weapon){
+    H.market={cycle:H.cycle,weapon:smithStock('weapon'),armor:smithStock('armor'),heirloom:shuffle(Object.keys(HEIRLOOMS)).slice(0,3),specialty:shuffle(Object.keys(SPECIALTIES)).slice(0,4)};
+  }
+}
+function buy(slot,n){
+  const p=slot==='weapon'||slot==='armor'?PRICES[slot][n]:(itemInfo(slot,n)||{}).price;if(!p||H.gold<p)return;
+  H.gold-=p;H.armory.push({slot,name:n});
+  if(H.market[slot]){const k=H.market[slot].indexOf(n);if(k>=0)H.market[slot].splice(k,1)}
+  H.log.push({cycle:H.cycle,text:`Bought ${n} for ${p} gold.`});render();
+}
+function sell(i){const it=H.armory[i];if(!it)return;const g=sellPrice(it.slot,it.name);H.armory.splice(i,1);H.gold+=g;H.log.push({cycle:H.cycle,text:`Sold ${it.name} for ${g} gold.`});render()}
+/* put an item on a member; whatever they wore goes back to the armory */
+function equip(m,slot,name){
+  if(!m||m.gear[slot]===name)return;
+  const old=m.gear[slot];
+  if(name&&name!=='None'){const i=H.armory.findIndex(x=>x.slot===slot&&x.name===name);if(i<0)return;H.armory.splice(i,1)}
+  if(old&&old!=='None')H.armory.push({slot,name:old});
+  m.gear[slot]=name||(slot==='weapon'||slot==='armor'?'None':'');
+  m.wounds=Math.min(m.wounds,maxWounds(m));
+}
+function gearOptions(m,slot){
+  const cur=m.gear[slot]||'',none=slot==='weapon'||slot==='armor'?'None':'';
+  const names=[...new Set(H.armory.filter(x=>x.slot===slot).map(x=>x.name))].filter(n=>n!==cur);
+  const opt=(v,l)=>`<option value="${esc(v)}" ${v===cur?'selected':''}>${esc(l)}</option>`;
+  let h=opt(none,'Nothing');
+  if(cur&&cur!=='None')h+=opt(cur,cur+(slot==='weapon'?' (+'+wVal(cur)+')':slot==='armor'?' (+'+aVal(cur)+')':''));
+  names.forEach(n=>{const c=H.armory.filter(x=>x.slot===slot&&x.name===n).length;h+=opt(n,n+(slot==='weapon'?' (+'+wVal(n)+')':slot==='armor'?' (+'+aVal(n)+')':'')+' · from the armory'+(c>1?' ×'+c:''))});
+  return h;
+}
+/* how much an item helps this member: weapons and armor by value; heirlooms and specialties by their best stat and the operations that stat leads */
+const ROLE_OPS={Might:['Battle','Conquest'],Grit:['Battle','Conquest'],Ability:['Espionage','Conquest'],Insight:['Intrigue']};
+function itemScore(m,slot,n){
+  if(!n||n==='None')return 0;
+  if(slot==='weapon')return wVal(n);
+  if(slot==='armor')return aVal(n);
+  const i=itemInfo(slot,n);if(!i)return 0;
+  const best=topStat(m.st),ops=ROLE_OPS[best];let sc=0;
+  if(i.stat&&i.stat===best)sc+=2;
+  if(i.op&&ops.includes(i.op))sc+=2;
+  if((i.wounds||i.fallGrit)&&(best==='Might'||best==='Grit'))sc+=2;
+  if(i.taster)sc+=1;
+  return sc;
+}
+const improves=(m,slot,n)=>itemScore(m,slot,n)>itemScore(m,slot,m.gear[slot]);
+function marketView(){
+  const row=(slot,n,p)=>{const own=H.armory.filter(x=>x.slot===slot&&x.name===n).length;
+    return `<li class="ware"><span style="flex:1;min-width:0"><b>${esc(n)}</b>${own?` <span class="muted">· ${own} in the armory</span>`:''}<br><span class="muted">${esc(itemDesc(slot,n))}</span></span><button class="sm" data-buy="${slot}|${esc(n)}" ${H.gold>=p?'':'disabled'}>Buy · ${p} gold</button></li>`};
+  const list=slot=>Object.entries(PRICES[slot]).sort((a,b)=>a[1]-b[1]).map(([n,p])=>row(slot,n,p)).join('');
+  const priceOf=(slot,n)=>slot==='weapon'||slot==='armor'?PRICES[slot][n]:itemInfo(slot,n).price;
+  const stock=slot=>H.market[slot].length?H.market[slot].map(n=>row(slot,n,priceOf(slot,n))).join(''):'<li class="muted">Sold out until next season.</li>';
+  const alive=H.members.filter(m=>!m.dead).sort((a,b)=>b.age-a.age);
+  const arm=H.armory.length?`<ul class="wares">${H.armory.map((it,i)=>`<li class="ware"><span style="flex:1;min-width:0"><span class="tk" style="color:var(--gold)">${ITEM_SLOTS[it.slot]}</span><b>${esc(it.name)}</b><br><span class="muted">${esc(itemDesc(it.slot,it.name))}</span></span>
+      <span class="give">${(()=>{const who=alive.filter(m=>m.age>=COME_OF_AGE&&!m.captive&&improves(m,it.slot,it.name));
+        return who.length?`<select id="give-${i}" aria-label="Give ${esc(it.name)} to">${who.map(m=>`<option value="${m.id}">${esc(m.given)} · ${m.gear[it.slot]&&m.gear[it.slot]!=='None'?'replaces '+esc(m.gear[it.slot]):'empty slot'}</option>`).join('')}</select><button class="sm" data-give="${i}">Equip</button>`:'<span class="muted" style="font-size:14px">No one would be better off with it</span>'})()}<button class="sm" data-sell="${i}">Sell · ${sellPrice(it.slot,it.name)}</button></span></li>`).join('')}</ul>`
+    :'<p class="muted">Empty. What you buy lands here, along with anything a member takes off.</p>';
+  return `<section class="pane"><div class="cyclebar"><div><span class="eyebrow">The market · ${seasonOf(H.cycle)}, year ${yearOf(H.cycle)}</span><p style="margin:4px 0 0">Every season the weaponsmith and armorer bring three new pieces each, from +1 to +3. Heirlooms and specialists come and go with the seasons too.</p></div>
+      <div class="tally"><div>Gold<b>${H.gold}</b></div><div>In the armory<b>${H.armory.length}</b></div></div></div></section>
+    <section class="pane fold"><details data-fold="armory" ${foldOpen('armory')?'open':''}><summary><h2>The armory</h2><span class="muted">${H.armory.length} item${H.armory.length===1?'':'s'}</span></summary><div class="foldbody"><p class="muted" style="font-size:15px;margin:0 0 10px">Items your house owns but nobody is using. Equip them here or from a member’s dossier. Selling returns half the price.</p>${arm}</div></details></section>
+    <div class="two"><section class="pane"><h2>Weaponsmith this season</h2><ul class="wares">${stock('weapon')}</ul></section><section class="pane"><h2>Armorer this season</h2><ul class="wares">${stock('armor')}</ul></section></div>
+    <div class="two"><section class="pane"><h2>Heirlooms this season</h2><ul class="wares">${stock('heirloom')}</ul></section><section class="pane"><h2>Specialists this season</h2><ul class="wares">${stock('specialty')}</ul></section></div>`;
+}
+
+/* ---------- relations with each house ---------- */
+const TENSION=['Cordial','Cool','Wary','Hostile','Bitter','Blood feud'];
+const STRIKE_HOW={land:'seize your land or send assassins',revenge:'send assassins',crown:'slander you at court',wealth:'raid your storehouses'};
+function guards(n){
+  const g=[];
+  H.pacts.filter(p=>p.house===n&&p.kind.startsWith('Pact of peace')).forEach(p=>g.push(p.kind.includes('coerced')?'a coerced pact of peace':'a pact of peace'));
+  if(H.pacts.some(p=>p.house===n&&p.kind==='Marriage alliance'))g.push('a marriage alliance');
+  H.members.filter(m=>m.hostage===n&&!m.dead).forEach(m=>g.push(`you hold ${m.given} as a ward`));
+  return g;
+}
+function tiesWith(n){
+  const t=[];const add=(group,text,tone)=>t.push({group,text,tone:tone||''});
+  H.pacts.filter(p=>p.house===n).forEach(p=>add('Treaties',p.kind+(p.income?` · +${p.income} gold each season`:''),'good'));
+  H.members.filter(m=>m.origin==='married'&&m.from===n).forEach(m=>{const s=spouseOf(m);add('Marriages',`${m.given} of House ${n} is wed to ${s?s.given:'one of yours'}${m.dead?' (dead)':''}`,m.dead?'':'good')});
+  H.offers.filter(o=>o.house===n).forEach(()=>add('Marriages','They have offered a marriage. Arrange it in Bloodlines.','warn'));
+  H.members.filter(m=>m.hostage===n&&!m.dead).forEach(m=>add('Wards',`You hold ${m.given}, age ${m.age}, as hostage${m.returnDue?'. Decision due':''}`,'good'));
+  H.members.filter(m=>m.kept&&m.from===n&&!m.dead).forEach(m=>add('Wards',`${m.given}, once their ward, chose to stay with you`,'bad'));
+  H.members.filter(m=>m.returned===n).forEach(m=>add('Wards',`${m.given} was sent home to them`));
+  H.members.filter(m=>m.origin==='adopted'&&!m.hostage&&!m.kept&&!m.returned&&m.from===n&&!m.dead).forEach(m=>add('Wards',`${m.given} was born to them and raised by you`));
+  H.hostageClaims.filter(c=>c.house===n).forEach(()=>add('Wards','They owe you a ward. Claim it in Bloodlines.','warn'));
+  H.informants.filter(i=>i.house===n).forEach(i=>add('Spies',`${i.name} reports to you from inside their hall`,'good'));
+  const sec=H.secrets.filter(s=>s.house===n).length;if(sec)add('Spies',`You hold ${sec} of their secret${sec>1?'s':''}`,'good');
+  if(H.plans.some(p=>p.house===n))add('Spies','You hold their battle plans','good');
+  H.captives.filter(c=>c.house===n).forEach(c=>add('Captives',`You hold ${c.name}, ${c.rank}`,'good'));
+  H.members.filter(m=>m.captive&&m.captive.house===n&&!m.dead).forEach(m=>add('Captives',`They hold ${m.given} of your house`,'bad'));
+  H.lands.filter(l=>l.from===n).forEach(l=>add('Land',`You took the ${l.tier.toLowerCase()} of ${l.name} from them`,'bad'));
+  return t;
+}
+function stanceOf(r){
+  const g=guards(r.name);
+  const wed=H.pacts.some(p=>p.house===r.name&&p.kind==='Marriage alliance');
+  if(g.length&&r.hostility>=3)return wed?'Bound by marriage, but resentful':'Held in check';
+  if(wed)return 'Bound by marriage';
+  if(g.length)return 'At peace';
+  if(r.hostility>=3)return 'Enemies';
+  if(H.pacts.some(p=>p.house===r.name))return 'Partners';
+  return r.hostility?'Uneasy':'Neutral';
+}
+function threatLine(r){
+  const g=guards(r.name);
+  if(g.length)return `<span class="okc">Will not strike at you</span> while ${g.join(', and ')}.`;
+  if(!r.hostility)return 'No reason to strike at you yet.';
+  return `<span class="hot">${r.hostility*6}% chance each season</span> they ${STRIKE_HOW[r.agenda]}.`;
+}
+function tensionMeter(r){return `<span class="tension t${r.hostility}"><span class="host" aria-hidden="true">${Array.from({length:5},(_,i)=>`<i class="${i<r.hostility?'on':''}"></i>`).join('')}</span><b>${TENSION[r.hostility]}</b></span>`}
+function relationsOverview(){
+  return `<div class="tablewrap"><table class="rel"><thead><tr><th scope="col">House</th><th scope="col">Stance</th><th scope="col">Tension</th><th scope="col">Ties</th><th scope="col">Threat</th></tr></thead><tbody>${H.rivals.map(r=>{
+    const t=tiesWith(r.name),groups=[...new Set(t.map(x=>x.group))];
+    return `<tr><th scope="row"><span class="relname"><svg class="mini" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'ov'+r.name)}</svg>${esc(r.name)}</span></th>
+      <td>${stanceOf(r)}</td><td>${tensionMeter(r)}</td>
+      <td>${groups.length?groups.map(gr=>`<span class="chip">${gr}${t.filter(x=>x.group===gr).length>1?' ×'+t.filter(x=>x.group===gr).length:''}</span>`).join(''):'<span class="muted">None</span>'}</td>
+      <td>${guards(r.name).length?'<span class="okc">Held in check</span>':r.hostility?`<span class="hot">${r.hostility*6}% a season</span>`:'<span class="muted">None</span>'}</td></tr>`}).join('')}</tbody></table></div>`;
+}
+function houseCard(r){
+  const Rz=H.realm;
+  const rels=H.rivals.filter(o=>o!==r&&relation(r.name,o.name)).map(o=>`<span class="${relation(r.name,o.name)==='war'?'hot':'okc'}">${relation(r.name,o.name)==='war'?'at war with':'allied with'} ${esc(o.name)}</span>`).join(' · ');
+  const secrets=H.secrets.map((s,i)=>[s,i]).filter(([s])=>s.house===r.name);
+  const lev=leverage===r.name;
+  const wardBtn=i=>H.members.some(m=>m.hostage===r.name&&!m.dead)||H.hostageClaims.some(c=>c.house===r.name)?'':`<button class="sm" data-bm="${i}|ward">… for a ward</button>`;
+  const secretHtml=secrets.length?`<div class="secrets">${lev?secrets.map(([s,i])=>`<div class="sec"><p style="margin:0">${esc(s.text)}.</p><div class="acts"><button class="sm" data-bm="${i}|gold">Blackmail for gold</button><button class="sm" data-bm="${i}|peace">… for peace</button><button class="sm" data-bm="${i}|marriage">… for a marriage</button>${wardBtn(i)}<button class="sm danger" data-expose="${i}">Expose at court</button></div></div>`).join('')+`<button class="sm" data-lev="">Close</button>`:`<button class="sm" data-lev="${esc(r.name)}">Use a secret (${secrets.length})</button>`}</div>`:'';
+  const ties=tiesWith(r.name),groups=[...new Set(ties.map(x=>x.group))];
+  const tieHtml=groups.length?groups.map(gr=>`<dt>${gr}</dt><dd><ul class="ties">${ties.filter(x=>x.group===gr).map(x=>`<li class="${x.tone}">${esc(x.text)}</li>`).join('')}</ul></dd>`).join(''):'';
+  const hist=H.log.filter(l=>l.text.includes('House '+r.name)).slice(-3).reverse();
+  return `<article class="hcard" id="house-${esc(r.name)}"><div class="hhead"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'h'+r.name)}</svg><div style="min-width:0;flex:1"><h3>House ${esc(r.name)}${Rz.royal.name===r.name?' <span class="status young">Royal</span>':''}</h3><p class="muted" style="margin:0;font-size:15px">${r.lord.sex==='f'?'Lady':'Lord'} ${esc(r.lord.given)}, ${r.lord.age} · ${esc(r.seat)}</p></div></div>
+    <div class="stance"><span class="eyebrow" style="color:var(--gold)">${stanceOf(r)}</span>${tensionMeter(r)}</div>
+    <p class="threat">${threatLine(r)}</p>
+    <dl class="opdl">${tieHtml||'<dt>Ties</dt><dd class="muted">None yet. Intrigue, marriage, wards and spies all bind houses together.</dd>'}</dl>
+    <dl class="opdl theirs"><dt>Agenda</dt><dd>${AGENDAS[r.agenda]}</dd><dt>Power</dt><dd>${'◆'.repeat(r.power)}${'◇'.repeat(3-r.power)} · ${r.lands} land${r.lands===1?'':'s'}</dd>${rels?`<dt>Realm</dt><dd>${rels}</dd>`:''}</dl>
+    ${hist.length?`<details class="hist"><summary>Recent dealings</summary><ul>${hist.map(l=>`<li><span class="cy">${seasonOf(l.cycle)}, yr ${yearOf(l.cycle)}</span>${esc(l.text)}</li>`).join('')}</ul></details>`:''}
+    <div class="acts"><button class="sm" data-calm="${esc(r.name)}" ${H.influence>=2&&r.hostility?'':'disabled'}>Ease tensions · 2 influence</button></div>${secretHtml}</article>`;
 }
 
 /* ---------- events ---------- */
 function doRoll(stat,skill){
-  const m=mem(sel);const base=m.st[stat],bonus=stat==='Might'?wVal(m.gear.weapon):0,target=base+bonus,roll=1+Math.floor(Math.random()*10);
+  const m=mem(sel);const base=m.st[stat],bonus=(stat==='Might'?wVal(m.gear.weapon):0)+gearBonus(m,stat),target=base+bonus,roll=1+Math.floor(Math.random()*10);
   lastRoll={id:m.id,stat,skill,base,bonus,target,roll,ok:roll===1||(roll!==10&&roll<=target)};render();
 }
 document.addEventListener('click',e=>{
-  const t=e.target.closest('button,[data-sel]');if(!t)return;
+  const t=e.target.closest('button,[data-sel],[data-jump]');if(!t)return;
   if(t.dataset.sec){section=t.dataset.sec;render();return}
   if(t.dataset.sel!=null){sel=+t.dataset.sel;if(t.dataset.go)section=t.dataset.go;lastRoll=null;render();if(t.dataset.go)window.scrollTo({top:0});return}
   if(t.dataset.roll){const [s,k]=t.dataset.roll.split('|');doRoll(s,k);return}
@@ -1292,13 +2541,28 @@ document.addEventListener('click',e=>{
   if(t.dataset.arrange){const i=+t.dataset.arrange,sl=$('match-'+i);if(sl)arrangeMatch(i,+sl.value);return}
   if(t.dataset.decline){declineMatch(+t.dataset.decline);return}
   if(t.dataset.ward){demandWard(+t.dataset.ward);return}
+  if(t.dataset.jump){const el=document.getElementById(t.dataset.jump);const d=document.querySelector('details[data-fold="houses"]');if(d&&!d.open)d.open=true;if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(t.dataset.adopt){adoptWard(+t.dataset.adopt);return}
+  if(t.dataset.relook){const m=mem(+t.dataset.relook);if(m)m.look=(Math.floor(Math.random()*4294967295)>>>0)||1;render();return}
+  if(t.dataset.buy){const k=t.dataset.buy.indexOf('|');buy(t.dataset.buy.slice(0,k),t.dataset.buy.slice(k+1));return}
+  if(t.dataset.sell!=null){sell(+t.dataset.sell);return}
+  if(t.dataset.give!=null){const i=+t.dataset.give,it=H.armory[i],sl=$('give-'+i),m=sl&&mem(+sl.value);if(it&&m){equip(m,it.slot,it.name);H.log.push({cycle:H.cycle,text:`${m.given} takes up the ${it.name}.`})}render();return}
   if(t.dataset.return){const [i,k]=t.dataset.return.split('|');returnWard(+i,k);return}
   if(t.id==='newSigil'){R=Math.random;H.house.sigil=newSigil();render();return}
-  if(t.id==='newHouse'){pendingConfirm=true;$('confirmBox').innerHTML=`<div class="confirm"><span>Found a new House? The current House and everyone in it will be lost.</span><button class="danger" id="yesNew">Found a new House</button><button id="noNew">Keep this House</button></div>`;return}
-  if(t.id==='yesNew'){H=generate((Math.random()*4294967295)>>>0);ensureState();planning=null;planTeam=[];sel=H.members.find(m=>m.ruler).id;lastRoll=null;$('confirmBox').innerHTML='';render();return}
+  if(t.id==='savesBtn'){savesOpen=!savesOpen;pendingDelete=null;t.setAttribute('aria-expanded',savesOpen);renderSaves();return}
+  if(t.dataset.closesaves){savesOpen=false;$('savesBtn').setAttribute('aria-expanded','false');renderSaves();return}
+  if(t.dataset.loadslot){switchSlot(t.dataset.loadslot);renderSaves();return}
+  if(t.dataset.newslot){newGameSlot();renderSaves();return}
+  if(t.dataset.delslot){pendingDelete=t.dataset.delslot;renderSaves();return}
+  if(t.dataset.delslotYes){deleteSlot(t.dataset.delslotYes);return}
+  if(t.dataset.delslotNo){pendingDelete=null;renderSaves();return}
+  if(t.id==='newHouse'){pendingConfirm=true;$('confirmBox').innerHTML=`<div class="confirm"><span>Found a new House in this save slot? The current House and everyone in it will be lost. To keep it, use Saves → Start a new House in a new slot.</span><button class="danger" id="yesNew">Found a new House</button><button id="noNew">Keep this House</button></div>`;return}
+  if(t.id==='yesNew'){H=generate((Math.random()*4294967295)>>>0);ensureState();planning=null;planTeam=[];sel=H.members.find(m=>m.ruler).id;lastRoll=null;$('confirmBox').innerHTML='';render();{const meta=readMeta(),sl=meta.slots.find(x=>x.id===activeSlot);if(sl&&/^House /.test(sl.name)){sl.name='House '+H.house.name;writeMeta(meta)}}save();renderSaves();return}
   if(t.id==='noNew'){$('confirmBox').innerHTML='';return}
 });
-document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('g.node')){e.preventDefault();e.target.dispatchEvent(new MouseEvent('click',{bubbles:true}))}});
+document.addEventListener('toggle',e=>{if(e.target.matches&&e.target.matches('details.ravens'))ravensOpen=e.target.open},true);
+document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.fold&&H){H.ui=H.ui||{};H.ui.folds=H.ui.folds||{};H.ui.folds[d.dataset.fold]=d.open;save()}},true);
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('g.node,g.hnode')){e.preventDefault();e.target.dispatchEvent(new MouseEvent('click',{bubbles:true}))}});
 document.addEventListener('input',e=>{
   const t=e.target,m=H&&mem(sel);
   if(t.dataset.edit&&m){m[t.dataset.edit]=t.value;const b=document.querySelector(`ul.roster button[data-sel="${m.id}"]`);if(b){b.querySelector('.rn').textContent=m.given;}save();return}
@@ -1306,7 +2570,8 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{
   const t=e.target,m=H&&mem(sel);
-  if(t.dataset.gear&&m&&t.tagName==='SELECT'){m.gear[t.dataset.gear]=t.value;m.wounds=Math.min(m.wounds,maxWounds(m));render();return}
+  if(t.dataset.gear&&m&&t.tagName==='SELECT'){equip(m,t.dataset.gear,t.value);render();return}
+  if(t.dataset.rename){renameSlot(t.dataset.rename,t.value);return}
   if(t.dataset.match){matchPick[+t.dataset.match]=+t.value;return}
   if(t.dataset.edit){render();return}
   if(t.id==='hname'){H.house.name=t.value.replace(/^\s*house\s+/i,'').trim()||H.house.name;render()}
@@ -1316,12 +2581,12 @@ document.addEventListener('change',e=>{
 
 /* ---------- start ---------- */
 function start(d){
-  if(d&&d.H){H=d.H;sel=d.sel||0;section=d.section||'house'}
+  if(d&&d.H){H=d.H;sel=d.sel||0;section=d.section||'house';activeSlot=d.activeSlot||readMeta().active}
   else if(!load()){H=generate((Math.random()*4294967295)>>>0);sel=H.members.find(m=>m.ruler).id}
   ensureState();
   render();
 }
-try{window.claude?.hot?.snapshot(()=>({H,sel,section}))}catch(e){}
+try{window.claude?.hot?.snapshot(()=>({H,sel,section,activeSlot}))}catch(e){}
 window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
 </script>
 </body>
