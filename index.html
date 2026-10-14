@@ -2677,6 +2677,26 @@ function itemScore(m,slot,n){
   return sc;
 }
 const improves=(m,slot,n)=>itemScore(m,slot,n)>itemScore(m,slot,m.gear[slot]);
+/* ---------- exchange: gold <-> influence, 6 influence moved per season (shared); the Lord Treasurer gets 4/4 ---------- */
+const EX_CAP=6;
+const isTreasurer=()=>!!(H.realm&&(H.realm.office==='treasurer'||H.realm.yours));
+const exBuy=()=>isTreasurer()?4:5, exSell=()=>isTreasurer()?4:3;
+const exUsed=()=>H.exchange&&H.exchange.season===H.cycle?H.exchange.n:0;
+const exLeft=()=>Math.max(0,EX_CAP-exUsed());
+function exchange(dir,n){
+  n=Math.min(n,exLeft());if(n<=0)return;
+  if(dir==='buy'){const c=n*exBuy();if(H.gold<c)return;H.gold-=c;H.influence+=n;H.log.push({cycle:H.cycle,text:`Paid ${c} gold for ${n} influence at court.`})}
+  else{if(H.influence<n)return;const g=n*exSell();H.influence-=n;H.gold+=g;H.log.push({cycle:H.cycle,text:`Traded ${n} influence for ${g} gold.`})}
+  H.exchange={season:H.cycle,n:exUsed()+n};
+}
+function exchangePane(){
+  const left=exLeft(),b=exBuy(),sl=exSell();
+  return `<section class="pane" style="padding:10px 14px"><div style="display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center">
+    <h2 style="margin:0;font-size:18px">Moneylender &amp; court</h2>
+    <button class="sm" style="margin:0" data-exch="buy|1" ${left&&H.gold>=b?'':'disabled'} title="${isTreasurer()?'Lord Treasurer rate':'The Lord Treasurer pays 4'}">+1 influence · ${b} gold</button>
+    <button class="sm" style="margin:0" data-exch="sell|1" ${left&&H.influence>=1?'':'disabled'} title="${isTreasurer()?'Lord Treasurer rate':'The Lord Treasurer gets 4'}">+${sl} gold · 1 influence</button>
+    <span class="muted" style="font-size:14px">${left} of ${EX_CAP} left this season${isTreasurer()?' · <span class="okc">Treasurer’s rate</span>':''}</span></div></section>`;
+}
 function marketView(){
   const row=(slot,n,p)=>{const own=H.armory.filter(x=>x.slot===slot&&x.name===n).length;
     return `<li class="ware"><span style="flex:1;min-width:0"><b>${esc(n)}</b>${own?` <span class="muted">· ${own} in the armory</span>`:''}<br><span class="muted">${esc(itemDesc(slot,n))}</span></span><button class="sm" data-buy="${slot}|${esc(n)}" ${H.gold>=p?'':'disabled'}>Buy · ${p} gold</button></li>`};
@@ -2690,6 +2710,7 @@ function marketView(){
     :'<p class="muted">Empty. What you buy lands here, along with anything a member takes off.</p>';
   return `<section class="pane"><div class="cyclebar"><div><span class="eyebrow">The market · ${seasonOf(H.cycle)}, year ${yearOf(H.cycle)}</span><p style="margin:4px 0 0">Every season the weaponsmith and armorer bring three new pieces each, from +1 to +3. Heirlooms and specialists come and go with the seasons too.</p></div>
       <div class="tally"><div>Gold<b>${H.gold}</b></div><div>In the armory<b>${H.armory.length}</b></div></div></div></section>
+    ${exchangePane()}
     <section class="pane fold"><details data-fold="armory" ${foldOpen('armory')?'open':''}><summary><h2>The armory</h2><span class="muted">${H.armory.length} item${H.armory.length===1?'':'s'}</span></summary><div class="foldbody"><p class="muted" style="font-size:15px;margin:0 0 10px">Items your house owns but nobody is using. Equip them here or from a member’s dossier. Selling returns half the price.</p>${arm}</div></details></section>
     <div class="two"><section class="pane"><h2>Weaponsmith this season</h2><ul class="wares">${stock('weapon')}</ul></section><section class="pane"><h2>Armorer this season</h2><ul class="wares">${stock('armor')}</ul></section></div>
     <div class="two"><section class="pane"><h2>Heirlooms this season</h2><ul class="wares">${stock('heirloom')}</ul></section><section class="pane"><h2>Specialists this season</h2><ul class="wares">${stock('specialty')}</ul></section></div>`;
@@ -2783,6 +2804,7 @@ document.addEventListener('click',e=>{
   if(t.dataset.hsigil!=null){const n=t.dataset.hsigil,r=rival(n);if(r)r.sigil=newSigil();if(H.realm.royal.name===n&&!H.realm.yours)H.realm.royal.sigil=r?r.sigil:newSigil();render();return}
   if(t.dataset.rout!=null){planRout(H.lands[+t.dataset.rout]);render();return}
   if(t.dataset.calloff!=null){callOffRout(H.lands[+t.dataset.calloff]);render();return}
+  if(t.dataset.exch){const [d,n]=t.dataset.exch.split('|');exchange(d,+n);render();return}
   if(t.dataset.extraop){extraOperation();render();return}
   if(t.dataset.reroll){if(H.ops.board.length){H.ops.board=genBoard();planning=null;planTeam=[]}render();return}
   if(t.dataset.invest!=null){invest(H.lands[+t.dataset.invest]);render();return}
