@@ -1438,8 +1438,8 @@ function person(o){
     const top=topStat(st);
     m.gear.weapon=top==='Might'?pick(['Longsword','Lance','Warhammer','Arming sword']):pick(['Dagger','Arming sword','Spear','Longbow']);
     m.gear.armor=top==='Might'||top==='Grit'?pick(['Mail hauberk','Brigandine','Plate harness']):pick(['None','Padded gambeson','Boiled leather']);
-    if(top==='Ability')m.gear.specialty=pick(['Lockpicks and a dark cloak','The household ledgers','A purse of forged seals','Map of the old tunnels']);
-    if(top==='Insight')m.gear.specialty=pick(['A network of chambermaids','Letters from a foreign court','The ear of a royal steward','A gift for poetry']);
+    if(top==='Ability')m.gear.specialty=pick(['The household ledgers','A siege engineer']);
+    if(top==='Insight')m.gear.specialty=pick(['A network of chambermaids','The ear of a royal steward','A gift for poetry']);
   }else m.gear.weapon=age>=Math.round(10*S.adult/16)?'Dagger':'None';
   return m;
 }
@@ -1890,7 +1890,19 @@ function ensureState(){
   if(!H.ops.board.length&&!H.ops.underway.length&&H.ops.season!==H.cycle)H.ops.board=genBoard();
   ensureRealm();
   ensureBlood();
+  migrateItems();
   ensureMarket();
+}
+/* items renamed or moved between the heirloom and specialty slots */
+function migrateItems(){
+  if(!Array.isArray(H.armory))H.armory=[];
+  const RENAME={'A master-at-arms':'A personal trainer'};
+  const toH=n=>HEIRLOOMS[n]&&!SPECIALTIES[n];
+  H.armory.forEach(it=>{if(RENAME[it.name])it.name=RENAME[it.name];if(it.slot==='specialty'&&toH(it.name))it.slot='heirloom'});
+  H.members.forEach(m=>{const g=m.gear;if(!g)return;if(RENAME[g.specialty])g.specialty=RENAME[g.specialty];
+    if(g.specialty&&toH(g.specialty)){if(!g.heirloom)g.heirloom=g.specialty;else H.armory.push({slot:'heirloom',name:g.specialty});g.specialty=''}});
+  if(H.market&&H.market.weapon&&((H.market.heirloom||[]).some(n=>!HEIRLOOMS[n])||(H.market.specialty||[]).some(n=>!SPECIALTIES[n])))
+    H.market={...H.market,heirloom:shuffle(Object.keys(HEIRLOOMS)).slice(0,3),specialty:shuffle(Object.keys(SPECIALTIES)).slice(0,4)};
 }
 /* ---------- peaceful operations: tourneys, hunts, bandits, wilds ---------- */
 const PEACE={
@@ -2074,8 +2086,9 @@ function woundIn(ms,m,n){
 }
 function rollStage(msId,memId){
   const ms=H.ops.underway.find(x=>x.id===msId),m=mem(memId);if(!ms||!m||ms.done)return;
-  const op=ms.op,st=op.stages[ms.stage],T=stageTarget(ms,m),roll=1+Math.floor(Math.random()*10);
-  const ok=roll===1||(roll!==10&&roll<=T.t);let note='';
+  const op=ms.op,st=op.stages[ms.stage],T=stageTarget(ms,m);let roll=1+Math.floor(Math.random()*10);
+  let ok=roll===1||(roll!==10&&roll<=T.t),note='',pre='';
+  if(!ok&&hasBoon(m,'marble')){ms.marbled=ms.marbled||[];if(!ms.marbled.includes(m.id)){ms.marbled.push(m.id);const r0=roll;roll=1+Math.floor(Math.random()*10);ok=roll===1||(roll!==10&&roll<=T.t);pre=`The plot marble turns (first rolled ${r0}). `}}
   if(!ok){
     const r=rival(op.target);
     if(st.stat==='Might'){const wn=op.peaceful&&!op.siege?(op.kind==='tourney'||op.kind==='melee'?1:Math.max(1,op.diff-1+(roll===10?1:0)-Math.floor(aVal(m.gear.armor)/2))):Math.max(1,op.diff+(roll===10?1:0)-Math.floor(aVal(m.gear.armor)/2));note=woundIn(ms,m,wn)+'.'}
@@ -2091,6 +2104,7 @@ function rollStage(msId,memId){
       if(roll===10){H.influence=Math.max(0,H.influence-1);note+=' A scandal costs 1 influence.'}
     }
   }else note=roll===1?'Flawless.':'';
+  note=pre+note;
   ms.results.push({stage:st.name,stat:st.stat,who:m.given,roll,t:T.t,ok,note});
   ms.stage++;
   if(ms.stage<op.stages.length&&!activeTeam(ms).length){
@@ -2387,8 +2401,10 @@ function rivalStrike(r,say){
   if(ag==='land'&&Math.random()<.45){const free=H.lands.filter(l=>!raidOn(l));if(free.length){const L=pick(free);H.ops.defense.push(genSiege(r,L));say(`House ${r.name} marches on your ${L.tier.toLowerCase()} of ${L.name}. Defend it this season or lose it.`,'warn');return}}
   if(ag==='revenge'||ag==='land'&&Math.random()<.3){const pool=H.members.filter(m=>!m.dead&&!m.captive&&isAdult(m));if(!pool.length)return;const m=pick(pool),roll=1+Math.floor(Math.random()*10);
     const see=m.st.Insight+(fxS(m).taster||0)+gearBonus(m,'Insight');if(roll===1||roll!==10&&roll<=see){say(`An assassin of House ${r.name} comes for ${m.given}, who sees it coming (needed ${see}, rolled ${roll}).`,'warn');return}
+    if(hasBoon(m,'chalice')){m.wounds=Math.min(m.wounds+1,Math.max(0,maxWounds(m)-1));say(`An assassin of House ${r.name} strikes at ${m.given}, but the silver chalice turns black at the poison. ${m.given} takes 1 wound and lives.`,'warn');return}
     say(`An assassin of House ${r.name} strikes at ${m.given}, who ${hurt(m,2)}.`,'bad');return}
-  if(ag==='crown'){H.realm.favor=Math.max(0,H.realm.favor-1);say(`House ${r.name} slanders your house at court. Royal favor falls.`,'bad');return}
+  if(ag==='crown'){const cs=living().find(m=>hasBoon(m,'crownshard'));if(cs){say(`House ${r.name} slanders your house at court, but ${cs.given} bears the Crown-shard and the court will not hear a word against you.`,'warn');return}
+    H.realm.favor=Math.max(0,H.realm.favor-1);say(`House ${r.name} slanders your house at court. Royal favor falls.`,'bad');return}
   const g=Math.min(H.gold,ri(4,9));H.gold-=g;say(`Raiders in the colors of House ${r.name} burn your storehouses: −${g} gold.`,'bad');
 }
 function realmTurn(){
@@ -2562,12 +2578,12 @@ function trainingTurn(){
   H.members.forEach(m=>{if(m.dead||m.captive||!m.train||!m.train.length)return;
     const steps=hasBoon(m,'tutor')?2:1;
     for(let s=0;s<steps&&m.train.length;s++){const t=m.train.shift();
-    if(m.st[t.k]<10){m.st[t.k]++;m.trainedPts=(m.trainedPts||0)+1;H.log.push({cycle:H.cycle,text:`Training pays off${s?' (master-at-arms)':''}: ${m.given}'s ${t.k} rises to ${m.st[t.k]}.`})}
+    if(m.st[t.k]<10){m.st[t.k]++;m.trainedPts=(m.trainedPts||0)+1;H.log.push({cycle:H.cycle,text:`Training pays off${s?' (personal trainer)':''}: ${m.given}'s ${t.k} rises to ${m.st[t.k]}.`})}
     else{H.gold+=t.cost;H.log.push({cycle:H.cycle,text:`${m.given}'s ${t.k} is already at its height. ${t.cost} gold refunded.`})}}
   });
 }
 function growChild(m){
-  const want=(isAdult(m)?20:childTotal(m.age,m.sp))+(m.trainedPts||0);let have=STATS.reduce((a,k)=>a+m.st[k],0),guard=0;
+  const want=(isAdult(m)?20:childTotal(m.age,m.sp))+(m.trainedPts||0)+(m.cradle||0)+(m.tutored||0);let have=STATS.reduce((a,k)=>a+m.st[k],0),guard=0;
   const lean=spOf(m).primary;
   while(have<want&&guard++<60){const k=Math.random()<.4?lean:pick(STATS);if(m.st[k]<10){m.st[k]++;have++}}
   if(isAdult(m))enforcePrimary(m.st,m.sp);
@@ -2578,6 +2594,7 @@ function makeChild(a,b){
   const st={};STATS.forEach(k=>st[k]=1);
   const c={id:H.nextId++,given,sex,sp,age:0,title:'',origin:'born',from:'',parents:[a.id,b.id],spouse:null,ruler:false,st,wounds:0,dead:false,
     gear:{weapon:'None',armor:'None',heirloom:'',specialty:''},traits:traitsFor(sp),look:(Math.floor(Math.random()*4294967295)>>>0)||1,born:H.cycle+1};
+  if(hasBoon(a,'cradle')||hasBoon(b,'cradle')){c.st[SPECIES[sp].primary]++;c.cradle=1}
   c.kit=pick(KIT_BY[pick(STATS)]);H.members.push(c);return c;
 }
 /* a concubine's child: one parent of the house, marked a bastard; raised as a child of the house but outside the line of succession */
@@ -2587,6 +2604,7 @@ function makeBastard(p){
   const st={};STATS.forEach(k=>st[k]=1);
   const c={id:H.nextId++,given,sex,sp,age:0,title:'',origin:'born',bastard:true,from:'',parents:[p.id],spouse:null,ruler:false,st,wounds:0,dead:false,
     gear:{weapon:'None',armor:'None',heirloom:'',specialty:''},traits:traitsFor(sp),look:(Math.floor(Math.random()*4294967295)>>>0)||1,born:H.cycle+1};
+  if(hasBoon(p,'cradle')){c.st[SPECIES[sp].primary]++;c.cradle=1}
   c.kit=pick(KIT_BY[pick(STATS)]);H.members.push(c);return c;
 }
 /* each new year: everyone ages, children grow, elders weaken, couples may have children */
@@ -2602,10 +2620,14 @@ function bloodlineTurn(say){
       if(hasBoon(m,'martyr')){m.gear.heirloom='';say(`${fullName(m)} sickens near to death at ${m.age}, but the Martyr’s token crumbles and they recover.`,'warn')}
       else{m.dead=true;m.fell=`Died of old age in year ${yearOf(H.cycle+1)}`;say(`${fullName(m)} dies of old age, at ${m.age}.`,'bad')}}
   });
+  const tu=living().find(m=>!m.captive&&hasBoon(m,'letters'));
+  if(tu){const kids=living().filter(m=>!isAdult(m)&&!m.captive&&STATS.some(k=>m.st[k]<10));
+    if(kids.length){const k=pick(kids),open=STATS.filter(s=>k.st[s]<10),st=open.includes(spOf(k).primary)&&Math.random()<.5?spOf(k).primary:pick(open);
+      k.st[st]++;k.tutored=(k.tutored||0)+1;say(`${tu.given}'s tutor of letters takes ${k.given} in hand: ${k.given}'s ${st} rises to ${k.st[st]}.`,'good')}}
   const seen=new Set();
   living().forEach(a=>{const b=spouseOf(a);if(!b||b.dead||seen.has(a.id))return;seen.add(a.id);seen.add(b.id);
     const mother=a.sex==='f'?a:b.sex==='f'?b:null;const FS=spOf(mother).fert;if(!mother||mother.age<FS[0]||mother.age>FS[1]||a.captive||b.captive)return;
-    if(Math.random()<birthOdds(mother,childrenOf(a,b))){const father=mother===a?b:a,c=makeChild(mother,father);
+    if(Math.random()<birthOdds(mother,childrenOf(a,b))+(hasBoon(a,'midwife')||hasBoon(b,'midwife')?.1:0)){const father=mother===a?b:a,c=makeChild(mother,father);
       say(`${mother.given} and ${father.given} welcome a ${c.sex==='m'?'son':'daughter'}, ${c.given}.`,'good')}});
 }
 /* when the ruler falls: the heir inherits, under a regent if still a child */
@@ -2724,36 +2746,43 @@ const PRICES={
   armor:{'Padded gambeson':4,'Boiled leather':5,'Mail hauberk':12,'Brigandine':13,'Plate harness':22,'Gothic plate':26}
 };
 const HEIRLOOMS={
-  'Signet of a dead king':{price:20,stat:'Insight',d:'+1 to every Insight roll'},
-  'Grandsire’s warhorn':{price:18,stat:'Might',d:'+1 to every Might roll'},
-  'Steward’s iron key':{price:16,stat:'Ability',d:'+1 to every Ability roll'},
-  'Saint’s reliquary':{price:22,stat:'Grit',fallGrit:2,d:'+1 to Grit rolls, and +2 to survive a fall'},
-  'Wolf-pelt mantle':{price:16,wounds:1,d:'Can take 1 more wound before falling'},
-  'Banner of the first lord':{price:24,op:'Battle',d:'+1 to every Battle roll'},
-  'Deed to the old marches':{price:20,op:'Conquest',d:'+1 to every Conquest roll'},
-  'Ring of the queen’s favor':{price:24,op:'Intrigue',d:'+1 to every Intrigue roll'},
-  'Charm of long years':{price:22,boon:'longlife',d:'Boon: old age cannot kill for ten years past the usual'},
-  'Martyr’s token':{price:26,boon:'martyr',d:'Boon: once, when the bearer would die, they live on and the token crumbles'},
-  'Mask of the faceless':{price:20,boon:'mask',d:'Boon: never taken captive; a capture becomes a wound instead'}
+  'Signet of a dead king':{price:14,stat:'Insight',d:'+1 to every Insight roll'},
+  'Grandsire’s warhorn':{price:13,stat:'Might',d:'+1 to every Might roll'},
+  'Steward’s iron key':{price:12,stat:'Ability',d:'+1 to every Ability roll'},
+  'Saint’s reliquary':{price:14,stat:'Grit',fallGrit:2,d:'+1 to Grit rolls, and +2 to survive a fall'},
+  'Wolf-pelt mantle':{price:11,wounds:1,d:'Can take 1 more wound before falling'},
+  'Banner of the first lord':{price:13,op:'Battle',d:'+1 to every Battle roll'},
+  'Deed to the old marches':{price:12,op:'Conquest',d:'+1 to every Conquest roll'},
+  'Ring of the queen’s favor':{price:13,op:'Intrigue',d:'+1 to every Intrigue roll'},
+  'Letters from a foreign court':{price:11,op:'Intrigue',d:'+1 to every Intrigue roll'},
+  'A purse of forged seals':{price:10,op:'Espionage',d:'+1 to every Espionage roll'},
+  'Map of the old tunnels':{price:10,op:'Espionage',d:'+1 to every Espionage roll'},
+  'Lockpicks and a dark cloak':{price:9,op:'Espionage',d:'+1 to every Espionage roll'},
+  'Charm of long years':{price:20,boon:'longlife',d:'Boon: old age cannot kill for ten years past the usual'},
+  'Martyr’s token':{price:24,boon:'martyr',d:'Boon: once, when the bearer would die, they live on and the token crumbles'},
+  'Mask of the faceless':{price:20,boon:'mask',d:'Boon: never taken captive; a capture becomes a wound instead'},
+  'Plot marble':{price:22,boon:'marble',d:'Boon: once per operation, reroll one failed roll'},
+  'Cradle-quilt of the old line':{price:20,boon:'cradle',d:'Boon: the bearer’s children are born with +1 to their species’ main stat'},
+  'Crown-shard':{price:20,boon:'crownshard',d:'Boon: while the bearer lives, slander at court cannot lower your royal favor'},
+  'Silver chalice':{price:18,boon:'chalice',d:'Boon: assassins cannot kill the bearer; a successful attempt becomes a single wound'}
 };
 const SPECIALTIES={
-  'Lockpicks and a dark cloak':{price:10,op:'Espionage',d:'+1 to every Espionage roll'},
-  'Map of the old tunnels':{price:12,op:'Espionage',d:'+1 to every Espionage roll'},
-  'A purse of forged seals':{price:12,op:'Espionage',d:'+1 to every Espionage roll'},
-  'A network of chambermaids':{price:12,op:'Intrigue',d:'+1 to every Intrigue roll'},
-  'Letters from a foreign court':{price:12,op:'Intrigue',d:'+1 to every Intrigue roll'},
-  'The ear of a royal steward':{price:14,op:'Intrigue',d:'+1 to every Intrigue roll'},
+  'A network of chambermaids':{price:10,op:'Intrigue',d:'+1 to every Intrigue roll'},
+  'The ear of a royal steward':{price:12,op:'Intrigue',d:'+1 to every Intrigue roll'},
   'A gift for poetry':{price:8,op:'Intrigue',d:'+1 to every Intrigue roll'},
-  'A veteran sergeant':{price:12,op:'Battle',d:'+1 to every Battle roll'},
-  'A war-hound':{price:9,op:'Battle',d:'+1 to every Battle roll'},
-  'A siege engineer':{price:14,op:'Conquest',d:'+1 to every Conquest roll'},
-  'The household ledgers':{price:10,op:'Conquest',d:'+1 to every Conquest roll'},
+  'A veteran sergeant':{price:10,op:'Battle',d:'+1 to every Battle roll'},
+  'A war-hound':{price:8,op:'Battle',d:'+1 to every Battle roll'},
+  'A siege engineer':{price:12,op:'Conquest',d:'+1 to every Conquest roll'},
+  'The household ledgers':{price:9,op:'Conquest',d:'+1 to every Conquest roll'},
   'A food taster':{price:8,taster:2,d:'+2 to see an assassin coming'},
-  'A concubine':{price:14,boon:'concubine',d:'Boon: 10% chance each season of a bastard child (bearer must be of age)'},
-  'A battlefield surgeon':{price:12,boon:'surgeon',d:'Boon: heals 2 wounds each season instead of 1'},
-  'A sworn shield':{price:14,boon:'shield',d:'Boon: turns aside the first wound in each operation'},
-  'A master-at-arms':{price:12,boon:'tutor',d:'Boon: training lands two steps each season instead of one'},
-  'A ransom agent':{price:12,boon:'ransom',d:'Boon: if taken captive, 50% chance to escape at each season’s end'}
+  'A concubine':{price:18,boon:'concubine',d:'Boon: 10% chance each season of a bastard child (bearer must be of age)'},
+  'A battlefield surgeon':{price:18,boon:'surgeon',d:'Boon: heals 2 wounds each season instead of 1'},
+  'A sworn shield':{price:22,boon:'shield',d:'Boon: turns aside the first wound in each operation'},
+  'A personal trainer':{price:16,boon:'tutor',d:'Boon: training lands two steps each season instead of one'},
+  'A ransom agent':{price:16,boon:'ransom',d:'Boon: if taken captive, 50% chance to escape at each season’s end'},
+  'A midwife':{price:16,boon:'midwife',d:'Boon: births to the bearer and their spouse are 10% more likely each year'},
+  'A tutor of letters':{price:16,boon:'letters',d:'Boon: each year, one child of the house gains an extra stat point'},
+  'A herald':{price:18,boon:'herald',d:'Boon: each season, the most hostile house’s hostility falls by 1'}
 };
 const ITEM_SLOTS={weapon:'Weapon',armor:'Armor',heirloom:'Heirloom',specialty:'Specialty'};
 const itemInfo=(slot,n)=>slot==='heirloom'?HEIRLOOMS[n]:slot==='specialty'?SPECIALTIES[n]:null;
@@ -2770,6 +2799,9 @@ function boonTurn(say){
     if(m.captive&&hasBoon(m,'ransom')&&Math.random()<.5){const hn=m.captive.house;m.captive=null;say(`${m.given}'s ransom agent bribes the gaolers of House ${hn}. ${m.given} escapes and comes home.`,'good')}
     if(!m.captive&&isAdult(m)&&hasBoon(m,'concubine')&&Math.random()<.1){const c=makeBastard(m);say(`${m.given}'s concubine bears a bastard ${c.sex==='m'?'son':'daughter'}, ${c.given}. The child is raised in the house.`,'warn')}
   });
+  const hd=living().find(m=>!m.captive&&hasBoon(m,'herald'));
+  if(hd){const top=H.rivals.filter(r=>r.hostility>0).sort((a,b)=>b.hostility-a.hostility)[0];
+    if(top){top.hostility--;say(`${hd.given}'s herald carries soft words to House ${top.name}. Their hostility falls to ${top.hostility}.`,'good')}}
 }
 /* bonus from heirloom and specialty to a roll of `stat`, during an operation of `type` (or none) */
 function gearBonus(m,stat,type){
