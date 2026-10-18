@@ -1,10 +1,4 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-</head>
-<body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Avelon</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -833,9 +827,6 @@ function drawPortrait(c){
   col(cx1,18,20,sD);row(21,cx0-1,cx1+1,sD);px(cx1,21,sDD);
   px(hx0+2,20,sL);px(hx0+3,20,sL);
   row(24,cx0-2,cx1+2,shade(S,-.45));row(25,cx0-1,cx1+1,sD);
-  if(c.species==='Fur'){const MZ=mix(S,'#efe6d4',.5);
-    for(let y=19;y<=26;y++)for(let x=cx0-3;x<=cx1+3;x++){if(y===19&&(x<cx0-1||x>cx1+1))continue;if(isSkin(get(x,y)))px(x,y,MZ)}
-    rect(cx0,20,cx1,21,'#2a1f1a');px(cx0,20,'#4a3a32');row(24,cx0-2,cx1+2,shade(S,-.5))}
 
   /* marks */
   switch(c.mark){
@@ -898,10 +889,6 @@ function drawPortrait(c){
   if(c.species==='Fey'&&!FULL_COVER.has(c.headgear)){
     col(hx0-2,13,18,S);col(hx0-3,11,15,S);col(hx0-4,9,12,sL);px(hx0-5,8,sL);col(hx0-2,16,17,sD);
     col(hx1+2,13,18,sD);col(hx1+3,11,15,sD);col(hx1+4,9,12,sD);px(hx1+5,8,sDD);col(hx1+2,16,17,sDD)}
-  if(c.species==='Fur'&&['bare','circlet','coronet'].includes(c.headgear)){const IN=mix(S,'#c98f92',.45);
-    for(let k=0;k<=6;k++){const y=8-k,w=k<2?3:k<4?2:k<6?1:0;
-      for(let x=hx0+2-w;x<=hx0+2+w;x++)px(x,y,(k>=1&&k<=4&&Math.abs(x-(hx0+2))<w)?IN:S);
-      for(let x=hx1-2-w;x<=hx1-2+w;x++)px(x,y,(k>=1&&k<=4&&Math.abs(x-(hx1-2))<w)?IN:sD)}}
   /* headgear */
   const faceTint=(y0,y1,f)=>{for(let y=y0;y<=y1;y++)for(let x=hx0;x<=hx1;x++)if(inFace(x,y)){const v=get(x,y);if(v)px(x,y,shade(v,f))}};
   const hood=(depth,K)=>{
@@ -1013,10 +1000,31 @@ function drawPortrait(c){
   }
 
   hairGuard(d.G,preHair,postHair,c.headgear,RIM_P);
+  if(c.species==='Fur'&&!['greathelm','crestedhelm','plague'].includes(c.headgear))furEarsP(c,d,hx0,hx1);
 
   /* familiar on the shoulder */
   famPortrait(c,d,fem?2:0);
   return d.G;
+}
+/* kemonomimi ears in the hair color: cat, fox, wolf or rabbit (a rabbit's right ear may droop) */
+const EARS_P={cat:{top:2,hw:[0,1,1,2,2,3],inner:[2,5]},fox:{top:0,hw:[0,0,1,1,2,2,2,3,3],inner:[3,7],tip:2},wolf:{top:1,hw:[1,1,2,2,3,3,4],inner:[2,6]},rabbit:{top:0,hw:[1,2,2,2,2,2,2,2,2,2],inner:[1,8]}};
+const EARS_B={cat:{top:2,hw:[0,1,1]},fox:{top:0,hw:[0,0,1,1,1],tip:2},wolf:{top:1,hw:[1,1,1,1]},rabbit:{top:0,hw:[1,1,1,1,1]}};
+const EAR_IN={cat:'#d99a9e',fox:'#efe2c8',rabbit:'#e3a9ac'};
+function earColors(c){const H=c.hair;return {L:H,R:shade(H,-.14),tip:shade(H,-.5),inn:c.earType==='wolf'?shade(H,-.32):mix(EAR_IN[c.earType]||EAR_IN.cat,H,.25)}}
+function furEarsP(c,d,hx0,hx1){
+  const E=EARS_P[c.earType]||EARS_P.cat,K=earColors(c),px=d.px,off=c.earType==='rabbit'?3:2;
+  const ear=(ex,base)=>E.hw.forEach((hw,i)=>{const y=E.top+i;for(let x=ex-hw;x<=ex+hw;x++){let k=base;
+    if(E.tip&&i<E.tip)k=K.tip;else if(i>=E.inner[0]&&i<=E.inner[1]&&hw>=2&&Math.abs(x-ex)<hw)k=K.inn;px(x,y,k)}});
+  ear(hx0+off,K.L);
+  if(c.earDroop){const rx=hx1-off;for(let t=0;t<=9;t++){const cx=rx+t,cy=9-Math.round(t*.6);for(let y=cy-2;y<=cy+2;y++)px(cx,y,(y===cy&&t>1&&t<9)?K.inn:K.R)}}
+  else ear(hx1-off,K.R);
+}
+function furEarsB(c,d){
+  const E=EARS_B[c.earType]||EARS_B.cat,K=earColors(c),px=d.px;
+  const ear=(ex,base)=>E.hw.forEach((hw,i)=>{const y=E.top+i;for(let x=ex-hw;x<=ex+hw;x++)px(x,y,E.tip&&i<E.tip?K.tip:(i===E.hw.length-2&&hw>=1&&x===ex?K.inn:base))});
+  ear(21,K.L);
+  if(c.earDroop){for(let t=0;t<=5;t++){const cx=27+t,cy=4-Math.round(t*.4);px(cx,cy,K.R);px(cx,cy+1,K.R)}}
+  else ear(26,K.R);
 }
 function famPortrait(c,d0,ox){
   const px=(x,y,k)=>d0.px(x-ox,y,k),rect=(a,b,e,f,k)=>d0.rect(a-ox,b,e-ox,f,k),row=(y,a,b,k)=>d0.row(y,a-ox,b-ox,k);
@@ -1066,8 +1074,13 @@ function drawBody(c){
   rect(19,bt,22,44,G.boot);rect(25,bt,28,44,shade(G.boot,-.08));px(18,43,G.boot);px(18,44,G.boot);px(29,43,G.boot);px(29,44,G.boot);
   row(bt,19,22,shade(G.boot,.18));row(bt,25,28,shade(G.boot,.18));
   if(c.garb==='fur'){row(39,19,22,PELT);row(39,25,28,PELT)}
-  if(c.species==='Fur'){const pts=[[0,26],[1,27],[2,28],[3,29],[4,30],[5,31],[5,32],[6,33],[6,34],[6,35],[5,36],[4,37]];
-    pts.forEach(([dx,y],i)=>{const tip=i>=pts.length-3;px(tx1+dx,y,tip?shade(S,.3):S);px(tx1+dx+1,y,tip?shade(S,.1):sD)})}
+  if(c.species==='Fur'){const H0=c.hair,TD=shade(H0,-.18),T=c.earType;
+    if(T==='rabbit'){const P=mix(H0,'#f1ece2',.55);rect(tx1+1,28,tx1+3,30,P);px(tx1+4,29,P);px(tx1+2,27,P);row(30,tx1+2,tx1+3,shade(P,-.15))}
+    else{const pts=[[0,26],[1,27],[2,28],[3,29],[4,30],[5,31],[5,32],[6,33],[6,34],[6,35],[5,36],[4,37]];
+      const wd=T==='cat'?[2,2,2,2,2,2,2,2,2,2,2,2]:T==='fox'?[2,2,3,3,4,4,4,4,4,3,3,2]:[2,2,3,3,3,3,3,3,3,3,2,2];
+      const tipN=T==='cat'?2:3,tipC=T==='fox'?'#efe9dc':shade(H0,T==='wolf'?-.45:-.3);
+      pts.forEach(([dx,y],i)=>{const tip=i>=pts.length-tipN,w=wd[i],x0=tx1+dx-Math.floor((w-2)/2);
+        for(let k=0;k<w;k++)px(x0+k,y,tip?(k===w-1?shade(tipC,-.12):tipC):(k===w-1?TD:H0))})}}
 
   /* torso */
   /* a woman's torso pulls in at the waist (rows 20-22) and fills out at the hips */
@@ -1147,7 +1160,6 @@ function drawBody(c){
       break;
   }
 
-  if(c.species==='Fur'){const MZ=mix(S,'#efe6d4',.5);for(let y=9;y<=11;y++)for(let x=22;x<=25;x++)if(isSkin(get(x,y)))px(x,y,MZ);px(23,9,'#2a1f1a');px(24,9,'#2a1f1a')}
   if(c.braided&&c.beard==='long'){row(16,23,24,A);px(23,19,A)}
   /* hair */
   const preHair=d.G.slice();
@@ -1177,7 +1189,6 @@ function drawBody(c){
 
   const postHair=d.G.slice();
   if(c.species==='Fey'&&!FULL_COVER.has(c.headgear)){px(18,7,S);px(18,6,S);px(17,5,sL);px(29,7,sD);px(29,6,sD);px(30,5,sD)}
-  if(c.species==='Fur'&&['bare','circlet','coronet'].includes(c.headgear)){const IN=mix(S,'#c98f92',.45);rect(20,1,22,2,S);px(21,2,IN);px(20,0,S);rect(25,1,27,2,sD);px(26,2,IN);px(27,0,sD)}
   /* headgear */
   const faceRows=(y0,y1,f)=>{for(let y=y0;y<=y1;y++)for(let x=20;x<=27;x++){const v=get(x,y);if(v&&y>=3&&y<=12)px(x,y,shade(v,f))}};
   const faceOpen=(x,y)=>y>=5&&y<=12&&x>=21-(y<=10?1:0)+(y===12?1:0)&&x<=26+(y<=10?1:0)-(y===12?1:0);
@@ -1240,6 +1251,8 @@ function drawBody(c){
   if(c.item==='swordshield')drawShield(c,d,tx0);
 
   famBody(c,d,tx0);
+  if(c.species==='Fur'){const G=d.G;for(let y=N-1;y>=0;y--)for(let x=0;x<N;x++)G[y*N+x]=y>=2?G[(y-2)*N+x]:null;
+    if(!['greathelm','crestedhelm','plague'].includes(c.headgear))furEarsB(c,d)}
   if(c.species==='Pel'){const G=d.G,cut=[30,33,36],rows=[];
     for(let y=0;y<N;y++)if(!cut.includes(y))rows.push(G.slice(y*N,y*N+N));
     while(rows.length<N)rows.unshift(new Array(N).fill(null));
@@ -1339,13 +1352,13 @@ function rollFor(seed,setting,sex){
 }
 return {rollFor,drawPortrait,drawBody,drawBg,compose,TINCT};
 })();
-const FUR_COATS=['#b07a45','#9a4f2a','#8d8a86','#6e5236','#d9c7a2','#3a332e','#e6e1d6','#c48a4a'];
-const FUR_MANES=['#2a201a','#5a3a22','#d8cdb8','#7a7570','#a0522d','#1d1a18'];
+const FUR_EARS=['cat','fox','wolf','rabbit'];
+function furEar(m){const r=mulberry32(((m.look>>>0)^0x5f3a)>>>0),type=FUR_EARS[Math.floor(r()*FUR_EARS.length)];return {type,droop:type==='rabbit'&&r()<.4}}
 function speciesLook(m,c){
   const sp=m.sp||'Kin';c.species=sp;
   if(sp==='Fey')c.build='lean';
   if(sp==='Pel'){c.build='broad';if(c.sex==='m'){c.beard='long';c.braided=true}}
-  if(sp==='Fur'){const r=mulberry32(((m.look>>>0)^0x5f3a)>>>0);c.skin=FUR_COATS[Math.floor(r()*FUR_COATS.length)];c.hair=FUR_MANES[Math.floor(r()*FUR_MANES.length)];if(c.beard==='stubble')c.beard='none'}
+  if(sp==='Fur'){const e=furEar(m);c.earType=e.type;c.earDroop=e.droop}
 }
 const SF_TINCT={or:'#d4a72c',argent:'#e6e2d6',gules:'#b0262a',azure:'#2b4f9a',vert:'#2e6b3a',purpure:'#6a3577',sable:'#1f1c1e'};
 const SF_DIV={plain:'pale',pale:'pale',perpale:'pale',fess:'fess',chief:'fess',bend:'bend',chevron:'chevron',quarterly:'quarterly'};
@@ -1384,7 +1397,7 @@ function spriteFor(m){
   return c;
 }
 const SF_CACHE=new Map();
-function spriteKey(m,c){return [c.seed,c.setting,c.sex,c.division,c.tinct1,c.tinct2,c.cloth,c.accent,c.hair,c.headgear,c.garb,c.item,c.beard,c.species,c.skin,c.build,c.braided?1:0].join('|')}
+function spriteKey(m,c){return [c.seed,c.setting,c.sex,c.division,c.tinct1,c.tinct2,c.cloth,c.accent,c.hair,c.headgear,c.garb,c.item,c.beard,c.species,c.skin,c.build,c.braided?1:0,c.earType||'',c.earDroop?1:0].join('|')}
 function spriteImages(m){
   const c=spriteFor(m),k=spriteKey(m,c);
   if(SF_CACHE.has(k))return SF_CACHE.get(k);
@@ -1648,7 +1661,7 @@ function dossier(m){
   const hp=Array.from({length:mw},(_,i)=>`<i class="${i<m.wounds?'on':''} ${i>=m.st.Grit?'armor':''}" title="${i>=m.st.Grit?'From armor or heirloom':'From Grit'}"></i>`).join('');
   const kin=kinOf(m).map(([rel,k])=>`<li><span class="tk">${rel}</span><button data-sel="${k.id}">${esc(fullName(k))}</button> <span class="muted">· ${k.age}</span></li>`).join('')||'<li class="muted">No kin within the house.</li>';
   return `<div class="dhead">
-      <div class="figs"><figure class="cam">${portrait(m,144)}<figcaption>${spOf(m).name} · ${m.sex==='m'?'He':'She'} · age ${m.age}</figcaption></figure><figure class="cam"><img class="pf" src="${bodyURL(m)}" width="144" height="144" alt=""><figcaption>${spriteSetting(m)==='heraldic'?'In heraldry':'Ready for war'}</figcaption></figure>
+      <div class="figs"><figure class="cam">${portrait(m,144)}<figcaption>${spOf(m).name}${m.sp==='Fur'?' ('+furEar(m).type+')':''} · ${m.sex==='m'?'He':'She'} · age ${m.age}</figcaption></figure><figure class="cam"><img class="pf" src="${bodyURL(m)}" width="144" height="144" alt=""><figcaption>${spriteSetting(m)==='heraldic'?'In heraldry':'Ready for war'}</figcaption></figure>
         ${m.dead?'':`<button class="sm" data-relook="${m.id}">Redraw look</button>`}</div>
       <div style="min-width:0">
         <input class="given" id="given-${m.id}" data-edit="given" value="${esc(m.given)}" aria-label="Given name">
@@ -3048,5 +3061,4 @@ function start(d){
 try{window.claude?.hot?.snapshot(()=>({H,sel,section,activeSlot}))}catch(e){}
 window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
 </script>
-</body>
-</html>
+</body></html>
