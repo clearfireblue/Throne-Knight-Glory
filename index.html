@@ -1,31 +1,39 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Throne Knight Glory</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+</head>
+<body>
+<title>Avelon</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
 <style>
 /* Layout: a house chronicle. Sigil, house name and words across the top, section nav, then a two-pane roster (members | dossier) on parchment; the family tree is its own section. */
 :root{
-  --bg:#e6d8b8;--panel:#f3e8cc;--field:#ebdcbc;--ink:#20170f;--muted:#6a5740;--line:#b8a27a;
-  --accent:#2f5d4a;--gold:#94701a;--blood:#9b1c1c;--kin:#6b3f7a;--glow:rgba(47,93,74,.18);
+  --bg:#e9e4d2;--panel:#f5f1e3;--field:#ece6d2;--ink:#1c2230;--muted:#5d6577;--line:#b5b093;
+  --accent:#2f6f6a;--gold:#8a6a16;--blood:#a3243a;--kin:#5b4a9a;--glow:rgba(47,111,106,.18);
   --f-display:"Cinzel","Trajan Pro","Palatino Linotype",Georgia,serif;
-  --f-body:"EB Garamond","Garamond",Georgia,"Times New Roman",serif;
+  --f-body:"Cormorant Garamond","Garamond",Georgia,"Times New Roman",serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#14110d;--panel:#1e1914;--field:#181410;--ink:#eadfc6;--muted:#a8987a;--line:#3a3126;
-  --accent:#6fae8c;--gold:#d9a93b;--blood:#e0675a;--kin:#b48ad0;--glow:rgba(111,174,140,.16);color-scheme:dark}}
+  --bg:#0f1420;--panel:#172033;--field:#121a2a;--ink:#e8e4d4;--muted:#9aa3b8;--line:#2b3550;
+  --accent:#6fcfb8;--gold:#e0b84a;--blood:#e0707f;--kin:#a99bf0;--glow:rgba(111,207,184,.16);color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#14110d;--panel:#1e1914;--field:#181410;--ink:#eadfc6;--muted:#a8987a;--line:#3a3126;
-  --accent:#6fae8c;--gold:#d9a93b;--blood:#e0675a;--kin:#b48ad0;--glow:rgba(111,174,140,.16);color-scheme:dark}
+  --bg:#0f1420;--panel:#172033;--field:#121a2a;--ink:#e8e4d4;--muted:#9aa3b8;--line:#2b3550;
+  --accent:#6fcfb8;--gold:#e0b84a;--blood:#e0707f;--kin:#a99bf0;--glow:rgba(111,207,184,.16);color-scheme:dark}
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.5 var(--f-body);font-variant-numeric:lining-nums}
+body{margin:0;background:var(--bg);color:var(--ink);font:20px/1.5 var(--f-body);font-variant-numeric:lining-nums}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse at 50% 0%,transparent 40%,rgba(60,35,10,.22) 100%),
-  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .1 0 0 0 .12 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+  background:radial-gradient(ellipse at 50% 0%,transparent 40%,rgba(30,40,90,.18) 100%),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .26 0 0 0 0 .38 0 0 0 .12 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
 .wrap{position:relative;z-index:1;max-width:1160px;margin:0 auto;padding-inline:16px;padding-block:18px 56px}
 h1,h2,h3{font-family:var(--f-display);font-weight:600;margin:0;line-height:1.15;text-wrap:balance}
 .eyebrow{font:600 13px/1 var(--f-display);letter-spacing:.2em;text-transform:uppercase;color:var(--accent)}
+header.house .eyebrow::before,header.house .eyebrow::after{content:"✦";color:var(--gold);margin:0 .7em;font-size:.9em}
+header.house .eyebrow::before{margin-left:0}
 .muted{color:var(--muted)}
 button,select,input,textarea{font:inherit;color:inherit}
 button{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:8px 14px;min-height:44px;cursor:pointer}
@@ -114,7 +122,7 @@ figure.cam figcaption{font:500 12px/1.3 var(--f-body);color:var(--muted);text-al
 .royaledit{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:flex-end;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
 .royaledit .fld{flex:1;min-width:10em}
 .royaledit input{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:8px 10px;min-height:44px;width:100%}
-.sgback{position:fixed;inset:0;z-index:50;background:rgba(20,12,4,.55);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 12px}
+.sgback{position:fixed;inset:0;z-index:50;background:rgba(8,12,26,.6);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 12px}
 .sgpanel{position:relative;width:100%;max-width:620px;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.4)}
 .sgpanel::before,.sgpanel::after{content:"";position:absolute;width:12px;height:12px;border:2px solid var(--gold);pointer-events:none}
 .sgpanel::before{top:-1px;left:-1px;border-right:0;border-bottom:0}.sgpanel::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
@@ -372,7 +380,7 @@ ul.slots-list li.act{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)
   <header class="house">
     <svg class="sigil" id="sigil" viewBox="0 0 100 118" role="img" aria-label="House sigil"></svg>
     <div style="min-width:0">
-      <div class="eyebrow">Throne Knight Glory</div>
+      <div class="eyebrow">Avelon</div>
       <textarea class="hname" id="hname" rows="1" aria-label="House name" spellcheck="false"></textarea>
       <input class="hwords" id="hwords" aria-label="House words">
       <input class="hseat" id="hseat" aria-label="Seat of the house">
@@ -424,12 +432,68 @@ const aVal=n=>(ARMORS.find(w=>w[0]===n)||ARMORS[0])[1];
 const maxWounds=m=>m.st.Grit+aVal(m.gear.armor)+((typeof HEIRLOOMS!=='undefined'&&HEIRLOOMS[m.gear.heirloom]||{}).wounds||0);
 const COME_OF_AGE=16;
 
+/* ---------- species ---------- */
+const SPECIES={
+  Fey:{name:'Fey',primary:'Insight',adult:20,old:120,fert:[20,90],odds:[.2,.16,.12,.08,.04,.02],male:.5,desc:'Long-lived and slow to bear children, quick of mind.'},
+  Pel:{name:'Pel',primary:'Might',adult:18,old:90,fert:[18,60],odds:[.5,.4,.3,.2,.1,.05],male:.75,desc:'Stout and long-lived. Three in four are born male.'},
+  Kin:{name:'Kin',primary:'Ability',adult:16,old:60,fert:[16,42],odds:[.5,.4,.3,.2,.1,.05],male:.5,desc:'Adaptable and middling in all things.'},
+  Fur:{name:'Fur',primary:'Grit',adult:14,old:45,fert:[14,34],odds:[.75,.6,.45,.3,.15,.08],male:.5,desc:'Short-lived and hardy, with large broods.'}
+};
+const SPECIES_KEYS=['Fey','Pel','Kin','Fur'];
+const spOf=m=>SPECIES[m&&m.sp]||SPECIES.Kin;
+const adultAge=m=>spOf(m).adult;
+const isAdult=m=>m.age>=spOf(m).adult;
+/* a Kin-year equivalent of an age in a species' years, and back: the same stage of life */
+const kinAge=(a,sp)=>{const S=SPECIES[sp]||SPECIES.Kin;return a<S.adult?a*16/S.adult:16+(a-S.adult)*44/(S.old-S.adult)};
+const toSpAge=(a,sp)=>{const S=SPECIES[sp]||SPECIES.Kin;return a<16?Math.max(0,Math.round(a*S.adult/16)):Math.round(S.adult+(a-16)*(S.old-S.adult)/44)};
+const childTotal=(age,sp)=>clamp(Math.round(4+age*(16/(SPECIES[sp]||SPECIES.Kin).adult)*.9),4,18);
+/* a species' primary stat is never below 6 for an adult: points move in from the highest other stats */
+function enforcePrimary(st,sp,min){min=min||6;const p=(SPECIES[sp]||SPECIES.Kin).primary;
+  while(st[p]<min){const donors=STATS.filter(k=>k!==p&&st[k]>2);if(!donors.length)break;const top=Math.max(...donors.map(k=>st[k]));const k=pick(donors.filter(x=>st[x]===top));st[k]--;st[p]++}}
+const birthOdds=(mother,n)=>{const o=spOf(mother).odds;return n<o.length?o[n]:Math.min(o[o.length-1],.05)};
+const speciesLine=m=>{const S=spOf(m);return `${S.name}: ${S.desc} Primary stat ${S.primary} (marked ✦). Of age at ${S.adult}, old age from ${S.old}, fertile ${S.fert[0]} to ${S.fert[1]}.`};
+
 /* ---------- names ---------- */
-const HOUSES=['Harrow','Ashford','Blackmere','Vance','Thornwood','Marlowe','Greyholt','Dunmarrow','Ravell','Coldwater','Fenwick','Ironside','Wyle','Selmont','Halloran','Crane','Mourne','Ostrey','Varrick','Dale'];
-const SEATS=['Ravenmoor','Greywater Keep','Ashford Hall','the Blackmere','Saint Orrin’s Pass','Gallows Heath','Hollin Tower','Coldmarch','Thornholt','Dunmarrow Castle','the Weeping Crag','Highmere'];
-const WORDS=['Ours Is the Long Night','We Do Not Kneel','Iron Remembers','Patience Wins Crowns','By Blood, By Oath','The Tide Returns','Nothing Is Forgotten','First In, Last Out','We Endure','Ash Before Ruin','Silent and Sure','Our Debts Are Paid'];
+const HOUSES_BY={
+  Fey:['Aelindel','Silverbough','Lorathen','Moonwater','Evenstar','Thistledown','Ashenglade','Faelorn','Dawnwhisper','Larkspire','Nightbloom','Willowmere','Starvale','Elmwyrd'],
+  Pel:['Stonehelm','Ironvein','Deepforge','Granitehold','Anvilcrest','Hammerfall','Coalbeard','Goldseam','Rockhammer','Blackhearth','Emberdeep','Stoutshield','Flintmar','Dunmoran'],
+  Kin:['Harrow','Ashford','Blackmere','Vance','Thornwood','Marlowe','Greyholt','Dunmarrow','Ravell','Coldwater','Fenwick','Ironside','Wyle','Selmont','Halloran','Crane','Mourne','Ostrey','Varrick','Dale'],
+  Fur:['Redtail','Greymane','Swiftpaw','Ashfur','Thornpelt','Duskwhisker','Brightfang','Longstride','Mossback','Sunhide','Stormcoat','Ridgeback','Keenclaw','Hollowtrack']
+};
+const HOUSES=[].concat(HOUSES_BY.Fey,HOUSES_BY.Pel,HOUSES_BY.Kin,HOUSES_BY.Fur);
+const houseSp=n=>['Fey','Pel','Kin','Fur'].find(k=>HOUSES_BY[k].includes(n));
+const SEATS_BY={
+  Fey:['Silverwood Hall','the Moonlit Court','Evenfall Bower','Thistle Keep','the Glade of Whispers','Starvale Spire','Larkspire Tower','Willowmere Hall'],
+  Pel:['Deepforge Hold','Ironvein Halls','the Granite Gate','Anvilcrest Keep','Hammerfall Redoubt','Coalbeard Deep','Goldseam Mine-Keep','Blackhearth Hold'],
+  Kin:['Ravenmoor','Greywater Keep','Ashford Hall','the Blackmere','Saint Orrin’s Pass','Gallows Heath','Hollin Tower','Coldmarch','Thornholt','Dunmarrow Castle','the Weeping Crag','Highmere'],
+  Fur:['Redfern Den','the Longgrass Camp','Thornpelt Lodge','Mossback Warren','Ridgeback Holt','Keenclaw Roost','Duskhollow','the Howling Hill']
+};
+const SEATS=[].concat(SEATS_BY.Fey,SEATS_BY.Pel,SEATS_BY.Kin,SEATS_BY.Fur);
+const WORDS_BY={
+  Fey:['Long Memory, Quiet Hands','We Remember the First Dawn','Patience Outlasts Stone','The Wood Endures','Nothing Fades Unwatched','Grace Before Blade','Slow to Anger, Slower to Forget','Under the Old Stars'],
+  Pel:['Stone Holds','Forged, Not Born','We Dig Deep','The Hearth Is Kept','Iron and Oath','No Debt Goes Unpaid','Hold the Line','Deeper Than Any Grudge'],
+  Kin:['Ours Is the Long Night','We Do Not Kneel','Iron Remembers','Patience Wins Crowns','By Blood, By Oath','The Tide Returns','Nothing Is Forgotten','First In, Last Out','We Endure','Ash Before Ruin','Silent and Sure','Our Debts Are Paid'],
+  Fur:['The Pack Runs Together','Keen Eyes, Swift Feet','We Do Not Cage','Teeth and Loyalty','First to the Hunt','The Wild Remembers','Fur and Fang','Never Last Home']
+};
 const MALE=['Aldric','Bran','Cedric','Edmund','Garrick','Hal','Jory','Lucan','Merrick','Osric','Roland','Torren','Ulric','Wendel','Gareth','Rickard','Dorian','Emmett','Leofric','Tobias','Alard','Baldwin','Corwin','Drogo','Everard','Fulk','Giles','Hamon','Ivo','Josce','Lambert','Milo','Neville','Odo','Piers','Raoul','Simon','Thurstan','Walter','Ywain'];
 const FEMALE=['Alys','Briony','Cassana','Delena','Elinor','Gwyneth','Isolde','Jocelyn','Maud','Lyra','Rowena','Sabine','Tamsin','Ysolde','Merewen','Cerys','Odile','Perrin','Wynne','Avelyn','Aveline','Beatrix','Clemence','Edith','Helewise','Imogen','Joan','Margery','Nesta','Petronel','Rosamund','Sybil','Theda','Ursula','Wenna','Agnes'];
+const NAMES={
+  Kin:{m:MALE,f:FEMALE},
+  Fey:{m:['Aelrin','Caerith','Elarion','Faelan','Ilvar','Laurien','Merithal','Naevor','Quillan','Sylvar','Thaerin','Vaelor','Yllian','Zephiel','Aerel','Belian','Cyrenil','Dorael','Eldrian','Fenlar','Galadan','Ivrael','Kaelen','Lorian','Maelis','Orenil','Rhydian','Taelon'],
+       f:['Aelwyn','Caelia','Elowen','Faenya','Ilyana','Lirael','Mirelle','Naelia','Sylvaine','Thessaly','Vaelira','Yselde','Aeris','Belisae','Celandine','Daeryn','Eiliana','Fiorel','Galenna','Hesperia','Isilme','Jessaelin','Lethiel','Maelira','Nimriel','Orianne','Silmara']},
+  Pel:{m:['Bardolf','Brogar','Cragmar','Dagnar','Durgan','Eitri','Fargrim','Garrik','Gundar','Haldor','Hrolf','Jorund','Kazrin','Korrin','Norgrim','Orsk','Rurik','Skarn','Stenar','Thurgal','Torvald','Ulgar','Varn','Wulfgar','Yngvar','Bromm'],
+       f:['Brunhild','Dagny','Disa','Eira','Frida','Gunnhild','Hilda','Ingrid','Jorunn','Kolga','Magda','Norna','Olga','Runa','Sigrun','Thora','Ulla','Vigdis','Yrsa','Astrid','Berta','Dorna','Embla','Fenna','Gerda','Hulda']},
+  Fur:{m:['Ashen','Bracken','Caldor','Dorrick','Fennec','Garrow','Hask','Ikar','Jarrek','Korrak','Lupin','Marrok','Nashir','Orrel','Pike','Rask','Sorrel','Tarn','Varek','Yarrow','Zahir','Brack','Rennick','Tavish'],
+       f:['Ashka','Brisa','Cassia','Dara','Ember','Fiora','Hazel','Ilka','Jessa','Kesh','Lyris','Maren','Nessa','Pella','Raisa','Saffi','Tamsa','Umbra','Vesna','Willow','Yara','Zinnia','Briar','Moss','Rowan']}
+};
+const nameFor=(sex,sp)=>pick((NAMES[sp]||NAMES.Kin)[sex==='f'?'f':'m']);
+const SP_TRAITS={
+  Fey:['Counts the years in centuries','Cannot abide the clang of iron','Speaks to the old trees','Never raises their voice','Keeps a garden that outlived three lords','Sings at dusk without noticing'],
+  Pel:['Keeps a grudge-book three generations deep','Will not leave a debt unpaid','Hoards a stash of old coin','Tests every wall with a knuckle','Counts the cost of everything aloud','Brews something strong in secret'],
+  Kin:['Hurries as though time were short','Takes the measure of strangers at a glance','Lives for the next feast','Trusts the family first and last','Never turns down a wager','Dreams of a larger hall'],
+  Fur:['Sleeps lightly, ears turning at every sound','Scents a lie before it is told','Cannot sit through a long council','Shares every kill with the pack','Marks the borders by night','Restless indoors in any weather']
+};
+const traitsFor=sp=>{const own=shuffle(SP_TRAITS[sp]||SP_TRAITS.Kin),gen=shuffle(TRAITS);return [own[0],gen[0]]};
 const TRAITS=['Keeps a ledger of every slight','Prays to the old gods in secret','Never drinks wine poured by another','Hums the old king’s hymn when nervous','Writes letters they never send','Laughs at funerals','Can recite the lineage of every house','Sleeps with a dagger beneath the pillow','Feeds the ravens by hand','Keeps a dead brother’s ring','Breaks bread with servants','Gambles on dice and loses','Never forgets a face','Lies easily and well','Hunts alone at dawn','Collects maps of lands they will never see','Distrusts anyone who smiles too much','Has a bastard nobody speaks of','Swore an oath they regret','Will not sit with their back to a door'];
 const OLD_DEATHS=['taken by the winter fever','fell at the Battle of the Ford','drowned crossing the Weeping Water','poisoned at a wedding feast'];
 
@@ -437,7 +501,7 @@ const OLD_DEATHS=['taken by the winter fever','fell at the Battle of the Ford','
 const TINCT={or:'#c9a23a',argent:'#e9e4d4',gules:'#9b1c1c',azure:'#2d4f8a',vert:'#2f6a3e',sable:'#1e1a18',purpure:'#5e3a6e'};
 const METALS=['or','argent'],COLORS=['gules','azure','vert','sable','purpure'];
 const ORDS=['plain','pale','fess','bend','chevron','perpale','quarterly','chief'];
-const CHARGES=['mullet','roundel','lozenge','crescent','cross','tower','none'];
+const CHARGES=['mullet','roundel','lozenge','crescent','cross','tower','tree','anvil','paw','none'];
 function newSigil(){const metalField=R()<.35;const field=metalField?pick(METALS):pick(COLORS);const other=metalField?pick(COLORS):pick(METALS);
   return {field,ord:pick(ORDS),ordC:other,charge:pick(CHARGES),chargeC:R()<.5?other:(metalField?pick(COLORS):pick(METALS))}}
 function sigilSVG(s,uid){const cid='sh'+String(uid||'h').replace(/[^a-z0-9]/gi,'');
@@ -462,6 +526,9 @@ function sigilSVG(s,uid){const cid='sh'+String(uid||'h').replace(/[^a-z0-9]/gi,'
     case 'lozenge':ch=`<path ${tr} d="M0 -18 L12 0 L0 18 L-12 0 Z" fill="${C}"/>`;break;
     case 'crescent':ch=`<path ${tr} d="M-14 -4 A15 15 0 0 0 14 -4 A11 11 0 0 1 -14 -4 Z" fill="${C}"/>`;break;
     case 'cross':ch=`<path ${tr} d="M-4 -17 H4 V-4 H17 V4 H4 V17 H-4 V4 H-17 V-4 H-4 Z" fill="${C}"/>`;break;
+    case 'tree':ch=`<path ${tr} d="M0 -18 C10 -18 16 -10 12 -3 C16 2 12 9 4 8 L4 18 H-4 V8 C-12 9 -16 2 -12 -3 C-16 -10 -10 -18 0 -18 Z" fill="${C}"/>`;break;
+    case 'anvil':ch=`<path ${tr} d="M-17 -9 H14 L18 -9 C18 -3 14 0 8 0 H6 V6 L11 11 V16 H-11 V11 L-6 6 V0 H-9 C-14 0 -17 -4 -17 -9 Z" fill="${C}"/>`;break;
+    case 'paw':ch=`<g ${tr} fill="${C}"><ellipse cx="0" cy="7" rx="10" ry="8"/><circle cx="-11" cy="-3" r="4"/><circle cx="-4" cy="-11" r="4"/><circle cx="4" cy="-11" r="4"/><circle cx="11" cy="-3" r="4"/></g>`;break;
     case 'tower':ch=`<path ${tr} d="M-12 16 V-6 H-12 V-14 H-7 V-9 H-2 V-14 H2 V-9 H7 V-14 H12 V-6 V16 H3 V6 A3 3 0 0 0 -3 6 V16 Z" fill="${C}"/>`;break;
   }
   return `<defs><clipPath id="${cid}"><path d="${shield}"/></clipPath></defs>
@@ -766,6 +833,9 @@ function drawPortrait(c){
   col(cx1,18,20,sD);row(21,cx0-1,cx1+1,sD);px(cx1,21,sDD);
   px(hx0+2,20,sL);px(hx0+3,20,sL);
   row(24,cx0-2,cx1+2,shade(S,-.45));row(25,cx0-1,cx1+1,sD);
+  if(c.species==='Fur'){const MZ=mix(S,'#efe6d4',.5);
+    for(let y=19;y<=26;y++)for(let x=cx0-3;x<=cx1+3;x++){if(y===19&&(x<cx0-1||x>cx1+1))continue;if(isSkin(get(x,y)))px(x,y,MZ)}
+    rect(cx0,20,cx1,21,'#2a1f1a');px(cx0,20,'#4a3a32');row(24,cx0-2,cx1+2,shade(S,-.5))}
 
   /* marks */
   switch(c.mark){
@@ -791,6 +861,7 @@ function drawPortrait(c){
       break;
   }
 
+  if(c.braided&&c.beard==='long'){row(33,cx0-1,cx1+1,A);row(37,cx0,cx1,A);px(cx0,40,A);px(cx1,40,shade(A,-.3))}
   /* hair */
   const preHair=d.G.slice();
   const st=c.hairStyle;
@@ -824,6 +895,13 @@ function drawPortrait(c){
   }
 
   const postHair=d.G.slice();
+  if(c.species==='Fey'&&!FULL_COVER.has(c.headgear)){
+    col(hx0-2,13,18,S);col(hx0-3,11,15,S);col(hx0-4,9,12,sL);px(hx0-5,8,sL);col(hx0-2,16,17,sD);
+    col(hx1+2,13,18,sD);col(hx1+3,11,15,sD);col(hx1+4,9,12,sD);px(hx1+5,8,sDD);col(hx1+2,16,17,sDD)}
+  if(c.species==='Fur'&&['bare','circlet','coronet'].includes(c.headgear)){const IN=mix(S,'#c98f92',.45);
+    for(let k=0;k<=6;k++){const y=8-k,w=k<2?3:k<4?2:k<6?1:0;
+      for(let x=hx0+2-w;x<=hx0+2+w;x++)px(x,y,(k>=1&&k<=4&&Math.abs(x-(hx0+2))<w)?IN:S);
+      for(let x=hx1-2-w;x<=hx1-2+w;x++)px(x,y,(k>=1&&k<=4&&Math.abs(x-(hx1-2))<w)?IN:sD)}}
   /* headgear */
   const faceTint=(y0,y1,f)=>{for(let y=y0;y<=y1;y++)for(let x=hx0;x<=hx1;x++)if(inFace(x,y)){const v=get(x,y);if(v)px(x,y,shade(v,f))}};
   const hood=(depth,K)=>{
@@ -988,6 +1066,8 @@ function drawBody(c){
   rect(19,bt,22,44,G.boot);rect(25,bt,28,44,shade(G.boot,-.08));px(18,43,G.boot);px(18,44,G.boot);px(29,43,G.boot);px(29,44,G.boot);
   row(bt,19,22,shade(G.boot,.18));row(bt,25,28,shade(G.boot,.18));
   if(c.garb==='fur'){row(39,19,22,PELT);row(39,25,28,PELT)}
+  if(c.species==='Fur'){const pts=[[0,26],[1,27],[2,28],[3,29],[4,30],[5,31],[5,32],[6,33],[6,34],[6,35],[5,36],[4,37]];
+    pts.forEach(([dx,y],i)=>{const tip=i>=pts.length-3;px(tx1+dx,y,tip?shade(S,.3):S);px(tx1+dx+1,y,tip?shade(S,.1):sD)})}
 
   /* torso */
   /* a woman's torso pulls in at the waist (rows 20-22) and fills out at the hips */
@@ -1067,6 +1147,8 @@ function drawBody(c){
       break;
   }
 
+  if(c.species==='Fur'){const MZ=mix(S,'#efe6d4',.5);for(let y=9;y<=11;y++)for(let x=22;x<=25;x++)if(isSkin(get(x,y)))px(x,y,MZ);px(23,9,'#2a1f1a');px(24,9,'#2a1f1a')}
+  if(c.braided&&c.beard==='long'){row(16,23,24,A);px(23,19,A)}
   /* hair */
   const preHair=d.G.slice();
   const st=c.hairStyle;
@@ -1094,6 +1176,8 @@ function drawBody(c){
   }
 
   const postHair=d.G.slice();
+  if(c.species==='Fey'&&!FULL_COVER.has(c.headgear)){px(18,7,S);px(18,6,S);px(17,5,sL);px(29,7,sD);px(29,6,sD);px(30,5,sD)}
+  if(c.species==='Fur'&&['bare','circlet','coronet'].includes(c.headgear)){const IN=mix(S,'#c98f92',.45);rect(20,1,22,2,S);px(21,2,IN);px(20,0,S);rect(25,1,27,2,sD);px(26,2,IN);px(27,0,sD)}
   /* headgear */
   const faceRows=(y0,y1,f)=>{for(let y=y0;y<=y1;y++)for(let x=20;x<=27;x++){const v=get(x,y);if(v&&y>=3&&y<=12)px(x,y,shade(v,f))}};
   const faceOpen=(x,y)=>y>=5&&y<=12&&x>=21-(y<=10?1:0)+(y===12?1:0)&&x<=26+(y<=10?1:0)-(y===12?1:0);
@@ -1156,6 +1240,10 @@ function drawBody(c){
   if(c.item==='swordshield')drawShield(c,d,tx0);
 
   famBody(c,d,tx0);
+  if(c.species==='Pel'){const G=d.G,cut=[30,33,36],rows=[];
+    for(let y=0;y<N;y++)if(!cut.includes(y))rows.push(G.slice(y*N,y*N+N));
+    while(rows.length<N)rows.unshift(new Array(N).fill(null));
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++)G[y*N+x]=rows[y][x]}
   return d.G;
 }
 function drawItem(c,d,hX,tx0,front){
@@ -1251,6 +1339,14 @@ function rollFor(seed,setting,sex){
 }
 return {rollFor,drawPortrait,drawBody,drawBg,compose,TINCT};
 })();
+const FUR_COATS=['#b07a45','#9a4f2a','#8d8a86','#6e5236','#d9c7a2','#3a332e','#e6e1d6','#c48a4a'];
+const FUR_MANES=['#2a201a','#5a3a22','#d8cdb8','#7a7570','#a0522d','#1d1a18'];
+function speciesLook(m,c){
+  const sp=m.sp||'Kin';c.species=sp;
+  if(sp==='Fey')c.build='lean';
+  if(sp==='Pel'){c.build='broad';if(c.sex==='m'){c.beard='long';c.braided=true}}
+  if(sp==='Fur'){const r=mulberry32(((m.look>>>0)^0x5f3a)>>>0);c.skin=FUR_COATS[Math.floor(r()*FUR_COATS.length)];c.hair=FUR_MANES[Math.floor(r()*FUR_MANES.length)];if(c.beard==='stubble')c.beard='none'}
+}
 const SF_TINCT={or:'#d4a72c',argent:'#e6e2d6',gules:'#b0262a',azure:'#2b4f9a',vert:'#2e6b3a',purpure:'#6a3577',sable:'#1f1c1e'};
 const SF_DIV={plain:'pale',pale:'pale',perpale:'pale',fess:'fess',chief:'fess',bend:'bend',chevron:'chevron',quarterly:'quarterly'};
 const SF_METAL_TRIM={or:'#c19a2e',argent:'#c9cbcf'};
@@ -1282,12 +1378,13 @@ function spriteFor(m){
     c.cloth=setting==='heraldic'?SF_TINCT[color]:shade(SF_TINCT[color],-.22);
     c.accent=SF_METAL_TRIM[metal];
   }
-  if(m.age<COME_OF_AGE){c.beard='none';c.headgear='bare';c.item='none';c.mark='none';if(setting==='medieval')c.garb=m.sex==='f'?'kirtle':'gambeson'}
-  if(m.age>=58)c.hair=m.age>=68?'#e2dccb':'#8a8680';
+  speciesLook(m,c);
+  if(!isAdult(m)){c.beard='none';c.headgear='bare';c.item='none';c.mark='none';if(setting==='medieval')c.garb=m.sex==='f'?'kirtle':'gambeson'}
+  {const S=spOf(m);if(m.age>=S.old-2)c.hair=m.age>=S.old+8?'#e2dccb':'#8a8680'}
   return c;
 }
 const SF_CACHE=new Map();
-function spriteKey(m,c){return [c.seed,c.setting,c.sex,c.division,c.tinct1,c.tinct2,c.cloth,c.accent,c.hair,c.headgear,c.garb,c.item,c.beard].join('|')}
+function spriteKey(m,c){return [c.seed,c.setting,c.sex,c.division,c.tinct1,c.tinct2,c.cloth,c.accent,c.hair,c.headgear,c.garb,c.item,c.beard,c.species,c.skin,c.build,c.braided?1:0].join('|')}
 function spriteImages(m){
   const c=spriteFor(m),k=spriteKey(m,c);
   if(SF_CACHE.has(k))return SF_CACHE.get(k);
@@ -1301,57 +1398,62 @@ function bodyURL(m){return spriteImages(m).body}
 function portrait(m,size){return '<img class="pf" src="'+portraitURL(m)+'" width="'+size+'" height="'+size+'" alt="">'}
 
 /* ---------- house generator ---------- */
-function statsFor(age,lean){
-  /* adults spread 20 points; children grow toward that as they age; elders lose Might */
-  const total=age<COME_OF_AGE?clamp(Math.round(4+age*.9),4,18):20;
-  const adult=age>=COME_OF_AGE,base=adult?2:1;const st={};STATS.forEach(k=>st[k]=base);let left=total-base*4;
-  if(lean&&age>=COME_OF_AGE){const a=ri(3,4);st[lean[0]]+=a;left-=a;if(lean[1]){const b=ri(2,3);st[lean[1]]+=b;left-=b}}
+function statsFor(age,lean,spk){
+  /* adults spread 20 points; children grow toward that as they age; elders lose Might; a species' primary stat starts at 6 or more */
+  const S=SPECIES[spk]||SPECIES.Kin,isA=age>=S.adult;
+  const total=isA?20:childTotal(age,spk);
+  const base=isA?2:1;const st={};STATS.forEach(k=>st[k]=base);let left=total-base*4;
+  if(lean&&isA){const a=ri(3,4);st[lean[0]]+=a;left-=a;if(lean[1]){const b=ri(2,3);st[lean[1]]+=b;left-=b}}
   while(left>0){const k=pick(STATS);if(st[k]<10){st[k]++;left--}}
-  if(age>=62&&st.Might>2){const d=Math.min(st.Might-2,ri(1,3));st.Might-=d;st.Insight=Math.min(10,st.Insight+d)}
+  if(isA)enforcePrimary(st,spk);
+  if(age>=S.old+2&&st.Might>2){const d=Math.min(st.Might-2,ri(1,3));st.Might-=d;st.Insight=Math.min(10,st.Insight+d)}
   return st;
 }
 const topStat=st=>STATS.reduce((a,k)=>st[k]>st[a]?k:a,STATS[0]);
 let nextId=0;const USED=new Set();
 function person(o){
-  const sex=o.sex||(R()<.5?'m':'f');
-  const st=statsFor(o.age,o.lean);
-  let given,t=0;do{given=pick(sex==='m'?MALE:FEMALE)}while(USED.has(given)&&++t<60);USED.add(given);
-  const m={id:nextId++,given,sex,age:o.age,title:o.title||'',origin:o.origin||'born',from:o.from||'',
+  /* o.age is given in Kin years and converted to the species' own */
+  const sp=o.sp||'Kin',S=SPECIES[sp],age=toSpAge(o.age,sp);
+  const sex=o.sex||(R()<S.male?'m':'f');
+  const st=statsFor(age,o.lean,sp);
+  let given,t=0;do{given=nameFor(sex,sp)}while(USED.has(given)&&++t<60);USED.add(given);
+  const m={id:nextId++,given,sex,sp,age,title:o.title||'',origin:o.origin||'born',from:o.from||'',
     parents:o.parents||[],spouse:null,ruler:!!o.ruler,st,wounds:0,dead:false,
-    gear:{weapon:'None',armor:'None',heirloom:'',specialty:''},traits:shuffle(TRAITS).slice(0,2),look:(Math.floor(R()*4294967295)>>>0)||1};
+    gear:{weapon:'None',armor:'None',heirloom:'',specialty:''},traits:traitsFor(sp),look:(Math.floor(R()*4294967295)>>>0)||1};
   m.kit=pick(KIT_BY[topStat(st)]);
-  if(o.age>=COME_OF_AGE){
+  if(age>=S.adult){
     const top=topStat(st);
     m.gear.weapon=top==='Might'?pick(['Longsword','Lance','Warhammer','Arming sword']):pick(['Dagger','Arming sword','Spear','Longbow']);
     m.gear.armor=top==='Might'||top==='Grit'?pick(['Mail hauberk','Brigandine','Plate harness']):pick(['None','Padded gambeson','Boiled leather']);
     if(top==='Ability')m.gear.specialty=pick(['Lockpicks and a dark cloak','The household ledgers','A purse of forged seals','Map of the old tunnels']);
     if(top==='Insight')m.gear.specialty=pick(['A network of chambermaids','Letters from a foreign court','The ear of a royal steward','A gift for poetry']);
-  }else m.gear.weapon=o.age>=10?'Dagger':'None';
+  }else m.gear.weapon=age>=Math.round(10*S.adult/16)?'Dagger':'None';
   return m;
 }
 function generate(seed){
   R=mulberry32(seed);
   try{
     nextId=0;USED.clear();
-    const name=pick(HOUSES),others=shuffle(HOUSES.filter(h=>h!==name)),seat=pick(SEATS);
+    const hsp=pick(SPECIES_KEYS),sp2=R()<.6?hsp:pick(SPECIES_KEYS),wsp0=pick(SPECIES_KEYS);
+    const name=pick(HOUSES_BY[hsp]),others=[pick(HOUSES_BY[sp2].filter(h=>h!==name))];others.push(pick(HOUSES_BY[wsp0].filter(h=>h!==name&&h!==others[0])));const seat=pick(SEATS_BY[hsp]);
     const members=[];const add=m=>(members.push(m),m);
     const rulerSex=R()<.7?'m':'f';
     const rulerAge=ri(38,50);
-    const elder=add(person({age:rulerAge+ri(22,28),sex:'f',title:'Dowager',lean:['Insight','Ability']}));
-    const ruler=add(person({age:rulerAge,sex:rulerSex,ruler:true,parents:[elder.id],title:(rulerSex==='m'?'Lord of ':'Lady of ')+seat,lean:['Might','Insight']}));
-    const spouse=add(person({age:rulerAge+ri(-6,2),sex:rulerSex==='m'?'f':'m',origin:'married',from:others[0],title:rulerSex==='m'?'Lady '+name:'Lord consort',lean:['Insight','Ability']}));
+    const elder=add(person({age:rulerAge+ri(22,28),sex:'f',sp:hsp,title:'Dowager',lean:['Insight','Ability']}));
+    const ruler=add(person({age:rulerAge,sex:rulerSex,ruler:true,sp:hsp,parents:[elder.id],title:(rulerSex==='m'?'Lord of ':'Lady of ')+seat,lean:['Might','Insight']}));
+    const spouse=add(person({age:rulerAge+ri(-6,2),sex:rulerSex==='m'?'f':'m',origin:'married',sp:sp2,from:others[0],title:rulerSex==='m'?'Lady '+name:'Lord consort',lean:['Insight','Ability']}));
     ruler.spouse=spouse.id;spouse.spouse=ruler.id;
-    const sib=add(person({age:rulerAge+ri(-9,-2),parents:[elder.id],lean:[pick(['Might','Ability','Grit']),'Grit']}));
-    sib.title=sib.st.Might>=6?(sib.sex==='m'?'Ser':'Dame')+', master-at-arms':sib.sex==='m'?'Uncle to the heir':'Aunt to the heir';
+    const sib=add(person({age:rulerAge+ri(-9,-2),sp:hsp,parents:[elder.id],lean:[pick(['Might','Ability','Grit']),'Grit']}));
+    sib.title=sib.st.Might>=6?(sib.sex==='m'?'Sir':'Dame')+', master-at-arms':sib.sex==='m'?'Uncle to the heir':'Aunt to the heir';
     const nKids=ri(2,4);let age=ri(Math.min(22,rulerAge-17),Math.min(24,rulerAge-16));
     const ORD=['Heir','Second-born','Third-born','Fourth-born'];
     for(let i=0;i<nKids;i++){
       if(age<1)break;
-      add(person({age,parents:[ruler.id,spouse.id],title:ORD[i],lean:age>=COME_OF_AGE?[pick(STATS),pick(STATS)]:null}));
+      add(person({age,sp:R()<.5?hsp:sp2,parents:[ruler.id,spouse.id],title:ORD[i],lean:age>=COME_OF_AGE?[pick(STATS),pick(STATS)]:null}));
       age-=ri(2,5);
     }
-    const ward=add(person({age:ri(9,17),origin:'adopted',from:others[1],parents:[ruler.id,spouse.id],title:'Ward'}));
-    return {v:1,cycle:1,gold:40,house:{name,words:pick(WORDS),seat,sigil:newSigil(),founderNote:'Grandsire '+pick(OLD_DEATHS)},members,nextId};
+    const ward=add(person({age:ri(9,17),origin:'adopted',sp:wsp0,from:others[1],parents:[ruler.id,spouse.id],title:'Ward'}));
+    return {v:1,cycle:1,gold:40,house:{name,words:pick(WORDS_BY[hsp]),seat,sigil:newSigil(),founderNote:'Grandsire '+pick(OLD_DEATHS)},members,nextId};
   }finally{R=Math.random}
 }
 
@@ -1443,7 +1545,7 @@ function updateHomeIcon(){
   const img=new Image();
   img.onload=()=>{try{
     const N=180,cv=document.createElement('canvas');cv.width=cv.height=N;const x=cv.getContext('2d');
-    const g=x.createRadialGradient(N/2,N*.35,N*.1,N/2,N/2,N*.75);g.addColorStop(0,'#efe3c6');g.addColorStop(1,'#d9c79f');
+    const g=x.createRadialGradient(N/2,N*.35,N*.1,N/2,N/2,N*.75);g.addColorStop(0,'#eeeadb');g.addColorStop(1,'#cfd3c0');
     x.fillStyle=g;x.fillRect(0,0,N,N);
     const h=N*.78,w=h*100/118;x.shadowColor='rgba(40,25,10,.35)';x.shadowBlur=6;x.shadowOffsetY=3;
     x.drawImage(img,(N-w)/2,(N-h)/2+2,w,h);
@@ -1460,7 +1562,7 @@ function renderHeader(){
   if(document.activeElement!==$('hname'))$('hname').value='House '+H.house.name;
   if(document.activeElement!==$('hwords'))$('hwords').value='“'+H.house.words+'”';
   if(document.activeElement!==$('hseat'))$('hseat').value='Seat: '+H.house.seat;
-  const alive=H.members.filter(m=>!m.dead),adults=alive.filter(m=>m.age>=COME_OF_AGE);
+  const alive=H.members.filter(m=>!m.dead),adults=alive.filter(m=>isAdult(m));
   $('readout').innerHTML=`<div>Year ${yearOf(H.cycle)}<b>${seasonOf(H.cycle)}</b></div><div>Members<b>${alive.length}</b></div><div>Gold<b>${H.gold}</b></div><div>Influence<b>${H.influence}</b></div><div>Favor<b>${H.realm?H.realm.favor:0}</b></div>`;
 }
 const SECTIONS=[['house','The House'],['tree','Family Tree'],['ops','Operations'],['market','Market'],['realm','The Realm'],['blood','Bloodlines']];
@@ -1502,16 +1604,17 @@ function houseView(){
   const byGroup={};H.members.forEach(m=>{(byGroup[groupOf(m)]=byGroup[groupOf(m)]||[]).push(m)});
   const list=GROUPS.filter(g=>byGroup[g]).map(g=>`<li class="ghead">${g}</li>`+byGroup[g].sort((a,b)=>b.age-a.age).map(m=>{
     const hp0=heirOf();const hurt=(hp0&&hp0.id===m.id?' · heir':'')+(m.returned?` · returned home`:m.dead?` · <span class="hot">fallen</span>`:m.captive?` · <span class="hot">captive</span>`:m.onOp===H.cycle?` · away`:m.wounds>0?` · <span class="hot">${m.wounds} wound${m.wounds>1?'s':''}</span>`:'');
-    return `<li><button data-sel="${m.id}" ${m.id===sel?'aria-current="true"':''}>${portrait(m,48)}<span style="min-width:0"><span class="rn">${esc(m.given)}</span><span class="rj">${esc(m.title||'—')} · ${m.age}${hurt}</span></span></button></li>`}).join('')).join('');
+    return `<li><button data-sel="${m.id}" ${m.id===sel?'aria-current="true"':''}>${portrait(m,48)}<span style="min-width:0"><span class="rn">${esc(m.given)}</span><span class="rj">${spOf(m).name} · ${esc(m.title||'—')} · ${m.age}${hurt}</span></span></button></li>`}).join('')).join('');
   return `<div class="grid"><section class="pane"><h2>Members</h2><ul class="roster">${list}</ul></section><section class="pane d">${dossier(mem(sel))}</section></div>`;
 }
 function origLine(m){
   if(m.origin==='married')return `Wed into House ${esc(H.house.name)} from House ${esc(m.from)} — a political match.`;
   if(m.origin==='adopted')return `Born of House ${esc(m.from)}, adopted into House ${esc(H.house.name)}.`;
+  if(m.bastard){const p=mem(m.parents[0]);return `Born a bastard of House ${esc(H.house.name)}${p?', to '+esc(p.given)+' and a concubine':''}. Outside the line of succession.`}
   return `Born to House ${esc(H.house.name)}.`;
 }
 function dossier(m){
-  const mw=maxWounds(m),left=mw-m.wounds,young=m.age<COME_OF_AGE;
+  const mw=maxWounds(m),left=mw-m.wounds,young=!isAdult(m);
   const pills=[];
   if(m.returned)pills.push(`<span class="status kin">Returned home to House ${esc(m.returned)}</span>`);
   else if(m.dead)pills.push(`<span class="status bad">Fallen${m.fell?' · '+esc(m.fell):''}</span>`);
@@ -1519,11 +1622,13 @@ function dossier(m){
   else if(m.wounds>=mw)pills.push('<span class="status bad">Gravely wounded</span>');
   else if(m.wounds>0)pills.push(`<span class="status bad">Wounded · ${left} left</span>`);
   else pills.push('<span class="status ok">Hale</span>');
+  pills.push(`<span class="status kin">${spOf(m).name}</span>`);
   if(!m.dead&&heirOf()===m)pills.push('<span class="status young">Heir apparent</span>');
   if(!m.dead&&H.regency&&H.regency.regent===m.id)pills.push('<span class="status young">Regent</span>');
   if(m.hostage&&!m.dead)pills.push(`<span class="status kin">Hostage of House ${esc(m.hostage)}</span>`,`<button class="sm" data-adopt="${m.id}">Adopt into House ${esc(H.house.name)} · House ${esc(m.hostage)} will be outraged</button>`);
   if(!m.dead&&m.onOp===H.cycle)pills.push('<span class="status young">On an operation this cycle</span>');
-  if(young)pills.push(`<span class="status young">Too young for operations · of age in ${COME_OF_AGE-m.age}</span>`);
+  if(young)pills.push(`<span class="status young">Too young for operations · of age in ${adultAge(m)-m.age}</span>`);
+  if(m.bastard)pills.push('<span class="status kin">Bastard</span>');
   if(m.origin!=='born')pills.push(`<span class="status kin">${m.origin==='married'?'By marriage':'By adoption'}</span>`);
   const trainRow=(m,k)=>{
     if(m.dead)return '';const n=queuedIn(m,k),top=m.st[k]+n,cost=nextTrainCost(m,k);
@@ -1534,7 +1639,7 @@ function dossier(m){
   const stats=STATS.map(k=>{
     const v=m.st[k],bonus=(k==='Might'?wVal(m.gear.weapon):0)+gearBonus(m,k);
     const skills=SKILLS[k].map(s=>`<button data-roll="${k}|${s}">${s}<b>${v+bonus}</b></button>`).join('');
-    return `<span class="sn">${k}</span><span class="pips" aria-label="${k} ${v} of 10">${Array.from({length:10},(_,i)=>`<i class="${i<v?'on':''}"></i>`).join('')}</span><span class="sv">${v}</span>
+    return `<span class="sn">${k}${k===spOf(m).primary?' ✦':''}</span><span class="pips" aria-label="${k} ${v} of 10">${Array.from({length:10},(_,i)=>`<i class="${i<v?'on':''}"></i>`).join('')}</span><span class="sv">${v}</span>
       <p class="help">${STAT_HELP[k]}</p><div class="skills">${skills}</div>${trainRow(m,k)}`}).join('');
   let roll='';
   if(lastRoll&&lastRoll.id===m.id){const L=lastRoll;
@@ -1543,7 +1648,7 @@ function dossier(m){
   const hp=Array.from({length:mw},(_,i)=>`<i class="${i<m.wounds?'on':''} ${i>=m.st.Grit?'armor':''}" title="${i>=m.st.Grit?'From armor or heirloom':'From Grit'}"></i>`).join('');
   const kin=kinOf(m).map(([rel,k])=>`<li><span class="tk">${rel}</span><button data-sel="${k.id}">${esc(fullName(k))}</button> <span class="muted">· ${k.age}</span></li>`).join('')||'<li class="muted">No kin within the house.</li>';
   return `<div class="dhead">
-      <div class="figs"><figure class="cam">${portrait(m,144)}<figcaption>${m.sex==='m'?'He':'She'} · age ${m.age}</figcaption></figure><figure class="cam"><img class="pf" src="${bodyURL(m)}" width="144" height="144" alt=""><figcaption>${spriteSetting(m)==='heraldic'?'In heraldry':'Ready for war'}</figcaption></figure>
+      <div class="figs"><figure class="cam">${portrait(m,144)}<figcaption>${spOf(m).name} · ${m.sex==='m'?'He':'She'} · age ${m.age}</figcaption></figure><figure class="cam"><img class="pf" src="${bodyURL(m)}" width="144" height="144" alt=""><figcaption>${spriteSetting(m)==='heraldic'?'In heraldry':'Ready for war'}</figcaption></figure>
         ${m.dead?'':`<button class="sm" data-relook="${m.id}">Redraw look</button>`}</div>
       <div style="min-width:0">
         <input class="given" id="given-${m.id}" data-edit="given" value="${esc(m.given)}" aria-label="Given name">
@@ -1551,7 +1656,7 @@ function dossier(m){
         <p class="origin">${esc(fullName(m))}. ${origLine(m)}</p>
         <div class="pills">${pills.join('')}</div>
       </div></div>
-    <h3>The four stats</h3>
+    <h3>The four stats</h3><p class="muted" style="margin:0 0 8px;font-size:17px">${esc(speciesLine(m))}</p>
     <div class="stats">${stats}</div>
     ${roll}
     <h3>Health</h3>
@@ -1625,7 +1730,7 @@ function treeView(){
     lines+=`<path class="blood" d="M${sx} ${sy} V${my} H${tx} V${b.y}"/>`;
   });
   L.units.forEach(u=>{if(u.ms.length===2){const a=pos[u.ms[0].id],b=pos[u.ms[1].id];lines+=`<line class="wed" x1="${a.x+CW}" y1="${a.y+CH/2}" x2="${b.x}" y2="${b.y+CH/2}"/>`}});
-  treeMembers().forEach(m=>{const p=pos[m.id];const tag=m.origin==='married'?'Wed in · House '+m.from:m.origin==='adopted'?'Adopted · House '+m.from:'';
+  treeMembers().forEach(m=>{const p=pos[m.id];const tag=m.origin==='married'?'Wed in · House '+m.from:m.origin==='adopted'?'Adopted · House '+m.from:m.bastard?'Bastard':'';
     nodes+=`<g class="node ${m.id===sel?'sel':''} ${m.dead?'dead':''} ${m.origin==='married'?'inlaw':''} ${m.origin==='adopted'?'ward':''}" data-sel="${m.id}" data-go="house" tabindex="0" role="button" aria-label="${esc(fullName(m))}, ${esc(m.title)}">
       <rect class="card" x="${p.x}" y="${p.y}" width="${CW}" height="${CH}" rx="3"/>
       <image href="${portraitURL(m)}" x="${p.x+6}" y="${p.y+6}" width="48" height="48" style="image-rendering:pixelated"/>
@@ -1641,7 +1746,7 @@ function laterView(k){
   const T={
     ops:['Operations','Phase 2',['Four operation types: Espionage, Intrigue, Battle and Conquest.','Each draws on different stats: Ability for sabotage and theft, Insight for court plots, Might and Grit in the field.','Members of age are sent out; wounds, captures and deaths come back.']],
     realm:['The Realm','Phase 3',['Rival great houses, each with its own ambitions and standing.','The throne and royal favor.','Political shifts every cycle: betrayals, sudden deaths, broken alliances and new claimants.']],
-    blood:['Bloodlines','Phase 4',['New members by birth, adoption or political marriage.','Members age each cycle and children come of age at '+COME_OF_AGE+'.','Succession when the ruler falls.']]
+    blood:['Bloodlines','Phase 4',['New members by birth, adoption or political marriage.','Members age each year and come of age by species: Fey 20, Pel 18, Kin 16, Fur 14.','Succession when the ruler falls.']]
   }[k];
   return `<section class="pane later"><div class="eyebrow">${T[1]}</div><h2 style="margin-top:6px">${T[0]}</h2><p class="muted">This part of the game is still being built. What it will hold:</p><ul>${T[2].map(x=>`<li>${x}</li>`).join('')}</ul></section>`;
 }
@@ -1664,8 +1769,8 @@ const OPS={
 };
 const OP_TYPES=['Espionage','Intrigue','Battle','Conquest'];
 const SECRETS=['The heir of House {T} is no child of the lord','Lord {T} owes ruinous debts to moneylenders across the sea','House {T} plotted against the crown in the last war','The lady of House {T} keeps a lover in the guard','House {T} poisoned their own grandsire','House {T} shelters a rival claimant to the throne','The granaries of House {T} are nearly empty','The scribe of House {T} sells their letters to another lord','House {T} broke a guest-right oath and buried the evidence','The castellan of House {T} can be bought'];
-const LAND_A=['Ash','Raven','Thorn','Wolf','Cold','Black','Elder','Mourn','Grey','Iron','Hollow','Bleak'];
-const LAND_B=['ford','mere','wick','holt','dale','barrow','fell','stead','brook','moor'];
+const LAND_A=['Ash','Raven','Thorn','Wolf','Cold','Black','Elder','Mourn','Grey','Iron','Hollow','Bleak','Silver','Star','Moss','Amber','Oak','Fern','Stone','Hawk'];
+const LAND_B=['ford','mere','wick','holt','dale','barrow','fell','stead','brook','moor','weald','vale','glen','tarn','reach'];
 const LAND_TIER=[['Village',2,40],['Holdfast',4,120],['Castle',7,300]];
 const CAPTIVE_RANKS=['a squire','a household knight','the lord’s nephew','a sworn sword','a bannerman’s son','the master-at-arms','a younger daughter'];
 const DIFF_NAME=['','Low','Middling','High'];
@@ -1673,14 +1778,14 @@ const DIFF_NAME=['','Low','Middling','High'];
 function genRivals(){
   const want=[...new Set(H.members.filter(m=>m.origin!=='born'&&m.from).map(m=>m.from))];
   shuffle(HOUSES.filter(n=>n!==H.house.name&&!want.includes(n))).forEach(n=>{if(want.length<5)want.push(n)});
-  return want.slice(0,5).map(n=>({name:n,seat:pick(SEATS),sigil:newSigil(),power:ri(1,3),hostility:0,lands:ri(4,7)}));
+  return want.slice(0,5).map(n=>{const sp=((H.members.find(m=>m.origin!=='born'&&m.from===n)||{}).sp)||houseSp(n)||pick(SPECIES_KEYS);return {name:n,seat:pick(SEATS_BY[sp]),sigil:newSigil(),power:ri(1,3),hostility:0,lands:ri(4,7),sp}});
 }
 const rival=n=>H.rivals.find(r=>r.name===n);
 /* ---------- sigil picker: edits apply instantly; the rule of tincture is enforced against the field ---------- */
 let sigilEdit=null; /* {kind:'mine'|'rival'|'royal', name} */
 const TINCT_NAME={or:'Gold (Or)',argent:'Silver (Argent)',gules:'Red (Gules)',azure:'Blue (Azure)',vert:'Green (Vert)',sable:'Black (Sable)',purpure:'Purple (Purpure)'};
 const ORD_NAME={plain:'Plain',pale:'Pale',fess:'Fess',bend:'Bend',chevron:'Chevron',perpale:'Per pale',quarterly:'Quarterly',chief:'Chief'};
-const CHARGE_NAME={mullet:'Star',roundel:'Roundel',lozenge:'Lozenge',crescent:'Crescent',cross:'Cross',tower:'Tower',none:'None'};
+const CHARGE_NAME={mullet:'Star',roundel:'Roundel',lozenge:'Lozenge',crescent:'Crescent',cross:'Cross',tower:'Tower',tree:'Tree',anvil:'Anvil',paw:'Paw',none:'None'};
 const TINCT_ORDER=['or','argent','gules','azure','vert','sable','purpure'];
 const isMetal=t=>METALS.includes(t);
 const tinctOk=(c,field)=>isMetal(c)!==isMetal(field);
@@ -1766,6 +1871,7 @@ function ensureState(){
   if(H.influence==null)H.influence=0;
   ['lands','captives','secrets','plans','pacts','offers','log'].forEach(k=>{if(!Array.isArray(H[k]))H[k]=[]});migrateLands();
   if(!Array.isArray(H.rivals))H.rivals=genRivals();
+  H.rivals.forEach(r=>{if(!r.sp)r.sp=houseSp(r.name)||pick(SPECIES_KEYS)});H.members.forEach(m=>{if(!m.sp)m.sp='Kin'});
   if(!H.ops)H.ops={nextOp:1,board:[],underway:[]};
   if(!Array.isArray(H.ops.defense))H.ops.defense=[];
   if(!H.ops.board.length&&!H.ops.underway.length&&H.ops.season!==H.cycle)H.ops.board=genBoard();
@@ -1879,7 +1985,7 @@ function finishPeace(ms,grade,out){
     const i=H.lands.findIndex(l=>l.name===op.landName);
     if(op.siege){const r=rival(op.target);
       if(grade==='fail'){if(i>=0){const L=H.lands.splice(i,1)[0];refundBuild(L,t=>out.push(t));if(r)r.lands++;out.push(`House ${op.target} seizes your ${L.tier.toLowerCase()} of ${L.name}.`)}}
-      else{out.push(`${op.place} holds against House ${op.target}.`);if(grade==='full'){const cap={name:pick(MALE.concat(FEMALE))+' '+op.target,rank:pick(CAPTIVE_RANKS),house:op.target,ransom:4+3*op.diff+ri(0,3)};H.captives.push(cap);out.push(`Captured ${cap.name}, ${cap.rank}`)}}
+      else{out.push(`${op.place} holds against House ${op.target}.`);if(grade==='full'){const cap={name:nameFor(pick(['m','f']),(rival(op.target)||{}).sp)+' '+op.target,rank:pick(CAPTIVE_RANKS),house:op.target,ransom:4+3*op.diff+ri(0,3)};H.captives.push(cap);out.push(`Captured ${cap.name}, ${cap.rank}`)}}
       return;}
     const L=i>=0?H.lands[i]:null,said=t=>out.push(t);
     if(grade==='fail'){if(L)raidLost(L,said)}
@@ -1929,7 +2035,7 @@ function rewardText(op){
   }
 }
 const cycleIncome=()=>H.lands.reduce((a,l)=>a+landIncome(l),0)+H.pacts.filter(p=>p.income).reduce((a,p)=>a+p.income,0)+(H.realm&&H.realm.office==='treasurer'?3:0)+(H.realm&&H.realm.yours?8:0);
-const canServe=m=>!m.dead&&!m.captive&&m.age>=COME_OF_AGE&&m.wounds<maxWounds(m);
+const canServe=m=>!m.dead&&!m.captive&&isAdult(m)&&m.wounds<maxWounds(m);
 const available=m=>canServe(m)&&m.onOp!==H.cycle;
 const activeTeam=ms=>ms.team.map(mem).filter(m=>m&&canServe(m));
 function stageTarget(ms,m){
@@ -1944,7 +2050,14 @@ function hurt(m,n){
   if(m.wounds<maxWounds(m))return `takes ${n} wound${n>1?'s':''}`;
   m.wounds=maxWounds(m);const g=1+Math.floor(Math.random()*10);
   if(g===1||(g!==10&&g<=m.st.Grit+(fxH(m).fallGrit||0)+gearBonus(m,'Grit')))return `falls, gravely wounded, and survives on Grit (rolled ${g})`;
+  if(hasBoon(m,'martyr')){m.gear.heirloom='';return `falls and should not rise (rolled ${g}), but the Martyr’s token crumbles and ${m.given} lives on, gravely wounded`}
   m.dead=true;m.fell='Fell in cycle '+H.cycle;return `falls and does not rise. Grit failed (rolled ${g})`;
+}
+/* a wound taken during an operation; a sworn shield turns aside the first one */
+function woundIn(ms,m,n){
+  let pre='';
+  if(hasBoon(m,'shield')){ms.shielded=ms.shielded||[];if(!ms.shielded.includes(m.id)){ms.shielded.push(m.id);n--;pre='A sworn shield turns aside the first blow; '}}
+  return n>0?pre+m.given+' '+hurt(m,n):pre+m.given+' is unhurt';
 }
 function rollStage(msId,memId){
   const ms=H.ops.underway.find(x=>x.id===msId),m=mem(memId);if(!ms||!m||ms.done)return;
@@ -1952,11 +2065,12 @@ function rollStage(msId,memId){
   const ok=roll===1||(roll!==10&&roll<=T.t);let note='';
   if(!ok){
     const r=rival(op.target);
-    if(st.stat==='Might'){const wn=op.peaceful&&!op.siege?(op.kind==='tourney'||op.kind==='melee'?1:Math.max(1,op.diff-1+(roll===10?1:0)-Math.floor(aVal(m.gear.armor)/2))):Math.max(1,op.diff+(roll===10?1:0)-Math.floor(aVal(m.gear.armor)/2));note=m.given+' '+hurt(m,wn)+'.'}
+    if(st.stat==='Might'){const wn=op.peaceful&&!op.siege?(op.kind==='tourney'||op.kind==='melee'?1:Math.max(1,op.diff-1+(roll===10?1:0)-Math.floor(aVal(m.gear.armor)/2))):Math.max(1,op.diff+(roll===10?1:0)-Math.floor(aVal(m.gear.armor)/2));note=woundIn(ms,m,wn)+'.'}
     else if(op.type==='Conquest'){note='The peasants will not bend.'}
     else if(op.type==='Espionage'){
-      if(roll===10){m.captive={house:op.target,ransom:8*op.diff+4};note=m.given+' is caught and taken captive by House '+op.target+'.'}
-      else note='Caught by a guard, '+m.given+' fights free and '+hurt(m,1)+'.';
+      if(roll===10&&hasBoon(m,'mask'))note=m.given+' is cornered, but slips away behind the faceless mask. '+woundIn(ms,m,1)+'.';
+      else if(roll===10){m.captive={house:op.target,ransom:8*op.diff+4};note=m.given+' is caught and taken captive by House '+op.target+'.'}
+      else note='Caught by a guard, '+m.given+' fights free. '+woundIn(ms,m,1)+'.';
       if(r&&!ms.raised){r.hostility=clamp(r.hostility+1,0,5);ms.raised=1}
     }else{
       note='The words fall flat. House '+op.target+' takes offense.';
@@ -1976,7 +2090,7 @@ function finishOp(ms){
   const op=ms.op,n=op.stages.length,s=ms.results.filter(r=>r.ok).length;
   const grade=s===n?'full':s*2>=n?'partial':'fail';const out=[],r=rival(op.target);
   if(op.peaceful){finishPeace(ms,grade,out);ms.done=true;ms.grade=grade;ms.gains=out;return}
-  const capName=()=>pick(MALE.concat(FEMALE))+' '+op.target;
+  const capName=()=>nameFor(pick(['m','f']),(rival(op.target)||{}).sp)+' '+op.target;
   if(op.type==='Battle'||op.type==='Conquest'){if(r)r.hostility=clamp(r.hostility+1,0,5);
     const pi=H.plans.findIndex(p=>p.house===op.target);if(pi>=0){H.plans.splice(pi,1);out.push('The stolen battle plans are spent.')}}
   if(grade==='full'&&(op.type==='Battle'||op.type==='Conquest')&&!H.hostageClaims.some(c=>c.house===op.target)&&!H.members.some(m=>m.hostage===op.target&&!m.dead)){H.hostageClaims.push({house:op.target,why:'Defeated in '+op.type.toLowerCase()});out.push('House '+op.target+' must yield a ward if you demand one (Bloodlines).')}
@@ -2134,9 +2248,9 @@ function endCycle(){
   if(H.ops.underway.some(x=>!x.done))return;
   H.ops.underway.forEach(ms=>{H.log.push({cycle:H.cycle,text:ms.op.title+': '+ms.gains.join('. ')})});H.ops.underway=[];
   const inc=cycleIncome();H.gold+=inc;trainingTurn();
-  H.members.forEach(m=>{if(!m.dead&&m.wounds>0)m.wounds--});
+  H.members.forEach(m=>{if(!m.dead&&m.wounds>0)m.wounds-=Math.min(m.wounds,hasBoon(m,'surgeon')?2:1)});
   H.log.push({cycle:H.cycle,text:`${seasonOf(H.cycle)} ends. Your holdings pay ${inc} gold. The wounded mend.`});
-  H.news=realmTurn();banditTurn((t,tone)=>H.news.push({t,tone}));if(seasonOf(H.cycle+1)==='Spring')informantTurn((t,tone)=>H.news.push({t,tone}));if(seasonOf(H.cycle+1)==='Winter')bloodlineTurn((t,tone)=>H.news.push({t,tone}));settleTraining();H.news.forEach(n=>H.log.push({cycle:H.cycle,text:n.t,realm:1}));if(H.log.length>80)H.log=H.log.slice(-80);
+  H.news=realmTurn();banditTurn((t,tone)=>H.news.push({t,tone}));boonTurn((t,tone)=>H.news.push({t,tone}));if(seasonOf(H.cycle+1)==='Spring')informantTurn((t,tone)=>H.news.push({t,tone}));if(seasonOf(H.cycle+1)==='Winter')bloodlineTurn((t,tone)=>H.news.push({t,tone}));settleTraining();H.news.forEach(n=>H.log.push({cycle:H.cycle,text:n.t,realm:1}));if(H.log.length>80)H.log=H.log.slice(-80);
   H.cycle++;H.ops.season=H.cycle;ensureMarket();H.ops.board=genBoard();planning=null;planTeam=[];leverage=null;render();
 }
 
@@ -2149,14 +2263,14 @@ const seasonOf=c=>SEASONS[(c-1)%4],yearOf=c=>1+Math.floor((c-1)/4);
 /* ---------- the realm ---------- */
 const AGENDAS={crown:'Covets the throne',land:'Hungers for land',revenge:'Nurses old grudges',wealth:'Hoards gold'};
 const OFFICES={treasurer:['Lord Treasurer','+3 gold each season'],spymaster:['Spymaster','+1 to Espionage rolls'],chancellor:['Lord Chancellor','+1 to Intrigue rolls'],marshal:['Marshal of the Realm','+1 to Might rolls in Battle and Conquest']};
-const ROYAL_HOUSES=['Aurelane','Valcourt','Draymoor','Solmere','Arundel'];
+const ROYAL_HOUSES=['Aurelane','Valcourt','Draymoor','Solmere','Arundel','Eldermere'];
 const DEATHS=['in their sleep','of a winter fever','after a fall from a horse','at a feast, and some say poison','in a hunting accident','of a wound that festered','at the hands of an unknown assassin'];
-function newMonarch(){const sex=R()<.75?'m':'f';return {given:pick(sex==='m'?MALE:FEMALE),sex,age:ri(52,68),health:ri(2,3)}}
-function newHeir(){const sex=R()<.6?'m':'f';return {given:pick(sex==='m'?MALE:FEMALE),sex,age:ri(6,30)}}
+function newMonarch(){const sex=R()<.75?'m':'f';return {given:nameFor(sex,pick(SPECIES_KEYS)),sex,age:ri(52,68),health:ri(2,3)}}
+function newHeir(){const sex=R()<.6?'m':'f';return {given:nameFor(sex,pick(SPECIES_KEYS)),sex,age:ri(6,30)}}
 const crownWord=k=>k&&k.sex==='f'?'Queen':'King';
 const heirWord=h=>h&&h.sex==='f'?'Princess':'Prince';
 function ensureRealm(){
-  H.rivals.forEach(r=>{if(!r.lord){const sx=Math.random()<.7?'m':'f';r.lord={given:pick(sx==='m'?MALE:FEMALE),sex:sx,age:ri(28,64)}}if(!r.agenda)r.agenda=pick(Object.keys(AGENDAS))});
+  H.rivals.forEach(r=>{if(!r.lord){const sx=Math.random()<.7?'m':'f';r.lord={given:nameFor(sx,r.sp),sex:sx,age:toSpAge(ri(28,64),r.sp)}}if(!r.agenda)r.agenda=pick(Object.keys(AGENDAS))});
   if(!H.realm){const royal=pick(ROYAL_HOUSES.filter(n=>n!==H.house.name));
     H.realm={royal:{name:royal,sigil:newSigil()},king:newMonarch(),heir:Math.random()<.85?newHeir():null,favor:3,office:null,crisis:null,alliances:[],wars:[],yours:false}}
   if(!Array.isArray(H.news))H.news=[];
@@ -2167,7 +2281,7 @@ function relation(a,b){const k=pairKey(a,b);if(H.realm.wars.includes(k))return '
 function setRel(a,b,kind){const k=pairKey(a,b);H.realm.wars=H.realm.wars.filter(x=>x!==k);H.realm.alliances=H.realm.alliances.filter(x=>x!==k);if(kind==='war')H.realm.wars.push(k);if(kind==='ally')H.realm.alliances.push(k)}
 const hasPeace=n=>H.pacts.some(p=>p.house===n&&(p.kind.startsWith('Pact of peace')||p.kind==='Marriage alliance'))||H.members.some(m=>m.hostage===n&&!m.dead);
 const officeBonus=type=>{const o=H.realm&&H.realm.office;return o==='spymaster'&&type==='Espionage'||o==='chancellor'&&type==='Intrigue'||o==='marshal'&&(type==='Battle'||type==='Conquest')?1:0};
-const ruler=()=>H.members.find(m=>m.ruler&&!m.dead)||H.members.find(m=>!m.dead&&m.age>=COME_OF_AGE);
+const ruler=()=>H.members.find(m=>m.ruler&&!m.dead)||H.members.find(m=>!m.dead&&isAdult(m));
 function bump(r,n){if(r)r.hostility=clamp(r.hostility+n,0,5)}
 
 function kingDies(say,how){
@@ -2188,7 +2302,7 @@ function kingDies(say,how){
   Rz.king=null;Rz.crisis={claimants:cl,backed:null,own:false};
   say(`The succession is contested. ${cl.map(c=>c.label).join(', ')} each claim the throne. It will be decided at the end of next season.`,'warn');
 }
-function newHeirR(){const sex=Math.random()<.6?'m':'f';return {given:pick(sex==='m'?MALE:FEMALE),sex,age:0}}
+function newHeirR(){const sex=Math.random()<.6?'m':'f';return {given:nameFor(sex,pick(SPECIES_KEYS)),sex,age:0}}
 function resolveCrisis(say){
   const Rz=H.realm,C=Rz.crisis,tot=C.claimants.reduce((a,c)=>a+c.str,0);let x=Math.random()*tot,win=C.claimants[0];
   for(const c of C.claimants){x-=c.str;if(x<=0){win=c;break}}
@@ -2200,7 +2314,7 @@ function resolveCrisis(say){
   }else{
     if(win.key==='heir'){const hp=win.person||Rz.heir||newMonarch();Rz.king={given:hp.given,sex:hp.sex,age:hp.age,health:3};Rz.heir=Math.random()<.7?newHeirR():null}
     else{const r=rival(win.key);Rz.royal={name:r.name,sigil:r.sigil};Rz.king={given:r.lord.given,sex:r.lord.sex,age:r.lord.age,health:3};Rz.heir=null;
-      const sx=Math.random()<.6?'m':'f';r.lord={given:pick(sx==='m'?MALE:FEMALE),sex:sx,age:ri(16,34)};r.power=Math.min(3,r.power+1);r.agenda=pick(['land','wealth','revenge'])}
+      const sx=Math.random()<.6?'m':'f';r.lord={given:nameFor(sx,r.sp),sex:sx,age:toSpAge(ri(16,34),r.sp)};r.power=Math.min(3,r.power+1);r.agenda=pick(['land','wealth','revenge'])}
     say(`${win.label} wins the throne and is crowned ${crownWord(Rz.king)} ${Rz.king.given}.`,'');
     const winR=win.key==='heir'?null:rival(win.key);
     if(C.backed===win.key){Rz.favor=Math.min(10,Rz.favor+3);Rz.office=prevOffice;say('You backed the winner. Royal favor rises.','good')}
@@ -2215,7 +2329,7 @@ const EVENTS=[
     const Rz=H.realm;
     if(Rz.heir&&!Rz.yours&&!Rz.crisis&&Math.random()<.2){say(`${heirWord(Rz.heir)} ${Rz.heir.given}, heir to the throne, has died ${pick(DEATHS)}.`,'bad');Rz.heir=null;return}
     const r=pick(H.rivals),old=r.lord,sx=Math.random()<.65?'m':'f';
-    r.lord={given:pick(sx==='m'?MALE:FEMALE),sex:sx,age:ri(15,40)};
+    r.lord={given:nameFor(sx,r.sp),sex:sx,age:toSpAge(ri(15,40),r.sp)};
     let t=`${old.sex==='f'?'Lady':'Lord'} ${old.given} of House ${r.name} has died ${pick(DEATHS)}. ${r.lord.given} now leads the house`;
     if(Math.random()<.5&&r.hostility){r.hostility--;t+=' and sets aside an old grudge'}else{r.agenda=pick(Object.keys(AGENDAS));t+=`, and ${AGENDAS[r.agenda].toLowerCase()}`}
     const lapsed=H.pacts.filter(p=>p.house===r.name);if(lapsed.length&&Math.random()<.4){H.pacts=H.pacts.filter(p=>p.house!==r.name);t+='. Your agreements with them died with the old lord'}
@@ -2258,7 +2372,7 @@ function rivalStrike(r,say){
   if(hasPeace(r.name))return;
   const ag=r.agenda;
   if(ag==='land'&&Math.random()<.45){const free=H.lands.filter(l=>!raidOn(l));if(free.length){const L=pick(free);H.ops.defense.push(genSiege(r,L));say(`House ${r.name} marches on your ${L.tier.toLowerCase()} of ${L.name}. Defend it this season or lose it.`,'warn');return}}
-  if(ag==='revenge'||ag==='land'&&Math.random()<.3){const pool=H.members.filter(m=>!m.dead&&!m.captive&&m.age>=COME_OF_AGE);if(!pool.length)return;const m=pick(pool),roll=1+Math.floor(Math.random()*10);
+  if(ag==='revenge'||ag==='land'&&Math.random()<.3){const pool=H.members.filter(m=>!m.dead&&!m.captive&&isAdult(m));if(!pool.length)return;const m=pick(pool),roll=1+Math.floor(Math.random()*10);
     const see=m.st.Insight+(fxS(m).taster||0)+gearBonus(m,'Insight');if(roll===1||roll!==10&&roll<=see){say(`An assassin of House ${r.name} comes for ${m.given}, who sees it coming (needed ${see}, rolled ${roll}).`,'warn');return}
     say(`An assassin of House ${r.name} strikes at ${m.given}, who ${hurt(m,2)}.`,'bad');return}
   if(ag==='crown'){H.realm.favor=Math.max(0,H.realm.favor-1);say(`House ${r.name} slanders your house at court. Royal favor falls.`,'bad');return}
@@ -2308,7 +2422,7 @@ const canClaim=()=>H.influence>=10||H.realm.favor>=7;
 
 /* ---------- power rankings and the web of houses ---------- */
 const BINDING=p=>p.kind==='Marriage alliance'||p.kind.startsWith('Pact of peace');
-function playerPower(){const hale=living().filter(m=>m.age>=COME_OF_AGE&&!m.captive).length;return clamp(Math.round(hale/3),1,3)}
+function playerPower(){const hale=living().filter(m=>isAdult(m)&&!m.captive).length;return clamp(Math.round(hale/3),1,3)}
 function powerOf(n){return n===H.house.name?playerPower():(rival(n)||{power:1}).power}
 function landsOf(n){return n===H.house.name?H.lands.length+1:(rival(n)||{lands:0}).lands}
 function alliesOf(n){
@@ -2399,15 +2513,14 @@ function realmView(){
 /* ---------- bloodlines ---------- */
 const BIRTH_ODDS=[.5,.4,.3,.2,.1,.05];
 const childrenOf=(a,b)=>H.members.filter(c=>c.origin==='born'&&!c.dead&&c.parents.includes(a.id)&&c.parents.includes(b.id)).length;
-const childTotal=age=>clamp(Math.round(4+age*.9),4,18);
-function ensureBlood(){if(!Array.isArray(H.informants))H.informants=[];living().forEach(m=>{if(m.hostage&&m.age>=COME_OF_AGE&&!m.kept&&m.returnDue==null)m.returnDue=true});if(!Array.isArray(H.hostageClaims))H.hostageClaims=[];if(H.regency===undefined)H.regency=null;if(H.fallen===undefined)H.fallen=false}
+function ensureBlood(){if(!Array.isArray(H.informants))H.informants=[];living().forEach(m=>{if(m.hostage&&isAdult(m)&&!m.kept&&m.returnDue==null)m.returnDue=true});if(!Array.isArray(H.hostageClaims))H.hostageClaims=[];if(H.regency===undefined)H.regency=null;if(H.fallen===undefined)H.fallen=false}
 const living=()=>H.members.filter(m=>!m.dead);
 const spouseOf=m=>m.spouse!=null?mem(m.spouse):null;
 const isMarried=m=>{const s=spouseOf(m);return !!(s&&!s.dead)};
 function descends(m,anc,seen=new Set()){if(seen.has(m.id))return false;seen.add(m.id);return m.parents.some(p=>p===anc||(mem(p)&&descends(mem(p),anc,seen)))}
 function lineOfSuccession(){
   const r=H.members.find(m=>m.ruler&&!m.dead);
-  const pool=living().filter(m=>m.origin==='born'&&m!==r);
+  const pool=living().filter(m=>m.origin==='born'&&!m.bastard&&m!==r);
   const rank=m=>r&&descends(m,r.id)?0:1;
   return pool.sort((a,b)=>rank(a)-rank(b)||b.age-a.age);
 }
@@ -2434,47 +2547,60 @@ function settleTraining(){ /* the dead are refunded in full */
 function trainingTurn(){
   settleTraining();
   H.members.forEach(m=>{if(m.dead||m.captive||!m.train||!m.train.length)return;
-    const t=m.train.shift();
-    if(m.st[t.k]<10){m.st[t.k]++;m.trainedPts=(m.trainedPts||0)+1;H.log.push({cycle:H.cycle,text:`Training pays off: ${m.given}'s ${t.k} rises to ${m.st[t.k]}.`})}
-    else{H.gold+=t.cost;H.log.push({cycle:H.cycle,text:`${m.given}'s ${t.k} is already at its height. ${t.cost} gold refunded.`})}
+    const steps=hasBoon(m,'tutor')?2:1;
+    for(let s=0;s<steps&&m.train.length;s++){const t=m.train.shift();
+    if(m.st[t.k]<10){m.st[t.k]++;m.trainedPts=(m.trainedPts||0)+1;H.log.push({cycle:H.cycle,text:`Training pays off${s?' (master-at-arms)':''}: ${m.given}'s ${t.k} rises to ${m.st[t.k]}.`})}
+    else{H.gold+=t.cost;H.log.push({cycle:H.cycle,text:`${m.given}'s ${t.k} is already at its height. ${t.cost} gold refunded.`})}}
   });
 }
 function growChild(m){
-  const want=(m.age>=COME_OF_AGE?20:childTotal(m.age))+(m.trainedPts||0);let have=STATS.reduce((a,k)=>a+m.st[k],0),guard=0;
-  const lean=topStat(m.st);
-  while(have<want&&guard++<40){const k=Math.random()<.4?lean:pick(STATS);if(m.st[k]<10){m.st[k]++;have++}}
+  const want=(isAdult(m)?20:childTotal(m.age,m.sp))+(m.trainedPts||0);let have=STATS.reduce((a,k)=>a+m.st[k],0),guard=0;
+  const lean=spOf(m).primary;
+  while(have<want&&guard++<60){const k=Math.random()<.4?lean:pick(STATS);if(m.st[k]<10){m.st[k]++;have++}}
+  if(isAdult(m))enforcePrimary(m.st,m.sp);
 }
 function makeChild(a,b){
-  const sex=Math.random()<.5?'m':'f',taken=new Set(H.members.map(x=>x.given));
-  let given,t=0;do{given=pick(sex==='m'?MALE:FEMALE)}while(taken.has(given)&&++t<60);
+  const sp=Math.random()<.5?(a.sp||'Kin'):(b.sp||'Kin'),sex=Math.random()<SPECIES[sp].male?'m':'f',taken=new Set(H.members.map(x=>x.given));
+  let given,t=0;do{given=nameFor(sex,sp)}while(taken.has(given)&&++t<60);
   const st={};STATS.forEach(k=>st[k]=1);
-  const c={id:H.nextId++,given,sex,age:0,title:'',origin:'born',from:'',parents:[a.id,b.id],spouse:null,ruler:false,st,wounds:0,dead:false,
-    gear:{weapon:'None',armor:'None',heirloom:'',specialty:''},traits:shuffle(TRAITS).slice(0,2),look:(Math.floor(Math.random()*4294967295)>>>0)||1,born:H.cycle+1};
+  const c={id:H.nextId++,given,sex,sp,age:0,title:'',origin:'born',from:'',parents:[a.id,b.id],spouse:null,ruler:false,st,wounds:0,dead:false,
+    gear:{weapon:'None',armor:'None',heirloom:'',specialty:''},traits:traitsFor(sp),look:(Math.floor(Math.random()*4294967295)>>>0)||1,born:H.cycle+1};
+  c.kit=pick(KIT_BY[pick(STATS)]);H.members.push(c);return c;
+}
+/* a concubine's child: one parent of the house, marked a bastard; raised as a child of the house but outside the line of succession */
+function makeBastard(p){
+  const sp=p.sp||'Kin',sex=Math.random()<SPECIES[sp].male?'m':'f',taken=new Set(H.members.map(x=>x.given));
+  let given,t=0;do{given=nameFor(sex,sp)}while(taken.has(given)&&++t<60);
+  const st={};STATS.forEach(k=>st[k]=1);
+  const c={id:H.nextId++,given,sex,sp,age:0,title:'',origin:'born',bastard:true,from:'',parents:[p.id],spouse:null,ruler:false,st,wounds:0,dead:false,
+    gear:{weapon:'None',armor:'None',heirloom:'',specialty:''},traits:traitsFor(sp),look:(Math.floor(Math.random()*4294967295)>>>0)||1,born:H.cycle+1};
   c.kit=pick(KIT_BY[pick(STATS)]);H.members.push(c);return c;
 }
 /* each new year: everyone ages, children grow, elders weaken, couples may have children */
 function bloodlineTurn(say){
   living().forEach(m=>{
     m.age++;
-    if(m.age<=COME_OF_AGE)growChild(m);
-    if(m.age===COME_OF_AGE){m.kit=pick(KIT_BY[topStat(m.st)]);if(m.gear.weapon==='None'||m.gear.weapon==='Dagger')m.gear.weapon=topStat(m.st)==='Might'?'Arming sword':'Dagger';
+    if(m.age<=adultAge(m))growChild(m);
+    if(m.age===adultAge(m)){m.kit=pick(KIT_BY[topStat(m.st)]);if(m.gear.weapon==='None'||m.gear.weapon==='Dagger')m.gear.weapon=topStat(m.st)==='Might'?'Arming sword':'Dagger';
       if(m.hostage){m.returnDue=true;say(`${m.given}, your hostage ward from House ${m.hostage}, comes of age. Decide in Bloodlines whether to send them home.`,'warn')}
       else say(`${m.given} comes of age and can now be sent on operations.`,'good')}
-    if(m.age>=62&&m.st.Might>1&&Math.random()<.35)m.st.Might--;
-    if(m.age>=60&&!m.captive&&Math.random()<(m.age-58)*.015){m.dead=true;m.fell=`Died of old age in year ${yearOf(H.cycle+1)}`;say(`${fullName(m)} dies of old age, at ${m.age}.`,'bad')}
+    if(m.age>=spOf(m).old+2&&m.st.Might>1&&Math.random()<.35)m.st.Might--;
+    if(m.age>=spOf(m).old&&!m.captive&&!(hasBoon(m,'longlife')&&m.age<spOf(m).old+10)&&Math.random()<(m.age-spOf(m).old+2)*.015){
+      if(hasBoon(m,'martyr')){m.gear.heirloom='';say(`${fullName(m)} sickens near to death at ${m.age}, but the Martyr’s token crumbles and they recover.`,'warn')}
+      else{m.dead=true;m.fell=`Died of old age in year ${yearOf(H.cycle+1)}`;say(`${fullName(m)} dies of old age, at ${m.age}.`,'bad')}}
   });
   const seen=new Set();
   living().forEach(a=>{const b=spouseOf(a);if(!b||b.dead||seen.has(a.id))return;seen.add(a.id);seen.add(b.id);
-    const mother=a.sex==='f'?a:b.sex==='f'?b:null;if(!mother||mother.age<COME_OF_AGE||mother.age>42||a.captive||b.captive)return;
-    if(Math.random()<BIRTH_ODDS[Math.min(5,childrenOf(a,b))]){const father=mother===a?b:a,c=makeChild(mother,father);
+    const mother=a.sex==='f'?a:b.sex==='f'?b:null;const FS=spOf(mother).fert;if(!mother||mother.age<FS[0]||mother.age>FS[1]||a.captive||b.captive)return;
+    if(Math.random()<birthOdds(mother,childrenOf(a,b))){const father=mother===a?b:a,c=makeChild(mother,father);
       say(`${mother.given} and ${father.given} welcome a ${c.sex==='m'?'son':'daughter'}, ${c.given}.`,'good')}});
 }
 /* when the ruler falls: the heir inherits, under a regent if still a child */
 function checkSuccession(){
   if(H.fallen)return;
   const r=H.members.find(m=>m.ruler);
-  if(H.regency){const h=mem(H.regency.heir);if(!h||h.dead||h.age>=COME_OF_AGE){if(h&&!h.dead)H.log.push({cycle:H.cycle,text:`${h.given} comes of age and takes up rule. The regency ends.`});H.regency=null}
-    else{const rg=mem(H.regency.regent);if(!rg||rg.dead){const nr=living().filter(m=>m.age>=COME_OF_AGE&&!m.captive).sort((a,b)=>b.age-a.age)[0];if(nr){H.regency.regent=nr.id;H.log.push({cycle:H.cycle,text:`${nr.given} becomes regent.`})}}}}
+  if(H.regency){const h=mem(H.regency.heir);if(!h||h.dead||isAdult(h)){if(h&&!h.dead)H.log.push({cycle:H.cycle,text:`${h.given} comes of age and takes up rule. The regency ends.`});H.regency=null}
+    else{const rg=mem(H.regency.regent);if(!rg||rg.dead){const nr=living().filter(m=>isAdult(m)&&!m.captive).sort((a,b)=>b.age-a.age)[0];if(nr){H.regency.regent=nr.id;H.log.push({cycle:H.cycle,text:`${nr.given} becomes regent.`})}}}}
   if(r&&!r.dead)return;
   const heir=lineOfSuccession()[0]||living().filter(m=>m.origin==='adopted').sort((a,b)=>b.age-a.age)[0]||living().sort((a,b)=>b.age-a.age)[0];
   if(r)r.ruler=false;
@@ -2482,8 +2608,8 @@ function checkSuccession(){
   const old=r?r.given:'the old ruler';
   heir.ruler=true;heir.title=(heir.sex==='m'?'Lord of ':'Lady of ')+H.house.seat;
   let t=`With ${old} dead, ${heir.given} inherits the rule of House ${H.house.name}.`;
-  if(heir.age<COME_OF_AGE){
-    const widow=r&&spouseOf(r),reg=widow&&!widow.dead&&widow.age>=COME_OF_AGE?widow:living().filter(m=>m!==heir&&m.age>=COME_OF_AGE&&!m.captive).sort((a,b)=>b.age-a.age)[0];
+  if(!isAdult(heir)){
+    const widow=r&&spouseOf(r),reg=widow&&!widow.dead&&isAdult(widow)?widow:living().filter(m=>m!==heir&&isAdult(m)&&!m.captive).sort((a,b)=>b.age-a.age)[0];
     H.regency={heir:heir.id,regent:reg?reg.id:null};
     t+=` ${heir.sex==='m'?'He':'She'} is only ${heir.age}, so ${reg?reg.given+' rules as regent':'no one stands as regent'}. Rival houses smell weakness.`;
     H.rivals.forEach(x=>bump(x,1));if(H.realm)H.realm.favor=Math.max(0,H.realm.favor-1);
@@ -2497,13 +2623,13 @@ function dowryFor(r){
   if(p===2)return {kind:'pact',text:'A trade pact worth 2 gold each season'};
   return {kind:'gold',text:'A dowry of 8 gold'};
 }
-const marriageable=()=>living().filter(m=>m.age>=COME_OF_AGE&&!m.captive&&!isMarried(m)&&m.origin!=='married');
+const marriageable=()=>living().filter(m=>isAdult(m)&&!m.captive&&!isMarried(m)&&m.origin!=='married');
 function arrangeMatch(i,memberId){
   const o=H.offers[i],m=mem(memberId);if(!o||!m||isMarried(m))return;const r=rival(o.house);
-  const sex=m.sex==='m'?'f':'m',taken=new Set(H.members.map(x=>x.given));let given,t=0;do{given=pick(sex==='m'?MALE:FEMALE)}while(taken.has(given)&&++t<60);
-  const age=clamp(m.age+ri(-6,4),COME_OF_AGE,70),st={};STATS.forEach(k=>st[k]=2);let left=12;while(left>0){const k=pick(STATS);if(st[k]<10){st[k]++;left--}}
-  const sp={id:H.nextId++,given,sex,age,title:sex==='f'?'Lady '+H.house.name:'Lord consort',origin:'married',from:o.house,parents:[],spouse:m.id,ruler:false,st,wounds:0,dead:false,
-    gear:{weapon:'Dagger',armor:'None',heirloom:'',specialty:'Kin in House '+o.house},traits:shuffle(TRAITS).slice(0,2),look:(Math.floor(Math.random()*4294967295)>>>0)||1};
+  const ssp=(r&&r.sp)||'Kin',sex=m.sex==='m'?'f':'m',taken=new Set(H.members.map(x=>x.given));let given,t=0;do{given=nameFor(sex,ssp)}while(taken.has(given)&&++t<60);
+  const age=toSpAge(clamp(Math.round(kinAge(m.age,m.sp))+ri(-6,4),16,70),ssp),st={};STATS.forEach(k=>st[k]=2);let left=12;while(left>0){const k=pick(STATS);if(st[k]<10){st[k]++;left--}}enforcePrimary(st,ssp);
+  const sp={id:H.nextId++,given,sex,sp:ssp,age,title:sex==='f'?'Lady '+H.house.name:'Lord consort',origin:'married',from:o.house,parents:[],spouse:m.id,ruler:false,st,wounds:0,dead:false,
+    gear:{weapon:'Dagger',armor:'None',heirloom:'',specialty:'Kin in House '+o.house},traits:traitsFor(ssp),look:(Math.floor(Math.random()*4294967295)>>>0)||1};
   sp.kit=pick(KIT_BY[topStat(st)]);m.spouse=sp.id;H.members.push(sp);
   const d=dowryFor(r);let dt='';
   if(d.kind==='gold'){H.gold+=8;dt='8 gold'}
@@ -2517,10 +2643,10 @@ function arrangeMatch(i,memberId){
 function declineMatch(i){const o=H.offers[i];if(!o)return;bump(rival(o.house),1);H.offers.splice(i,1);H.log.push({cycle:H.cycle,text:`House ${H.house.name} refuses a match with House ${o.house}, who take it as an insult.`});render()}
 function demandWard(i){
   const c=H.hostageClaims[i];if(!c)return;const r=rival(c.house);const ruler0=H.members.find(m=>m.ruler&&!m.dead);
-  const sex=Math.random()<.5?'m':'f',taken=new Set(H.members.map(x=>x.given));let given,t=0;do{given=pick(sex==='m'?MALE:FEMALE)}while(taken.has(given)&&++t<60);
-  const age=ri(6,14),st={};STATS.forEach(k=>st[k]=1);
-  const w={id:H.nextId++,given,sex,age,title:'Ward',origin:'adopted',from:c.house,hostage:c.house,parents:ruler0?[ruler0.id].concat(isMarried(ruler0)?[ruler0.spouse]:[]):[],spouse:null,ruler:false,st,wounds:0,dead:false,
-    gear:{weapon:'None',armor:'None',heirloom:'',specialty:''},traits:shuffle(TRAITS).slice(0,2),look:(Math.floor(Math.random()*4294967295)>>>0)||1};
+  const wsp=(r&&r.sp)||'Kin',sex=Math.random()<SPECIES[wsp].male?'m':'f',taken=new Set(H.members.map(x=>x.given));let given,t=0;do{given=nameFor(sex,wsp)}while(taken.has(given)&&++t<60);
+  const age=toSpAge(ri(6,14),wsp),st={};STATS.forEach(k=>st[k]=1);
+  const w={id:H.nextId++,given,sex,sp:wsp,age,title:'Ward',origin:'adopted',from:c.house,hostage:c.house,parents:ruler0?[ruler0.id].concat(isMarried(ruler0)?[ruler0.spouse]:[]):[],spouse:null,ruler:false,st,wounds:0,dead:false,
+    gear:{weapon:'None',armor:'None',heirloom:'',specialty:''},traits:traitsFor(wsp),look:(Math.floor(Math.random()*4294967295)>>>0)||1};
   w.kit=pick(KIT_BY[pick(STATS)]);growChild(w);H.members.push(w);bump(r,1);H.hostageClaims.splice(i,1);
   H.log.push({cycle:H.cycle,text:`House ${c.house} yields ${given}, age ${age}, as a ward. While the child lives under your roof, they will not strike at you.`});
   sel=w.id;render();
@@ -2560,9 +2686,9 @@ function bloodView(){
   const reg=H.regency?mem(H.regency.regent):null;
   const succ=`<section class="pane"><h2>Succession</h2>
     ${r?`<div class="srow">${portrait(r,48)}<div style="min-width:0"><b class="kname" style="font-size:20px">${esc(r.given)}</b><br><span class="muted">Ruler of House ${esc(H.house.name)} · age ${r.age}</span></div></div>`:''}
-    ${H.regency?`<p class="hot" style="margin:8px 0 0">A regency: ${reg?esc(reg.given)+' rules':'no one rules'} until ${esc(r?r.given:'the heir')} comes of age at ${COME_OF_AGE}.</p>`:''}
+    ${H.regency?`<p class="hot" style="margin:8px 0 0">A regency: ${reg?esc(reg.given)+' rules':'no one rules'} until ${esc(r?r.given:'the heir')} comes of age at ${r?adultAge(r):COME_OF_AGE}.</p>`:''}
     <h3>Line of succession</h3>${line.length?`<ol class="line">${line.map((m,i)=>`<li><button class="linkish" data-sel="${m.id}" data-go="house">${esc(m.given)}</button> <span class="muted">· ${m.age}${i===0?' · heir apparent':''}${m.captive?' · captive':''}</span></li>`).join('')}</ol>`:'<p class="hot">No heir of the blood. If the ruler dies, a ward or the eldest member inherits.</p>'}
-    <p class="muted" style="font-size:15px;margin:10px 0 0">Every Winter the house ages a year. Married couples may have a child, children grow toward their full stats, and the old may die. An heir under ${COME_OF_AGE} inherits under a regent, and rival houses grow bolder.</p></section>`;
+    <p class="muted" style="font-size:15px;margin:10px 0 0">Every Winter the house ages a year. Married couples may have a child, children grow toward their full stats, and the old may die. An heir who has not come of age inherits under a regent, and rival houses grow bolder.</p></section>`;
   const cands=marriageable();
   const offers=H.offers.length?H.offers.map((o,i)=>{const rv=rival(o.house),d=dowryFor(rv);const chosen=matchPick[i]!=null?matchPick[i]:(cands[0]&&cands[0].id);
     return `<article class="hcard"><div class="hhead">${rv?`<svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(rv.sigil,'mo'+i)}</svg>`:''}<div style="min-width:0;flex:1"><h3>House ${esc(o.house)} offers a match</h3><p class="muted" style="margin:0;font-size:15px">Power ${rv?'◆'.repeat(rv.power):'?'} · ${esc(d.text)}</p></div></div>
@@ -2574,8 +2700,8 @@ function bloodView(){
   const due=wards.filter(m=>m.returnDue);
   const dueHtml=due.length?`<section class="pane crisis"><h2>A ward comes of age</h2><div class="hgrid">${due.map(m=>`<article class="hcard"><div class="hhead">${portrait(m,48)}<div style="min-width:0;flex:1"><h3>${esc(m.given)} of House ${esc(m.hostage)}</h3><p class="muted" style="margin:0;font-size:15px">Age ${m.age} · Might ${m.st.Might}, Ability ${m.st.Ability}, Grit ${m.st.Grit}, Insight ${m.st.Insight}</p></div></div>
       <ul class="offices">${Object.entries(RETURN_OPTS).map(([k,[l,ty,d]])=>`<li><span style="flex:1;min-width:0">${ty?`<span class="optype t-${ty}" style="font-size:11px">${ty}</span>`:''}<b>${l}</b><br><span class="muted" style="font-size:15px">${esc(d.split('{H}').join(m.hostage))}</span></span><button class="sm${k==='keep'?' danger':''}" data-return="${m.id}|${k}">${k==='keep'?'Keep':'Choose'}</button></li>`).join('')}</ul></article>`).join('')}</div></section>`:'';
-  return `${dueHtml}<div class="two">${succ}<section class="pane"><h2>Hostage wards</h2><p class="muted" style="font-size:15px;margin:0 0 10px">A ward taken from a rival lives as one of your house. While they live with you, their family will not strike at you. At ${COME_OF_AGE} you decide whether to send them home, and on what terms.</p>
-      ${wards.length?`<ul class="offices">${wards.map(w=>`<li>${portrait(w,48)}<span style="flex:1;min-width:0"><button class="linkish" data-sel="${w.id}" data-go="house">${esc(w.given)}</button> <span class="muted">· ${w.age} · of House ${esc(w.hostage)}${w.returnDue?' · decision due':' · home at '+COME_OF_AGE}</span></span></li>`).join('')}</ul><h3>Claims</h3>`:''}${claims}${H.informants.length?`<h3>Spies placed</h3><ul class="offices">${H.informants.map(i=>`<li>${esc(i.name)} <span class="muted">· inside House ${esc(i.house)}</span></li>`).join('')}</ul>`:''}</section></div>
+  return `${dueHtml}<div class="two">${succ}<section class="pane"><h2>Hostage wards</h2><p class="muted" style="font-size:15px;margin:0 0 10px">A ward taken from a rival lives as one of your house. While they live with you, their family will not strike at you. When they come of age you decide whether to send them home, and on what terms.</p>
+      ${wards.length?`<ul class="offices">${wards.map(w=>`<li>${portrait(w,48)}<span style="flex:1;min-width:0"><button class="linkish" data-sel="${w.id}" data-go="house">${esc(w.given)}</button> <span class="muted">· ${w.age} · of House ${esc(w.hostage)}${w.returnDue?' · decision due':' · home at '+adultAge(w)}</span></span></li>`).join('')}</ul><h3>Claims</h3>`:''}${claims}${H.informants.length?`<h3>Spies placed</h3><ul class="offices">${H.informants.map(i=>`<li>${esc(i.name)} <span class="muted">· inside House ${esc(i.house)}</span></li>`).join('')}</ul>`:''}</section></div>
     <section class="pane"><h2>Marriage offers</h2><div class="hgrid">${offers}</div></section>`;
 }
 
@@ -2592,7 +2718,10 @@ const HEIRLOOMS={
   'Wolf-pelt mantle':{price:16,wounds:1,d:'Can take 1 more wound before falling'},
   'Banner of the first lord':{price:24,op:'Battle',d:'+1 to every Battle roll'},
   'Deed to the old marches':{price:20,op:'Conquest',d:'+1 to every Conquest roll'},
-  'Ring of the queen’s favor':{price:24,op:'Intrigue',d:'+1 to every Intrigue roll'}
+  'Ring of the queen’s favor':{price:24,op:'Intrigue',d:'+1 to every Intrigue roll'},
+  'Charm of long years':{price:22,boon:'longlife',d:'Boon: old age cannot kill for ten years past the usual'},
+  'Martyr’s token':{price:26,boon:'martyr',d:'Boon: once, when the bearer would die, they live on and the token crumbles'},
+  'Mask of the faceless':{price:20,boon:'mask',d:'Boon: never taken captive; a capture becomes a wound instead'}
 };
 const SPECIALTIES={
   'Lockpicks and a dark cloak':{price:10,op:'Espionage',d:'+1 to every Espionage roll'},
@@ -2606,7 +2735,12 @@ const SPECIALTIES={
   'A war-hound':{price:9,op:'Battle',d:'+1 to every Battle roll'},
   'A siege engineer':{price:14,op:'Conquest',d:'+1 to every Conquest roll'},
   'The household ledgers':{price:10,op:'Conquest',d:'+1 to every Conquest roll'},
-  'A food taster':{price:8,taster:2,d:'+2 to see an assassin coming'}
+  'A food taster':{price:8,taster:2,d:'+2 to see an assassin coming'},
+  'A concubine':{price:14,boon:'concubine',d:'Boon: 10% chance each season of a bastard child (bearer must be of age)'},
+  'A battlefield surgeon':{price:12,boon:'surgeon',d:'Boon: heals 2 wounds each season instead of 1'},
+  'A sworn shield':{price:14,boon:'shield',d:'Boon: turns aside the first wound in each operation'},
+  'A master-at-arms':{price:12,boon:'tutor',d:'Boon: training lands two steps each season instead of one'},
+  'A ransom agent':{price:12,boon:'ransom',d:'Boon: if taken captive, 50% chance to escape at each season’s end'}
 };
 const ITEM_SLOTS={weapon:'Weapon',armor:'Armor',heirloom:'Heirloom',specialty:'Specialty'};
 const itemInfo=(slot,n)=>slot==='heirloom'?HEIRLOOMS[n]:slot==='specialty'?SPECIALTIES[n]:null;
@@ -2616,6 +2750,14 @@ function itemDesc(slot,n){
   const i=itemInfo(slot,n);return i?i.d:'No effect in play';
 }
 const fxH=m=>HEIRLOOMS[m.gear.heirloom]||{},fxS=m=>SPECIALTIES[m.gear.specialty]||{};
+/* boons: personal effects of boon items, only while the member holds them */
+const hasBoon=(m,b)=>!!m&&!m.dead&&(fxH(m).boon===b||fxS(m).boon===b);
+function boonTurn(say){
+  living().forEach(m=>{
+    if(m.captive&&hasBoon(m,'ransom')&&Math.random()<.5){const hn=m.captive.house;m.captive=null;say(`${m.given}'s ransom agent bribes the gaolers of House ${hn}. ${m.given} escapes and comes home.`,'good')}
+    if(!m.captive&&isAdult(m)&&hasBoon(m,'concubine')&&Math.random()<.1){const c=makeBastard(m);say(`${m.given}'s concubine bears a bastard ${c.sex==='m'?'son':'daughter'}, ${c.given}. The child is raised in the house.`,'warn')}
+  });
+}
 /* bonus from heirloom and specialty to a roll of `stat`, during an operation of `type` (or none) */
 function gearBonus(m,stat,type){
   const h=fxH(m),s=fxS(m);let b=0;
@@ -2674,9 +2816,10 @@ function itemScore(m,slot,n){
   if(i.op&&ops.includes(i.op))sc+=2;
   if((i.wounds||i.fallGrit)&&(best==='Might'||best==='Grit'))sc+=2;
   if(i.taster)sc+=1;
+  if(i.boon)sc+=1;
   return sc;
 }
-const improves=(m,slot,n)=>itemScore(m,slot,n)>itemScore(m,slot,m.gear[slot]);
+const improves=(m,slot,n)=>itemScore(m,slot,n)>itemScore(m,slot,m.gear[slot])||(!!(itemInfo(slot,n)||{}).boon&&m.gear[slot]!==n);
 /* ---------- exchange: gold <-> influence, 6 influence moved per season (shared); the Lord Treasurer gets 4/4 ---------- */
 const EX_CAP=6;
 const isTreasurer=()=>!!(H.realm&&(H.realm.office==='treasurer'||H.realm.yours));
@@ -2705,7 +2848,7 @@ function marketView(){
   const stock=slot=>H.market[slot].length?H.market[slot].map(n=>row(slot,n,priceOf(slot,n))).join(''):'<li class="muted">Sold out until next season.</li>';
   const alive=H.members.filter(m=>!m.dead).sort((a,b)=>b.age-a.age);
   const arm=H.armory.length?`<ul class="wares">${H.armory.map((it,i)=>`<li class="ware"><span style="flex:1;min-width:0"><span class="tk" style="color:var(--gold)">${ITEM_SLOTS[it.slot]}</span><b>${esc(it.name)}</b><br><span class="muted">${esc(itemDesc(it.slot,it.name))}</span></span>
-      <span class="give">${(()=>{const who=alive.filter(m=>m.age>=COME_OF_AGE&&!m.captive&&improves(m,it.slot,it.name));
+      <span class="give">${(()=>{const who=alive.filter(m=>isAdult(m)&&!m.captive&&improves(m,it.slot,it.name));
         return who.length?`<select id="give-${i}" aria-label="Give ${esc(it.name)} to">${who.map(m=>`<option value="${m.id}">${esc(m.given)} · ${m.gear[it.slot]&&m.gear[it.slot]!=='None'?'replaces '+esc(m.gear[it.slot]):'empty slot'}</option>`).join('')}</select><button class="sm" data-give="${i}">Equip</button>`:'<span class="muted" style="font-size:14px">No one would be better off with it</span>'})()}<button class="sm" data-sell="${i}">Sell · ${sellPrice(it.slot,it.name)}</button></span></li>`).join('')}</ul>`
     :'<p class="muted">Empty. What you buy lands here, along with anything a member takes off.</p>';
   return `<section class="pane"><div class="cyclebar"><div><span class="eyebrow">The market · ${seasonOf(H.cycle)}, year ${yearOf(H.cycle)}</span><p style="margin:4px 0 0">Every season the weaponsmith and armorer bring three new pieces each, from +1 to +3. Heirlooms and specialists come and go with the seasons too.</p></div>
@@ -2769,6 +2912,26 @@ function relationsOverview(){
       <td>${groups.length?groups.map(gr=>`<span class="chip">${gr}${t.filter(x=>x.group===gr).length>1?' ×'+t.filter(x=>x.group===gr).length:''}</span>`).join(''):'<span class="muted">None</span>'}</td>
       <td>${guards(r.name).length?'<span class="okc">Held in check</span>':r.hostility?`<span class="hot">${r.hostility*6}% a season</span>`:'<span class="muted">None</span>'}</td></tr>`}).join('')}</tbody></table></div>`;
 }
+/* rerolling a rival: only a house with no ties to yours, so nothing in your chronicle points at it */
+function rerollBlock(r){
+  if(H.realm&&!H.realm.yours&&H.realm.royal.name===r.name)return 'The royal house cannot be rerolled';
+  if(tiesWith(r.name).length)return 'Bound to your house by ties. Only a house with no ties can be rerolled';
+  if(H.ops.underway.some(x=>x.op.target===r.name)||(H.ops.defense||[]).some(d=>d.target===r.name))return 'An operation involving them is underway';
+  if(H.realm&&H.realm.crisis&&H.realm.crisis.claimants.some(c=>c.key===r.name))return 'They are claiming the throne';
+  return null;
+}
+function rerollHouse(n){
+  const r=rival(n);if(!r||rerollBlock(r))return;
+  const taken=new Set([H.house.name,H.realm&&H.realm.royal&&H.realm.royal.name].concat(H.rivals.map(x=>x.name)));
+  const sp=pick(SPECIES_KEYS);let pool=HOUSES_BY[sp].filter(x=>!taken.has(x));if(!pool.length)pool=HOUSES.filter(x=>!taken.has(x));if(!pool.length)return;
+  const name=pick(pool),nsp=houseSp(name)||sp,sx=Math.random()<.7?'m':'f';
+  H.realm.alliances=H.realm.alliances.filter(k=>!k.split('|').includes(n));H.realm.wars=H.realm.wars.filter(k=>!k.split('|').includes(n));
+  Object.assign(r,{name,sp:nsp,seat:pick(SEATS_BY[nsp]),sigil:newSigil(),power:ri(1,3),hostility:0,lands:ri(4,7),agenda:pick(Object.keys(AGENDAS)),
+    lord:{given:nameFor(sx,nsp),sex:sx,age:toSpAge(ri(28,64),nsp)}});
+  H.ops.board.forEach(o=>{if(o.target===n){o.target=name;o.title=o.title.split(n).join(name)}});
+  if(leverage===n)leverage=null;if(houseMsg&&houseMsg.key===n)houseMsg=null;
+  H.log.push({cycle:H.cycle,text:`House ${n} fades from the chronicle. House ${name} of ${r.seat} rises in its place.`});
+}
 function houseCard(r){
   const Rz=H.realm;
   const rels=H.rivals.filter(o=>o!==r&&relation(r.name,o.name)).map(o=>`<span class="${relation(r.name,o.name)==='war'?'hot':'okc'}">${relation(r.name,o.name)==='war'?'at war with':'allied with'} ${esc(o.name)}</span>`).join(' · ');
@@ -2779,7 +2942,7 @@ function houseCard(r){
   const ties=tiesWith(r.name),groups=[...new Set(ties.map(x=>x.group))];
   const tieHtml=groups.length?groups.map(gr=>`<dt>${gr}</dt><dd><ul class="ties">${ties.filter(x=>x.group===gr).map(x=>`<li class="${x.tone}">${esc(x.text)}</li>`).join('')}</ul></dd>`).join(''):'';
   const hist=H.log.filter(l=>l.text.includes('House '+r.name)).slice(-3).reverse();
-  return `<article class="hcard" id="house-${esc(r.name)}"><div class="hhead"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'h'+r.name)}</svg><div style="min-width:0;flex:1"><h3 style="display:flex;gap:8px;align-items:center"><input class="hedit nm" data-hname="${esc(r.name)}" value="House ${esc(r.name)}" aria-label="Name of House ${esc(r.name)}">${Rz.royal.name===r.name?'<span class="status young">Royal</span>':''}</h3>${houseMsg&&houseMsg.key===r.name?`<p class="hmsg" role="alert">${esc(houseMsg.text)}</p>`:''}<p class="muted" style="margin:0;font-size:15px">${r.lord.sex==='f'?'Lady':'Lord'} ${esc(r.lord.given)}, ${r.lord.age}</p><input class="hedit st" data-hseat="${esc(r.name)}" value="Seat: ${esc(r.seat)}" aria-label="Seat of House ${esc(r.name)}"><span class="acts" style="margin-top:4px"><button class="sm" data-hsigil="${esc(r.name)}">Redraw sigil</button><button class="sm" data-sgopen="rival" data-sgname="${esc(r.name)}">Edit sigil</button></span></div></div>
+  return `<article class="hcard" id="house-${esc(r.name)}"><div class="hhead"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'h'+r.name)}</svg><div style="min-width:0;flex:1"><h3 style="display:flex;gap:8px;align-items:center"><input class="hedit nm" data-hname="${esc(r.name)}" value="House ${esc(r.name)}" aria-label="Name of House ${esc(r.name)}">${Rz.royal.name===r.name?'<span class="status young">Royal</span>':''}</h3>${houseMsg&&houseMsg.key===r.name?`<p class="hmsg" role="alert">${esc(houseMsg.text)}</p>`:''}<p class="muted" style="margin:0;font-size:15px">${r.lord.sex==='f'?'Lady':'Lord'} ${esc(r.lord.given)}, ${r.sp} · ${r.lord.age}</p><input class="hedit st" data-hseat="${esc(r.name)}" value="Seat: ${esc(r.seat)}" aria-label="Seat of House ${esc(r.name)}"><span class="acts" style="margin-top:4px"><button class="sm" data-hsigil="${esc(r.name)}">Redraw sigil</button><button class="sm" data-sgopen="rival" data-sgname="${esc(r.name)}">Edit sigil</button>${(()=>{const why=rerollBlock(r);return `<button class="sm" data-rerollhouse="${esc(r.name)}" ${why?`disabled title="${esc(why)}"`:'title="Replace this house with a new one"'}>Reroll house</button>`})()}</span></div></div>
     <div class="stance"><span class="eyebrow" style="color:var(--gold)">${stanceOf(r)}</span>${tensionMeter(r)}</div>
     <p class="threat">${threatLine(r)}</p>
     <dl class="opdl">${tieHtml||'<dt>Ties</dt><dd class="muted">None yet. Intrigue, marriage, wards and spies all bind houses together.</dd>'}</dl>
@@ -2801,6 +2964,7 @@ document.addEventListener('click',e=>{
   if(t.dataset.sgopen){sigilEdit={kind:t.dataset.sgopen,name:t.dataset.sgname||null};render();return}
   if(t.dataset.sgpart){setSigilPart(t.dataset.sgpart,t.dataset.sgval);render();return}
   if(t.dataset.sgclose){if(t.classList.contains('sgback')&&e.target!==t)return;sigilEdit=null;render();return}
+  if(t.dataset.rerollhouse){rerollHouse(t.dataset.rerollhouse);render();return}
   if(t.dataset.hsigil!=null){const n=t.dataset.hsigil,r=rival(n);if(r)r.sigil=newSigil();if(H.realm.royal.name===n&&!H.realm.yours)H.realm.royal.sigil=r?r.sigil:newSigil();render();return}
   if(t.dataset.rout!=null){planRout(H.lands[+t.dataset.rout]);render();return}
   if(t.dataset.calloff!=null){callOffRout(H.lands[+t.dataset.calloff]);render();return}
@@ -2884,6 +3048,5 @@ function start(d){
 try{window.claude?.hot?.snapshot(()=>({H,sel,section,activeSlot}))}catch(e){}
 window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
 </script>
-
-
-</body></html>
+</body>
+</html>
