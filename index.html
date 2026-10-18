@@ -71,6 +71,13 @@ nav.sect .soon{font:500 10px var(--f-body);letter-spacing:.1em;text-transform:up
 ul.roster{list-style:none;margin:0;padding:0;display:grid;gap:4px}
 ul.roster .ghead{margin:12px 0 2px;padding:0 4px 4px;border-bottom:1px solid var(--line);font:600 12px var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 ul.roster .ghead:first-child{margin-top:0}
+ul.roster li.grp>details>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;min-height:32px}
+ul.roster li.grp>details>summary::-webkit-details-marker{display:none}
+ul.roster li.grp>details>summary::before{content:"▸";transition:transform .15s}
+ul.roster li.grp>details[open]>summary::before{transform:rotate(90deg)}
+ul.roster li.grp:first-child .ghead{margin-top:0}
+ul.roster .gn{margin-left:auto;font:500 12px var(--f-body);color:var(--muted);letter-spacing:.06em}
+ul.roster li.grp>details>ul.roster{margin-top:4px}
 ul.roster button{width:100%;display:flex;gap:10px;align-items:center;text-align:left;background:none;border:1px solid transparent;padding:6px 8px}
 ul.roster button:hover{background:var(--field)}
 ul.roster button[aria-current="true"]{background:var(--field);border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
@@ -201,6 +208,10 @@ svg.tree line.wed{stroke:var(--kin);stroke-width:4}
 .teampick button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
 .teampick b{font:600 14px var(--f-display);white-space:nowrap;color:var(--gold)}
 .teampick .pf{width:48px;height:48px}
+.teampick.scroll{grid-template-columns:minmax(0,1fr);max-height:368px;overflow-y:auto;overscroll-behavior:contain;padding-right:4px;scrollbar-gutter:stable}
+.teampick.scroll button{height:58px;min-width:0;width:100%}
+.teampick.scroll button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.morehint{margin:0;font-size:14px;color:var(--gold)}
 .track{display:flex;gap:4px}
 .track i{flex:1;height:8px;border:1px solid var(--line)}
 .track i.ok{background:var(--accent);border-color:var(--accent)}.track i.miss{background:var(--blood);border-color:var(--blood)}.track i.now{border:2px solid var(--ink)}
@@ -318,6 +329,26 @@ svg.relweb line{stroke-width:3}
 .elab{font:600 12px var(--f-body);text-anchor:middle;fill:var(--ink);paint-order:stroke;stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
 .elab.e-t3,.elab.e-t4,.elab.e-t5{fill:var(--blood)}.elab.e-bound{fill:var(--kin)}
 .elab.sub{font-weight:400;font-size:11px;fill:var(--muted)}
+.elab.e-war{fill:var(--blood)}.elab.e-ally{fill:var(--accent)}
+.e-you.e-war{stroke-width:4}.e-you.e-ally{stroke-width:4}
+/* war & alliances */
+.dip .foldbody>h3{font-size:14px;letter-spacing:.1em;text-transform:uppercase;margin:16px 0 6px;color:var(--muted)}
+ul.mods{list-style:none;margin:0;padding:0;display:grid;gap:2px;font-size:15px}
+ul.mods li{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed var(--line);padding:2px 0}
+ul.mods b{font-family:var(--f-display);font-variant-numeric:tabular-nums}
+.confirm.col{flex-direction:column;align-items:flex-start}
+.confirm.col p{margin:0;font-size:15px}
+.warcard{border-color:var(--blood)}
+.terms{display:grid;gap:10px;margin:0 0 12px}
+.termrow{display:grid;gap:4px}
+.termrow>span{font:600 11px var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.termrow .opts{display:flex;flex-wrap:wrap;gap:6px}
+.termrow .opts button{min-height:36px;padding:2px 10px;font-size:15px;background:var(--field)}
+.termrow .opts button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow);font-weight:600}
+.danger-read{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;padding:8px 10px;background:var(--field);border-left:3px solid var(--blood);font-size:16px;margin:0 0 10px}
+.danger-read .dpip{color:var(--blood)}
+ul.demand{margin:4px 0 0;padding-left:18px;font-size:15px}
+.allycard{border-color:var(--accent)}
 .elab.favor{fill:var(--gold)}
 .crownnode circle{fill:var(--field);stroke:var(--gold);stroke-width:3}
 .crownnode path{fill:var(--gold)}
@@ -1473,7 +1504,7 @@ function generate(seed){
 /* ---------- state + saving ---------- */
 /* ---------- save slots ---------- */
 const KEY='wrathOfKings.v1',SLOTS_KEY='wrathOfKings.slots',SLOT_KEY=id=>'wrathOfKings.slot.'+id,MAX_SLOTS=6;
-let planning=null,planTeam=[],leverage=null,ravensOpen=true;
+let planning=null,planTeam=[],leverage=null,ravensOpen=true,envoy=null,pendingWar=null,pendingBreak=null,treaty=null,pendingDissolve=null;
 let H=null,sel=0,section='house',lastRoll=null,pendingConfirm=null,activeSlot=null,savesOpen=false,pendingDelete=null;
 function readMeta(){try{const m=JSON.parse(localStorage.getItem(SLOTS_KEY)||'null');if(m&&Array.isArray(m.slots))return m}catch(e){}return {active:null,slots:[]}}
 function writeMeta(m){try{localStorage.setItem(SLOTS_KEY,JSON.stringify(m))}catch(e){}}
@@ -1501,7 +1532,7 @@ function load(){
   for(const s of meta.slots)if(loadSlot(s.id))return true;
   return false;
 }
-function resetView(){planning=null;planTeam=[];leverage=null;lastRoll=null;pendingConfirm=null;$('confirmBox').innerHTML=''}
+function resetView(){planning=null;planTeam=[];leverage=null;lastRoll=null;pendingConfirm=null;envoy=null;pendingWar=null;pendingBreak=null;treaty=null;$('confirmBox').innerHTML=''}
 function switchSlot(id){if(id===activeSlot)return;save();if(loadSlot(id)){ensureState();resetView();if(!mem(sel)){const r=H.members.find(m=>m.ruler&&!m.dead);sel=r?r.id:H.members[0].id}render()}}
 function newGameSlot(){
   const meta=readMeta();if(meta.slots.length>=MAX_SLOTS)return;save();
@@ -1539,6 +1570,7 @@ function kinOf(m){
   return out;
 }
 function groupOf(m){
+  if(m.givenTo)return 'Given in treaties';
   if(m.returned)return 'Returned home';
   if(m.dead)return 'The fallen';
   const ruler=H.members.find(x=>x.ruler);
@@ -1547,7 +1579,7 @@ function groupOf(m){
   if(ruler&&m.parents.includes(ruler.id))return 'Children';
   return 'Kin';
 }
-const GROUPS=['The ruling pair','Children','Kin','Wards','Returned home','The fallen'];
+const GROUPS=['The ruling pair','Children','Kin','Wards','Returned home','Given in treaties','The fallen'];
 
 /* ---------- render ---------- */
 /* the House's sigil as the home-screen (apple-touch-icon) and tab icon: a 180px PNG on parchment, redrawn when the sigil changes */
@@ -1608,16 +1640,17 @@ function render(){
   else if(section==='market')main.innerHTML=marketView();
   else if(section==='blood')main.innerHTML=bloodView();
   else main.innerHTML=laterView(section);
+  if(H.fallen&&section!=='blood')main.innerHTML=`<section class="pane crisis"><h2>House ${esc(H.house.name)} ${H.dissolvedBy?'is dissolved':'has fallen'}</h2><p style="margin:0">${H.dissolvedBy?`You accepted the terms of House ${esc(H.dissolvedBy)}. Your house is no more.`:'No one remains to carry the name.'} Found a new House to play again.</p></section>`+main.innerHTML;
   renderSigilPicker();
   save();
   try{fitNames()}catch(e){}
 }
 function houseView(){
-  if(!mem(sel))sel=H.members[0].id;
-  const byGroup={};H.members.forEach(m=>{(byGroup[groupOf(m)]=byGroup[groupOf(m)]||[]).push(m)});
-  const list=GROUPS.filter(g=>byGroup[g]).map(g=>`<li class="ghead">${g}</li>`+byGroup[g].sort((a,b)=>b.age-a.age).map(m=>{
-    const hp0=heirOf();const hurt=(hp0&&hp0.id===m.id?' · heir':'')+(m.returned?` · returned home`:m.dead?` · <span class="hot">fallen</span>`:m.captive?` · <span class="hot">captive</span>`:m.onOp===H.cycle?` · away`:m.wounds>0?` · <span class="hot">${m.wounds} wound${m.wounds>1?'s':''}</span>`:'');
-    return `<li><button data-sel="${m.id}" ${m.id===sel?'aria-current="true"':''}>${portrait(m,48)}<span style="min-width:0"><span class="rn">${esc(m.given)}</span><span class="rj">${spOf(m).name} · ${esc(m.title||'—')} · ${m.age}${hurt}</span></span></button></li>`}).join('')).join('');
+  if(!mem(sel)||mem(sel).returned){const ru=H.members.find(m=>m.ruler&&!m.dead)||H.members.find(m=>!m.returned);if(ru)sel=ru.id}
+  const byGroup={};H.members.filter(m=>!m.returned).forEach(m=>{(byGroup[groupOf(m)]=byGroup[groupOf(m)]||[]).push(m)});
+  const list=GROUPS.filter(g=>byGroup[g]).map(g=>{const fk='g-'+g.toLowerCase().replace(/\W+/g,'-');return `<li class="grp"><details data-fold="${fk}" ${foldOpen(fk)?'open':''}><summary class="ghead">${g} <span class="gn">${byGroup[g].length}</span></summary><ul class="roster">`+byGroup[g].sort((a,b)=>b.age-a.age).map(m=>{
+    const hp0=heirOf();const hurt=(hp0&&hp0.id===m.id&&!m.dead?' · heir':'')+(m.givenTo?` · with House ${esc(m.givenTo)}`:m.returned?` · returned home`:m.dead?` · <span class="hot">fallen</span>`:m.captive?` · <span class="hot">captive</span>`:m.onOp===H.cycle?` · away`:m.wounds>0?` · <span class="hot">${m.wounds} wound${m.wounds>1?'s':''}</span>`:'');
+    return `<li><button data-sel="${m.id}" ${m.id===sel?'aria-current="true"':''}>${portrait(m,48)}<span style="min-width:0"><span class="rn">${esc(m.given)}</span><span class="rj">${spOf(m).name} · ${esc(m.title||'—')} · ${m.age}${hurt}</span></span></button></li>`}).join('')+'</ul></details></li>'}).join('');
   return `<div class="grid"><section class="pane"><h2>Members</h2><ul class="roster">${list}</ul></section><section class="pane d">${dossier(mem(sel))}</section></div>`;
 }
 function origLine(m){
@@ -1629,7 +1662,8 @@ function origLine(m){
 function dossier(m){
   const mw=maxWounds(m),left=mw-m.wounds,young=!isAdult(m);
   const pills=[];
-  if(m.returned)pills.push(`<span class="status kin">Returned home to House ${esc(m.returned)}</span>`);
+  if(m.givenTo)pills.push(`<span class="status kin">${m.givenAs==='ward'?'Given as a ward to':'Wed into'} House ${esc(m.givenTo)} under treaty</span>`);
+  else if(m.returned)pills.push(`<span class="status kin">Returned home to House ${esc(m.returned)}</span>`);
   else if(m.dead)pills.push(`<span class="status bad">Fallen${m.fell?' · '+esc(m.fell):''}</span>`);
   else if(m.captive)pills.push(`<span class="status bad">Held captive by House ${esc(m.captive.house)}</span>`);
   else if(m.wounds>=mw)pills.push('<span class="status bad">Gravely wounded</span>');
@@ -1686,7 +1720,7 @@ function dossier(m){
 
 /* ---------- family tree ---------- */
 /* hostage wards (and wards sent home) stay off the tree; adopted members are on it */
-const onTree=m=>!m.hostage&&!m.returned;
+const onTree=m=>!m.hostage&&!m.returned&&!m.givenTo;
 const treeMembers=()=>H.members.filter(onTree);
 function treeLayout(){
   const gen={};
@@ -1770,10 +1804,10 @@ const OPS={
     objs:[['Uncover a secret of House {T}','secret'],['Steal the battle plans of House {T}','plans'],['Plant a spy in the hall of House {T}','both']],
     stages:['Slip into the household','Bribe a kitchen maid','Copy the lord’s letters','Steal the cipher key','Listen at the solar door','Turn a household guard','Get out unseen']},
   Intrigue:{stat:'Insight',gives:'Political agreements, marriages, and a stronger position at court.',
-    objs:[['Broker a trade pact with House {T}','trade'],['Arrange a marriage with House {T}','marriage'],['Swear a pact of peace with House {T}','peace'],['Turn the court against House {T}','standing']],
+    objs:[['Open a {S} trade route with House {T}','route'],['Arrange a marriage with House {T}','marriage'],['Swear a pact of peace with House {T}','peace'],['Turn the court against House {T}','standing']],
     stages:['Win the steward’s ear','Host a feast in their honor','Charm the lady’s companions','Out-talk the rival envoy','Trade favors in the tiltyard','Ease an old grievance','Seal the bargain']},
   Battle:{stat:'Might',gives:'Quick gold, and prisoners to hold for ransom.',
-    objs:[['Raid the caravans of House {T}','gold'],['Ambush the levies of House {T}','captives'],['Break the host of House {T} in the field','both']],
+    objs:[['Raid the caravans of House {T}','gold'],['Ambush the levies of House {T}','captives'],['Break the host of House {T} in the field','both'],['Waylay the trade routes of House {T}','routes']],
     stages:['Break their vanguard','Hold the ford','Storm the camp','Duel their champion','Rout the levies','Run down the baggage train','Survive the counter-charge']},
   Conquest:{stat:'Might',hold:'Ability',gives:'Lands that pay income every cycle, and the peasants who work them.',
     objs:[['Seize a village of House {T}',1],['Take a holdfast of House {T}',2],['Conquer a castle of House {T}',3]],
@@ -1865,20 +1899,32 @@ function tryRenameHouse(old,raw,key){
   if(houseNameTaken(nw,old)){houseMsg={key,text:`House ${nw} already exists. Pick another name.`};return}
   houseMsg=null;renameHouse(old,nw);
 }
-function genOp(type,objPick){
-  const T=OPS[type],[objT,kind]=objPick||pick(T.objs),pool=H.rivals.filter(r=>r.lands>0||type!=='Conquest'),target=pick(pool.length?pool:H.rivals).name;
+function genOp(type,objPick,forceTarget){
+  const T=OPS[type],[objT,kind]=objPick||pick(T.objs);
+  let pool=H.rivals.filter(r=>(r.lands>0||type!=='Conquest')&&!alliedWith(r.name));
+  if(kind==='route'){const rp=H.rivals.filter(r=>canTradeWith(r.name)&&!hasRoute(r.name));pool=rp.length?rp:H.rivals.filter(r=>canTradeWith(r.name));if(!pool.length)pool=H.rivals}
+  const target=forceTarget||pick(pool.length?pool:H.rivals).name;
   const diff=type==='Conquest'?kind:ri(1,3);
   const n=diff+1;let stages;
   if(type==='Conquest'){stages=T.stages.slice(0,Math.max(1,n-1)).map(s=>({name:s,stat:'Might'}));stages.push({name:pick(T.holdStages),stat:'Ability'})}
   else stages=shuffle(T.stages).slice(0,n).map(s=>({name:s,stat:T.stat}));
-  const op={id:H.ops.nextOp++,type,kind,diff,target,title:objT.replace('{T}',target),stages};
-  if(type==='Battle'){op.gold=5*diff+ri(0,4);op.caps=kind==='gold'?0:kind==='captives'?diff:Math.max(1,diff-1);if(kind==='captives')op.gold=2*diff}
+  const op={id:H.ops.nextOp++,type,kind,diff,target,title:objT.replace('{T}',target).replace('{S}',ROUTE_SIZE[diff-1]),stages};
+  if(type==='Battle'){op.gold=5*diff+ri(0,4);op.caps=kind==='gold'||kind==='routes'?0:kind==='captives'?diff:Math.max(1,diff-1);if(kind==='captives')op.gold=2*diff;if(kind==='routes')op.gold=4*diff+ri(0,4)}
   if(type==='Conquest'){const t=LAND_TIER[diff-1];op.land={name:pick(LAND_A)+pick(LAND_B),tier:t[0],income:t[1],peasants:t[2]+ri(-10,30)}}
-  if(type==='Intrigue'){op.inf=kind==='standing'?2*diff:diff;if(kind==='trade')op.income=diff}
+  if(type==='Intrigue'){op.inf=kind==='standing'?2*diff:diff;if(kind==='trade')op.income=diff;if(kind==='route'){op.income=routeIncome(target,diff);op.size=ROUTE_SIZE[diff-1]}}
   return op;
 }
 function genBoard(){const t=SEASON_OP[seasonOf(H.cycle)];
-  if(t==='Battle'||t==='Conquest'){const hos=shuffle(OPS[t].objs),pe=shuffle(PEACE[t]);const ops=[genOp(t,hos[0]),genPeaceOp(t,pe[0]),Math.random()<.5?genOp(t,hos[1]):genPeaceOp(t,pe[1])];if(t==='Conquest')ops.sort((a,b)=>a.diff-b.diff);return ops}
+  if(t==='Battle'||t==='Conquest'){const hos=shuffle(OPS[t].objs),pe=shuffle(PEACE[t]);
+    /* at war: war operations against your enemies take up to two of the three places */
+    const foes=shuffle(warFoes().filter(n=>t!=='Conquest'||(rival(n)||{}).lands>0)).slice(0,2);
+    const ops=foes.length?foes.map((n,i)=>{const o=genOp(t,hos[i],n);o.war=true;return o}):[genOp(t,hos[0])];
+    ops.push(genPeaceOp(t,pe[0]));
+    if(ops.length<3)ops.push(Math.random()<.5?genOp(t,hos[1]):genPeaceOp(t,pe[1]));
+    if(t==='Conquest')ops.sort((a,b)=>a.diff-b.diff);return ops}
+  if(t==='Intrigue'){/* a trade route is always on the Winter board, beside two other court plots */
+    const all=OPS.Intrigue.objs,tr=all.find(o=>o[1]==='route'),rest=shuffle(all.filter(o=>o!==tr)).slice(0,2);
+    return (H.rivals.some(r=>canTradeWith(r.name))?[tr]:[]).concat(rest).concat(H.rivals.some(r=>canTradeWith(r.name))?[]:[shuffle(all.filter(o=>o!==tr&&!rest.includes(o)))[0]]).map(o=>genOp(t,o))}
   const objs=shuffle(OPS[t].objs).slice(0,3);if(t==='Conquest')objs.sort((a,b)=>a[1]-b[1]);return objs.map(o=>genOp(t,o))}
 function ensureState(){
   if(H.influence==null)H.influence=0;
@@ -1889,6 +1935,7 @@ function ensureState(){
   if(!Array.isArray(H.ops.defense))H.ops.defense=[];
   if(!H.ops.board.length&&!H.ops.underway.length&&H.ops.season!==H.cycle)H.ops.board=genBoard();
   ensureRealm();
+  ensureDip();
   ensureBlood();
   migrateItems();
   ensureMarket();
@@ -2009,6 +2056,7 @@ function finishPeace(ms,grade,out){
   if(op.kind==='defend'){
     const i=H.lands.findIndex(l=>l.name===op.landName);
     if(op.siege){const r=rival(op.target);
+      warTally(op.target,grade);
       if(grade==='fail'){if(i>=0){const L=H.lands.splice(i,1)[0];refundBuild(L,t=>out.push(t));if(r)r.lands++;out.push(`House ${op.target} seizes your ${L.tier.toLowerCase()} of ${L.name}.`)}}
       else{out.push(`${op.place} holds against House ${op.target}.`);if(grade==='full'){const cap={name:nameFor(pick(['m','f']),(rival(op.target)||{}).sp)+' '+op.target,rank:pick(CAPTIVE_RANKS),house:op.target,ransom:4+3*op.diff+ri(0,3)};H.captives.push(cap);out.push(`Captured ${cap.name}, ${cap.rank}`)}}
       return;}
@@ -2037,7 +2085,7 @@ function banditTurn(say){
   H.ops.defense=(H.ops.defense||[]).filter(op=>!op.rout);
   const old=H.ops.defense.filter(op=>op.created!==H.cycle);
   old.forEach(op=>{const L=H.lands.find(l=>l.name===op.landName);if(!L)return;
-    if(op.siege){H.lands.splice(H.lands.indexOf(L),1);refundBuild(L,say);const r=rival(op.target);if(r)r.lands++;say(`No one rode out, and House ${op.target} seizes your ${L.tier.toLowerCase()} of ${L.name}.`,'bad')}
+    if(op.siege){warTally(op.target,'fail');H.lands.splice(H.lands.indexOf(L),1);refundBuild(L,say);const r=rival(op.target);if(r)r.lands++;say(`No one rode out, and House ${op.target} seizes your ${L.tier.toLowerCase()} of ${L.name}.`,'bad')}
     else{say(`No one rode out against the raid on ${L.name}.`,'bad');raidLost(L,say)}});
   H.ops.defense=(H.ops.defense||[]).filter(op=>op.created===H.cycle);
   buildTurn(say);
@@ -2053,13 +2101,13 @@ function banditTurn(say){
 function rewardText(op){
   if(op.peaceful)return peaceRewardText(op);
   switch(op.type){
-    case 'Battle':return [op.gold+' gold',op.caps?op.caps+' captive'+(op.caps>1?'s':'')+' to ransom':''].filter(Boolean).join(' and ');
+    case 'Battle':if(op.kind==='routes')return `${op.gold} gold in plunder. A complete success ruins their merchants: their power falls by 1`;return [op.gold+' gold',op.caps?op.caps+' captive'+(op.caps>1?'s':'')+' to ransom':''].filter(Boolean).join(' and ');
     case 'Espionage':return op.kind==='secret'?'A secret of House '+op.target:op.kind==='plans'?'Battle plans: +2 on your next Battle or Conquest against them':'A secret and their battle plans';
-    case 'Intrigue':return op.kind==='trade'?'A trade pact worth '+op.income+' gold each cycle':op.kind==='marriage'?'An offer of marriage':op.kind==='peace'?'A pact of peace, ending their hostility':op.inf+' influence at court';
+    case 'Intrigue':return op.kind==='route'?`A ${op.size} trade route worth ${op.income} gold each season`:op.kind==='trade'?'A trade pact worth '+op.income+' gold each cycle':op.kind==='marriage'?'An offer of marriage':op.kind==='peace'?'A pact of peace, ending their hostility':op.inf+' influence at court';
     case 'Conquest':return `${op.land.tier} of ${op.land.name}: ${op.land.income} gold each cycle, ${op.land.peasants} peasants`;
   }
 }
-const cycleIncome=()=>H.lands.reduce((a,l)=>a+landIncome(l),0)+H.pacts.filter(p=>p.income).reduce((a,p)=>a+p.income,0)+(H.realm&&H.realm.office==='treasurer'?3:0)+(H.realm&&H.realm.yours?8:0);
+const cycleIncome=()=>H.lands.reduce((a,l)=>a+landIncome(l),0)+H.pacts.filter(p=>p.income).reduce((a,p)=>a+p.income,0)+tradeIncome()+tollIncome()+(H.realm&&H.realm.office==='treasurer'?3:0)+(H.realm&&H.realm.yours?8:0);
 const canServe=m=>!m.dead&&!m.captive&&isAdult(m)&&m.wounds<maxWounds(m);
 const available=m=>canServe(m)&&m.onOp!==H.cycle;
 const activeTeam=ms=>ms.team.map(mem).filter(m=>m&&canServe(m));
@@ -2068,7 +2116,9 @@ function stageTarget(ms,m){
   const base=m.st[st.stat],wb=st.stat==='Might'?wVal(m.gear.weapon):0,assist=Math.min(2,activeTeam(ms).length-1);
   const plans=(op.type==='Battle'||op.type==='Conquest')&&st.stat==='Might'&&H.plans.some(p=>p.house===op.target)?2:0;
   const off=st.stat==='Ability'&&op.type==='Conquest'?0:officeBonus(op.type),gb=gearBonus(m,st.stat,op.type);
-  return {base,wb,assist,plans,off,gb,pen:op.diff-1,t:base+wb+assist+plans+off+gb-(op.diff-1),stat:st.stat};
+  const ally=(op.war||op.siege&&atWar(op.target))&&st.stat==='Might'?Math.min(2,warAllies(op.target).length):0;
+  const lean=op.kind==='treaty'?(op.lean||0):0;
+  return {base,wb,assist,plans,off,gb,ally,lean,pen:op.diff-1,t:base+wb+assist+plans+off+gb+ally+lean-(op.diff-1),stat:st.stat};
 }
 function hurt(m,n){
   m.wounds+=n;
@@ -2100,6 +2150,7 @@ function rollStage(msId,memId){
       if(r&&!ms.raised){r.hostility=clamp(r.hostility+1,0,5);ms.raised=1}
     }else{
       note='The words fall flat. House '+op.target+' takes offense.';
+      if(op.kind==='treaty'&&roll===10&&!hasBoon(m,'mask')){m.captive={house:op.target,ransom:10+2*((r&&r.power)||1)};note+=' '+m.given+' is seized under the flag of truce.'}
       if(r&&!ms.raised){r.hostility=clamp(r.hostility+1,0,5);ms.raised=1}
       if(roll===10){H.influence=Math.max(0,H.influence-1);note+=' A scandal costs 1 influence.'}
     }
@@ -2117,13 +2168,16 @@ function finishOp(ms){
   const op=ms.op,n=op.stages.length,s=ms.results.filter(r=>r.ok).length;
   const grade=s===n?'full':s*2>=n?'partial':'fail';const out=[],r=rival(op.target);
   if(op.peaceful){finishPeace(ms,grade,out);ms.done=true;ms.grade=grade;ms.gains=out;return}
+  if(op.kind==='treaty'){finishTreaty(ms,grade,out);ms.done=true;ms.grade=grade;ms.gains=out;return}
   const capName=()=>nameFor(pick(['m','f']),(rival(op.target)||{}).sp)+' '+op.target;
+  if(op.war)warTally(op.target,grade);
   if(op.type==='Battle'||op.type==='Conquest'){if(r)r.hostility=clamp(r.hostility+1,0,5);
     const pi=H.plans.findIndex(p=>p.house===op.target);if(pi>=0){H.plans.splice(pi,1);out.push('The stolen battle plans are spent.')}}
   if(grade==='full'&&(op.type==='Battle'||op.type==='Conquest')&&!H.hostageClaims.some(c=>c.house===op.target)&&!H.members.some(m=>m.hostage===op.target&&!m.dead)){H.hostageClaims.push({house:op.target,why:'Defeated in '+op.type.toLowerCase()});out.push('House '+op.target+' must yield a ward if you demand one (Bloodlines).')}
   if(grade!=='fail')switch(op.type){
     case 'Battle':{const g=grade==='full'?op.gold:Math.ceil(op.gold/2),c=grade==='full'?op.caps:Math.floor(op.caps/2);
       H.gold+=g;out.unshift('+'+g+' gold');
+      if(op.kind==='routes'&&grade==='full'&&r&&r.power>1){r.power--;out.push(`The merchants of House ${op.target} are ruined. Their power falls`)}
       for(let i=0;i<c;i++){const cap={name:capName(),rank:pick(CAPTIVE_RANKS),house:op.target,ransom:4+3*op.diff+ri(0,3)};H.captives.push(cap);out.push('Captured '+cap.name+', '+cap.rank)}
       break}
     case 'Espionage':{
@@ -2136,7 +2190,8 @@ function finishOp(ms){
     case 'Intrigue':{
       if(grade==='partial'){H.influence+=1;out.push('+1 influence. Talks stall short of an agreement.');
         if(op.kind==='peace'&&r){r.hostility=Math.max(0,r.hostility-1);out.push('House '+op.target+' cools a little.')}break}
-      if(op.kind==='trade'){H.pacts.push({house:op.target,kind:'Trade pact',income:op.income});out.push('Trade pact sealed: +'+op.income+' gold each cycle.')}
+      if(op.kind==='trade'){addRoute(op.target,op.income,'small');out.push('Trade route opened: +'+op.income+' gold each season.')}
+      if(op.kind==='route'){addRoute(op.target,op.income,op.size);out.push(`A ${op.size} trade route with House ${op.target} opens: +${op.income} gold each season.`)}
       if(op.kind==='marriage'){H.offers.push({house:op.target,cycle:H.cycle});out.push('House '+op.target+' offers a marriage. Arrange it in Bloodlines (Phase 4).')}
       if(op.kind==='peace'){H.pacts.push({house:op.target,kind:'Pact of peace'});if(r)r.hostility=0;out.push('Pact of peace sworn. Their hostility ends.')}
       const inf=op.kind==='standing'?op.inf:1;H.influence+=inf;out.unshift('+'+inf+' influence');
@@ -2165,6 +2220,9 @@ function opsView(){
       <ol class="seasons" aria-label="The year">${SEASONS.map(x=>`<li class="${x===sea?'now':''}"><b>${x}</b> ${SEASON_OP[x]}</li>`).join('')}</ol>
       ${busy?'<p class="muted" style="margin:6px 0 0;font-size:15px">Finish the operation underway before ending the season.</p>':''}
       ${H.realm&&H.realm.crisis?'<p class="hot" style="margin:6px 0 0">The throne is contested. See The Realm before the season ends.</p>':''}
+      ${warFoes().length?`<p class="hot" style="margin:6px 0 0">At war with ${warFoes().map(n=>'House '+esc(n)).join(', ')}. War operations against them come up in Summer and Fall.</p>`:''}
+      ${H.dip&&H.dip.demands.length?`<p class="hot" style="margin:6px 0 0">${H.dip.demands.map(x=>'House '+esc(x.house)).join(', ')} ${H.dip.demands.length>1?'have':'has'} sent terms for peace. Answer in The Realm this Winter.</p>`:''}
+      ${H.dip&&H.dip.calls.length?`<p class="hot" style="margin:6px 0 0">${H.dip.calls.length===1?'An ally calls':'Allies call'} you to arms. Answer in The Realm before the season ends.</p>`:''}
     </section>
     ${under?`<section class="pane"><h2>Underway</h2><div class="opgrid">${under}</div></section>`:''}
     ${H.ops.defense&&H.ops.defense.some(d=>d.rout)?`<section class="pane"><div class="boardhead"><h2>Routing out bandits</h2><span class="muted" style="font-size:15px">A free action: it does not use this season’s operation. Each hold can be tried once a season.</span></div><div class="opgrid">${H.ops.defense.filter(d=>d.rout).map(opCard).join('')}</div></section>`:''}
@@ -2182,16 +2240,16 @@ function opCard(op){
   if(planningThis){
     const apt=m=>m.st[T.stat]+(T.stat==='Might'?wVal(m.gear.weapon):0)+gearBonus(m,T.stat,op.type),hold=m=>op.type==='Conquest'?m.st.Ability+gearBonus(m,'Ability',op.type):0;
     const opts=H.members.filter(available).sort((a,b)=>apt(b)-apt(a)||hold(b)-hold(a)||b.age-a.age);
-    pickHtml=opts.length?`<div class="teampick" role="group" aria-label="Choose the team">${opts.map(m=>{const v=m.st[T.stat]+(T.stat==='Might'?wVal(m.gear.weapon):0)+gearBonus(m,T.stat,op.type);
+    pickHtml=opts.length?`${opts.length>6?`<p class="morehint">Your best six for this operation are listed first. Scroll for ${opts.length-6} more.</p>`:''}<div class="teampick scroll" role="group" aria-label="Choose the team">${opts.map(m=>{const v=m.st[T.stat]+(T.stat==='Might'?wVal(m.gear.weapon):0)+gearBonus(m,T.stat,op.type);
       return `<button data-pick="${m.id}" aria-pressed="${planTeam.includes(m.id)}">${portrait(m,48)}<span>${esc(m.given)} <span class="muted">· ${esc(m.title||'')}</span></span><b>${T.stat} ${v}${op.type==='Conquest'?' · Ability '+m.st.Ability:''}</b></button>`}).join('')}</div>
       <p class="muted" style="margin:0;font-size:14px">Each extra member adds +1 to every roll, up to +2.</p>`:'<p class="muted">No one is free. Members heal and return next cycle.</p>';
   }
   return `<article class="opcard t-${op.type} ${planningThis?'planning':''}">
-    <div class="optype">${op.type}${op.kind==='defend'?' · defense':op.kind==='rout'?' · free action':op.peaceful?' · peaceful':''} · rolls ${T.stat}${op.type==='Conquest'?', then Ability':''}</div>
+    <div class="optype">${op.type}${op.war?' · war':''}${op.kind==='defend'?' · defense':op.kind==='rout'?' · free action':op.peaceful?' · peaceful':''} · rolls ${T.stat}${op.type==='Conquest'?', then Ability':''}</div>
     <h3>${esc(op.title)}</h3>
     <dl class="opdl">${op.target?`<dt>${op.siege?'Attacker':'Target'}</dt><dd>${miniSigil(op.target)} House ${esc(op.target)}</dd>`:`<dt>Where</dt><dd>${esc(op.kind==='defend'||op.kind==='rout'?'Your land at '+op.place:op.kind==='tourney'?'The royal lists':op.place)} <span class="okc">· no house is angered</span></dd>`}
       <dt>Danger</dt><dd><span class="dpip">${'◆'.repeat(op.diff)}${'◇'.repeat(3-op.diff)}</span> ${DIFF_NAME[op.diff]}${op.diff>1?' · −'+(op.diff-1)+' to rolls':''}</dd>
-      <dt>Stages</dt><dd>${stages}</dd><dt>Reward</dt><dd>${esc(rewardText(op))}</dd></dl>
+      <dt>Stages</dt><dd>${stages}</dd><dt>Reward</dt><dd>${esc(rewardText(op))}</dd>${(op.war||op.siege&&atWar(op.target))?`<dt>War</dt><dd>${warAllies(op.target).length?`<span class="okc">Allies at your side: +${Math.min(2,warAllies(op.target).length)} to Might rolls</span>`:'<span class="muted">No allies fighting beside you. Call them to arms in The Realm.</span>'}</dd>`:''}</dl>
     ${pickHtml}
     <div class="acts">${planningThis?`<button class="main" data-launch="${op.id}" ${planTeam.length?'':'disabled'}>Send ${planTeam.length||'the team'}</button><button data-plan="">Cancel</button>`:`<button data-plan="${op.id}">Choose a team</button>`}</div>
   </article>`;
@@ -2204,7 +2262,7 @@ function missionCard(ms){
   if(!ms.done){
     const st=op.stages[ms.stage],act=activeTeam(ms);
     body=`<p style="margin:0"><b>Stage ${ms.stage+1} of ${op.stages.length}:</b> ${esc(st.name)} <span class="muted">· rolls ${st.stat}</span></p>
-      <div class="teampick">${act.slice().sort((a,b)=>stageTarget(ms,b).t-stageTarget(ms,a).t).map(m=>{const T=stageTarget(ms,m);const parts=[T.stat+' '+T.base];if(T.wb)parts.push('weapon +'+T.wb);if(T.assist)parts.push('team +'+T.assist);if(T.plans)parts.push('plans +2');if(T.off)parts.push('office +1');if(T.gb)parts.push('gear +'+T.gb);if(T.pen)parts.push('danger −'+T.pen);
+      <div class="teampick">${act.slice().sort((a,b)=>stageTarget(ms,b).t-stageTarget(ms,a).t).map(m=>{const T=stageTarget(ms,m);const parts=[T.stat+' '+T.base];if(T.wb)parts.push('weapon +'+T.wb);if(T.assist)parts.push('team +'+T.assist);if(T.plans)parts.push('plans +2');if(T.off)parts.push('office +1');if(T.gb)parts.push('gear +'+T.gb);if(T.ally)parts.push('allies +'+T.ally);if(T.lean)parts.push('their leaning '+(T.lean>0?'+':'−')+Math.abs(T.lean));if(T.pen)parts.push('danger −'+T.pen);
         return `<button data-stageroll="${ms.id}|${m.id}">${portrait(m,48)}<span>${esc(m.given)} rolls <span class="muted">· ${parts.join(', ')}</span></span><b>${T.t} or under</b></button>`}).join('')}</div>`;
   }else{
     const G={full:'Complete success',partial:'Partial success',fail:'Failure'}[ms.grade];
@@ -2238,8 +2296,13 @@ function holdingsPane(){
   const held=ours.length?`<h3>Held by rivals</h3><ul class="hl">${ours.map(m=>`<li><b>${esc(fullName(m))}</b> <span class="muted">· held by House ${esc(m.captive.house)}</span><br><button class="sm" data-payransom="${m.id}" ${H.gold<m.captive.ransom?'disabled':''}>Pay ${m.captive.ransom} gold to free them</button></li>`).join('')}</ul>`:'';
   const secrets=H.secrets.length?`<ul class="hl">${H.secrets.map(s=>`<li>${esc(s.text)}.</li>`).join('')}</ul>`:'<p class="muted">None yet. Espionage uncovers them; they become leverage in The Realm.</p>';
   const plans=H.plans.length?`<p style="margin:0">${H.plans.map(p=>'House '+esc(p.house)).join(', ')} <span class="muted">· +2 on your next Battle or Conquest against them</span></p>`:'';
-  const pacts=H.pacts.length?`<ul class="hl">${H.pacts.map(p=>`<li><b>${esc(p.kind)}</b> with House ${esc(p.house)}${p.income?' · +'+p.income+' gold each cycle':''}</li>`).join('')}</ul>`:'<p class="muted">None yet. Intrigue wins them.</p>';
-  const offers=H.offers.length?`<ul class="hl">${H.offers.map(o=>`<li>House ${esc(o.house)} offers a marriage <span class="muted">· arranged in Bloodlines</span></li>`).join('')}</ul>`:'';
+  const agr=H.pacts.map(p=>`<li><b>${esc(p.kind)}</b> with House ${esc(p.house)}${p.income?' · +'+p.income+' gold each cycle':''}</li>`)
+    .concat(H.dip.allies.map(a=>`<li><b>Military alliance</b> with House ${esc(a.house)}</li>`))
+    .concat(H.dip.routes.map(x=>`<li><b>${esc(x.size[0].toUpperCase()+x.size.slice(1))} trade route</b> with House ${esc(x.house)} · ${routeActive(x)?`+${x.income} gold each season`:`<span class="hot">${esc(routeStatus(x))}</span>`}</li>`))
+    .concat(H.dip.truces.filter(t=>t.until>H.cycle).map(t=>`<li><b>Truce</b> with House ${esc(t.house)} <span class="muted">· until ${seasonOf(t.until)}, year ${yearOf(t.until)}</span></li>`))
+    .concat(H.dip.wars.map(w=>`<li><b class="hot">At war</b> with House ${esc(w.house)}</li>`));
+  const pacts=agr.length?`<ul class="hl">${agr.join('')}</ul>`:'<p class="muted">None yet. Intrigue wins treaties; envoys win alliances in The Realm.</p>';
+  const offers=H.offers.length?`<ul class="hl">${H.offers.map(o=>`<li>House ${esc(o.house)} ${o.treaty?'owes you a match under treaty':'offers a marriage'} <span class="muted">· arranged in Bloodlines</span></li>`).join('')}</ul>`:'';
   const peas=H.lands.reduce((a,l)=>a+l.peasants,0);
   return `<section class="pane hold"><h2>Holdings &amp; spoils</h2>
     <div class="tally"><div>Gold<b>${H.gold}</b></div><div>Influence<b>${H.influence}</b></div><div>Lands<b>${H.lands.length}</b></div><div>Peasants<b>${peas}</b></div></div>
@@ -2306,7 +2369,7 @@ function ensureRealm(){
 const pairKey=(a,b)=>[a,b].sort().join('|');
 function relation(a,b){const k=pairKey(a,b);if(H.realm.wars.includes(k))return 'war';if(H.realm.alliances.includes(k))return 'ally';return null}
 function setRel(a,b,kind){const k=pairKey(a,b);H.realm.wars=H.realm.wars.filter(x=>x!==k);H.realm.alliances=H.realm.alliances.filter(x=>x!==k);if(kind==='war')H.realm.wars.push(k);if(kind==='ally')H.realm.alliances.push(k)}
-const hasPeace=n=>H.pacts.some(p=>p.house===n&&(p.kind.startsWith('Pact of peace')||p.kind==='Marriage alliance'))||H.members.some(m=>m.hostage===n&&!m.dead);
+const hasPeace=n=>!atWar(n)&&(H.pacts.some(p=>p.house===n&&(p.kind.startsWith('Pact of peace')||p.kind==='Marriage alliance'))||H.members.some(m=>m.hostage===n&&!m.dead)||alliedWith(n)||inTruce(n));
 const officeBonus=type=>{const o=H.realm&&H.realm.office;return o==='spymaster'&&type==='Espionage'||o==='chancellor'&&type==='Intrigue'||o==='marshal'&&(type==='Battle'||type==='Conquest')?1:0};
 const ruler=()=>H.members.find(m=>m.ruler&&!m.dead)||H.members.find(m=>!m.dead&&isAdult(m));
 function bump(r,n){if(r)r.hostility=clamp(r.hostility+n,0,5)}
@@ -2360,7 +2423,8 @@ const EVENTS=[
     let t=`${old.sex==='f'?'Lady':'Lord'} ${old.given} of House ${r.name} has died ${pick(DEATHS)}. ${r.lord.given} now leads the house`;
     if(Math.random()<.5&&r.hostility){r.hostility--;t+=' and sets aside an old grudge'}else{r.agenda=pick(Object.keys(AGENDAS));t+=`, and ${AGENDAS[r.agenda].toLowerCase()}`}
     const lapsed=H.pacts.filter(p=>p.house===r.name);if(lapsed.length&&Math.random()<.4){H.pacts=H.pacts.filter(p=>p.house!==r.name);t+='. Your agreements with them died with the old lord'}
-    say(t+'.',lapsed.length?'bad':'');
+    let lost=false;if(alliedWith(r.name)&&Math.random()<.3){H.dip.allies=H.dip.allies.filter(a=>a.house!==r.name);lost=true;t+='. The new lord does not hold to the old alliance with you'}
+    say(t+'.',lapsed.length||lost?'bad':'');
   }],
   ['alliance',2,say=>{
     const pairs=[];H.rivals.forEach((a,i)=>H.rivals.slice(i+1).forEach(b=>{if(!relation(a.name,b.name))pairs.push([a,b])}));if(!pairs.length)return false;
@@ -2370,7 +2434,8 @@ const EVENTS=[
   }],
   ['war',2,say=>{
     const pairs=[];H.rivals.forEach((a,i)=>H.rivals.slice(i+1).forEach(b=>{if(relation(a.name,b.name)!=='ally'&&relation(a.name,b.name)!=='war')pairs.push([a,b])}));if(!pairs.length)return false;
-    const [a,b]=pick(pairs);setRel(a.name,b.name,'war');say(`House ${a.name} marches on House ${b.name}. The realm is at war.`,'warn');
+    const [a,b]=pick(pairs);setRel(a.name,b.name,'war');H.realm.warFrom[pairKey(a.name,b.name)]=a.name;say(`House ${a.name} marches on House ${b.name}. The realm is at war.`,'warn');
+    allyAttacked(a,b,say);
   }],
   ['decree',3,say=>{
     const Rz=H.realm;if(Rz.yours||!Rz.king)return false;const K=crownWord(Rz.king)+' '+Rz.king.given;
@@ -2388,9 +2453,11 @@ const EVENTS=[
     else{if(Rz.favor>=4){H.influence++;say(`${K} summons the lords to court. Your house is seated near the throne: +1 influence.`,'good')}else say(`${K} summons the lords to court. Your house is seated below the salt.`,'')}
   }],
   ['betrayal',2,say=>{
+    const fickle=H.dip.allies.filter(a=>{const r=rival(a.house);return r&&(r.hostility>0||r.agenda==='crown')});
+    if(fickle.length&&Math.random()<.35){const a=pick(fickle),r=rival(a.house);H.dip.allies=H.dip.allies.filter(x=>x!==a);bump(r,1);griev(a.house,'They broke their alliance with you');say(`House ${a.house} breaks its alliance with you.`,'bad');return}
     const pacts=H.pacts.filter(p=>{const r=rival(p.house);return r&&(r.hostility>0||r.agenda!=='wealth')});
     const allies=H.realm.alliances.slice();
-    if(pacts.length&&Math.random()<.6){const p=pick(pacts),r=rival(p.house);H.pacts.splice(H.pacts.indexOf(p),1);bump(r,1);say(`House ${p.house} tears up its ${p.kind.toLowerCase()} with you.`,'bad');return}
+    if(pacts.length&&Math.random()<.6){const p=pick(pacts),r=rival(p.house);H.pacts.splice(H.pacts.indexOf(p),1);bump(r,1);griev(p.house,`They tore up their ${p.kind.toLowerCase()} with you`);say(`House ${p.house} tears up its ${p.kind.toLowerCase()} with you.`,'bad');return}
     if(allies.length){const k=pick(allies),[a,b]=k.split('|');setRel(a,b,'war');say(`House ${a} betrays its ally House ${b}. The alliance ends in blood.`,'warn');return}
     return false;
   }]
@@ -2398,17 +2465,20 @@ const EVENTS=[
 function rivalStrike(r,say){
   if(hasPeace(r.name))return;
   const ag=r.agenda;
-  if(ag==='land'&&Math.random()<.45){const free=H.lands.filter(l=>!raidOn(l));if(free.length){const L=pick(free);H.ops.defense.push(genSiege(r,L));say(`House ${r.name} marches on your ${L.tier.toLowerCase()} of ${L.name}. Defend it this season or lose it.`,'warn');return}}
-  if(ag==='revenge'||ag==='land'&&Math.random()<.3){const pool=H.members.filter(m=>!m.dead&&!m.captive&&isAdult(m));if(!pool.length)return;const m=pick(pool),roll=1+Math.floor(Math.random()*10);
+  if(ag==='land'&&Math.random()<.45){const free=H.lands.filter(l=>!raidOn(l));if(free.length){const L=pick(free);H.ops.defense.push(genSiege(r,L));griev(r.name,`They marched on your ${L.tier.toLowerCase()} of ${L.name}`);say(`House ${r.name} marches on your ${L.tier.toLowerCase()} of ${L.name}. Defend it this season or lose it.`,'warn');return}}
+  if(ag==='revenge'||ag==='land'&&Math.random()<.3){const pool=H.members.filter(m=>!m.dead&&!m.captive&&isAdult(m));if(!pool.length)return;const m=pick(pool),roll=1+Math.floor(Math.random()*10);griev(r.name,`They sent an assassin against ${m.given}`);
     const see=m.st.Insight+(fxS(m).taster||0)+gearBonus(m,'Insight');if(roll===1||roll!==10&&roll<=see){say(`An assassin of House ${r.name} comes for ${m.given}, who sees it coming (needed ${see}, rolled ${roll}).`,'warn');return}
     if(hasBoon(m,'chalice')){m.wounds=Math.min(m.wounds+1,Math.max(0,maxWounds(m)-1));say(`An assassin of House ${r.name} strikes at ${m.given}, but the silver chalice turns black at the poison. ${m.given} takes 1 wound and lives.`,'warn');return}
     say(`An assassin of House ${r.name} strikes at ${m.given}, who ${hurt(m,2)}.`,'bad');return}
   if(ag==='crown'){const cs=living().find(m=>hasBoon(m,'crownshard'));if(cs){say(`House ${r.name} slanders your house at court, but ${cs.given} bears the Crown-shard and the court will not hear a word against you.`,'warn');return}
-    H.realm.favor=Math.max(0,H.realm.favor-1);say(`House ${r.name} slanders your house at court. Royal favor falls.`,'bad');return}
-  const g=Math.min(H.gold,ri(4,9));H.gold-=g;say(`Raiders in the colors of House ${r.name} burn your storehouses: −${g} gold.`,'bad');
+    H.realm.favor=Math.max(0,H.realm.favor-1);griev(r.name,'They slandered your house at court');say(`House ${r.name} slanders your house at court. Royal favor falls.`,'bad');return}
+  const live=H.dip?H.dip.routes.filter(routeActive):[];
+  if(live.length&&Math.random()<.5){const rt=pick(live);rt.cutUntil=H.cycle+3;griev(r.name,'Their raiders plundered your caravans');say(`Raiders in the colors of House ${r.name} fall on your caravans. The route with House ${rt.house} is cut for two seasons.`,'bad');return}
+  const g=Math.min(H.gold,ri(4,9));H.gold-=g;griev(r.name,'Their raiders burned your storehouses');say(`Raiders in the colors of House ${r.name} burn your storehouses: −${g} gold.`,'bad');
 }
 function realmTurn(){
   const news=[],say=(t,tone)=>news.push({t,tone}),Rz=H.realm;
+  expireCalls(say);
   if(seasonOf(H.cycle+1)==='Winter'){if(Rz.king&&!Rz.yours)Rz.king.age++;if(Rz.heir)Rz.heir.age++;H.rivals.forEach(r=>{r.lord.age++;if(r.hostility&&Math.random()<.3)r.hostility--})}
   if(Rz.crisis)resolveCrisis(say);
   else if(Rz.king&&!Rz.yours){const k=Rz.king,p=.015+Math.max(0,k.age-55)*.006+(3-k.health)*.04;
@@ -2417,13 +2487,519 @@ function realmTurn(){
   /* wars grind on: the stronger side takes land, and some end in peace */
   Rz.wars.slice().forEach(w=>{const [a,b]=w.split('|').map(rival);if(!a||!b)return;
     const win=a.power+Math.random()*3>=b.power+Math.random()*3?a:b,lose=win===a?b:a;
-    if(Math.random()<.3){setRel(a.name,b.name,null);say(`Houses ${a.name} and ${b.name} make peace.`,'');return}
+    const locked=H.dip.wars.some(x=>x.house===a.name&&x.allies.includes(b.name)||x.house===b.name&&x.allies.includes(a.name));
+    if(!locked&&Math.random()<.3){setRel(a.name,b.name,null);say(`Houses ${a.name} and ${b.name} make peace.`,'');return}
     if(lose.lands>0){lose.lands--;win.lands++;if(Math.random()<.5)say(`House ${win.name} takes land from House ${lose.name}.`,'')}else lose.power=Math.max(1,lose.power-1)});
   const n=Math.random()<.5?1:2;
   for(let i=0;i<n;i++){let tries=0;while(tries++<6){const tot=EVENTS.reduce((a,e)=>a+e[1],0);let x=Math.random()*tot,ev=EVENTS[0];for(const e of EVENTS){x-=e[1];if(x<=0){ev=e;break}}if(ev[2](say)!==false)break}}
-  H.rivals.forEach(r=>{if(Math.random()<r.hostility*.06)rivalStrike(r,say)});
+  H.rivals.forEach(r=>{if(!atWar(r.name)&&Math.random()<r.hostility*.06)rivalStrike(r,say)});
+  warTurn(say);
   if(Rz.office&&Rz.favor<3&&!Rz.yours){say(`With royal favor gone, you are stripped of the office of ${OFFICES[Rz.office][0]}.`,'bad');Rz.office=null}
   return news;
+}
+
+
+/* ---------- war & alliances (diplomacy phase 1) ---------- */
+/* H.dip: wars you are in, your military alliances, truces, allies' calls to arms, grievances (just causes), envoys heard this season */
+function ensureDip(){
+  if(!H.dip)H.dip={};const d=H.dip;
+  ['wars','allies','truces','calls','griev','demands','routes','embargo','embargoedBy'].forEach(k=>{if(!Array.isArray(d[k]))d[k]=[]});
+  if(d.toll==null)d.toll=0;
+  H.pacts.filter(p=>p.kind==='Trade pact').forEach(p=>d.routes.push({house:p.house,income:p.income||1,size:'small',since:H.cycle,cutUntil:0}));
+  H.pacts=H.pacts.filter(p=>p.kind!=='Trade pact');
+  if(!d.heard||typeof d.heard!=='object')d.heard={};
+  if(H.realm&&!H.realm.warFrom)H.realm.warFrom={};
+}
+const warWith=n=>H.dip?H.dip.wars.find(w=>w.house===n):null;
+const atWar=n=>!!warWith(n);
+const warFoes=()=>H.dip?H.dip.wars.map(w=>w.house).filter(n=>rival(n)):[];
+const alliedWith=n=>!!(H.dip&&H.dip.allies.some(a=>a.house===n));
+const inTruce=n=>!!(H.dip&&H.dip.truces.some(t=>t.house===n&&t.until>H.cycle));
+/* houses actually fighting beside you in a war: they joined it and are still at war with the enemy */
+const warAllies=n=>{const w=warWith(n);return w?w.allies.filter(a=>rival(a)&&relation(a,n)==='war'):[]};
+const WAR_BY={you:'You declared it',them:'They declared it',ally:'Drawn in to defend an ally'};
+function griev(n,text){if(!H.dip)return;H.dip.griev.push({house:n,text,cycle:H.cycle});if(H.dip.griev.length>40)H.dip.griev=H.dip.griev.slice(-40)}
+function fav(n){if(H.realm&&!H.realm.yours)H.realm.favor=clamp(H.realm.favor+n,0,10)}
+function bumpOthers(n){H.rivals.forEach(o=>{if(o.name!==n)bump(o,1)})}
+function warTally(n,grade){const w=warWith(n);if(!w)return;if(grade==='fail')w.losses++;else w.wins++}
+/* a just cause: tension, grievances in the last two years, secrets, captives, attacks on your allies */
+function causesAgainst(r){
+  const c=[],n=r.name;
+  if(r.hostility>=3)c.push(`Tension has reached ${TENSION[r.hostility].toLowerCase()}`);
+  H.dip.griev.filter(g=>g.house===n&&g.cycle>=H.cycle-8).slice(-2).reverse().forEach(g=>c.push(`${g.text} (${seasonOf(g.cycle)}, year ${yearOf(g.cycle)})`));
+  if(H.secrets.some(s=>s.house===n))c.push('You hold proof of their crimes');
+  if(H.members.some(m=>m.captive&&m.captive.house===n&&!m.dead))c.push('They hold one of your house captive');
+  H.dip.allies.forEach(a=>{if(relation(a.house,n)==='war')c.push(`They make war on your ally House ${a.house}`)});
+  return c;
+}
+function oathsWith(n){
+  const o=[];
+  H.pacts.filter(p=>p.house===n&&BINDING(p)).forEach(p=>o.push(p.kind.toLowerCase().replace(' (coerced)','')));
+  if(alliedWith(n))o.push('a military alliance');
+  return [...new Set(o)];
+}
+function newWar(n,o){return Object.assign({house:n,since:H.cycle,by:'you',cause:'',just:true,allies:[],wins:0,losses:0},o)}
+function declareWar(n,ctx){
+  ctx=ctx||{};const r=rival(n);if(!r||atWar(n)||inTruce(n))return;
+  const Rz=H.realm,causes=causesAgainst(r),just=!!(ctx.cause||causes.length),oaths=oathsWith(n),notes=[];
+  if(oaths.length){
+    H.pacts=H.pacts.filter(p=>p.house!==n);H.dip.allies=H.dip.allies.filter(a=>a.house!==n);
+    fav(-1);bumpOthers(n);notes.push(`You break ${oaths.join(' and ')} with them. Royal favor falls and every other house trusts you less.`);
+  }
+  if(!just){fav(-2);bumpOthers(n);notes.push('With no just cause the realm calls it naked aggression: royal favor −2, and every other house grows warier.')}
+  if(!Rz.yours&&Rz.royal.name===n){Rz.favor=0;notes.push('You have made war on the royal house. Your royal favor is gone.')}
+  H.dip.truces=H.dip.truces.filter(t=>t.house!==n);
+  r.hostility=Math.max(r.hostility,3);
+  const w=newWar(n,{by:'you',cause:ctx.cause||causes[0]||'No just cause',just,allies:ctx.with?[ctx.with]:[]});
+  H.dip.wars.push(w);
+  if(ctx.with){const a=rival(ctx.with);if(a)a.hostility=Math.max(0,a.hostility-1);notes.push(`House ${ctx.with} welcomes you to its war.`)}
+  /* mutual defense: their allies may come to their aid */
+  H.rivals.filter(o=>o.name!==n&&relation(o.name,n)==='ally'&&!alliedWith(o.name)&&!atWar(o.name)&&!inTruce(o.name)).forEach(o=>{
+    if(Math.random()<.6){H.dip.wars.push(newWar(o.name,{by:'them',cause:`Came to the defense of its ally House ${n}`,joined:n}));o.hostility=Math.max(o.hostility,3);notes.push(`House ${o.name} honors its alliance with House ${n} and declares war on you.`)}
+    else notes.push(`House ${o.name}, ally of House ${n}, stays out of it for now.`)});
+  H.log.push({cycle:H.cycle,text:`House ${H.house.name} declares war on House ${n}${just?': '+w.cause:', without just cause'}. ${notes.join(' ')}`});
+}
+/* a rival declares war on you; your allies are bound to defend you */
+const WAR_WHY={land:'they want your lands',revenge:'old grudges boil over',crown:'they mean to break a rival for the throne',wealth:'they covet your coffers'};
+function aiDeclare(r,say){
+  const w=newWar(r.name,{since:H.cycle+1,by:'them',cause:WAR_WHY[r.agenda]||'old grudges boil over'});H.dip.wars.push(w);r.hostility=Math.max(r.hostility,3);
+  say(`House ${r.name} declares war on you: ${w.cause}.`,'bad');
+  H.dip.allies.forEach(a=>{const ar=rival(a.house);if(!ar||relation(a.house,r.name)==='ally')return;setRel(a.house,r.name,'war');w.allies.push(a.house);say(`House ${a.house} honors your alliance and goes to war against House ${r.name}.`,'good')});
+  H.rivals.filter(o=>o.name!==r.name&&relation(o.name,r.name)==='ally'&&!alliedWith(o.name)&&!atWar(o.name)&&!inTruce(o.name)).forEach(o=>{
+    if(Math.random()<.5){H.dip.wars.push(newWar(o.name,{since:H.cycle+1,by:'them',cause:`Joined its ally House ${r.name}`,joined:r.name}));o.hostility=Math.max(o.hostility,3);say(`House ${o.name} joins its ally House ${r.name} in the war against you.`,'bad')}});
+}
+/* an ally of yours is attacked: you are bound to defend them */
+function allyAttacked(a,b,say){
+  if(!alliedWith(b.name)||atWar(a.name)||alliedWith(a.name)||inTruce(a.name))return;
+  H.dip.wars.push(newWar(a.name,{since:H.cycle+1,by:'ally',cause:`Bound to defend your ally House ${b.name}`,allies:[b.name]}));a.hostility=Math.max(a.hostility,3);
+  say(`Bound by your alliance with House ${b.name}, you are now at war with House ${a.name}.`,'warn');
+}
+/* each season every war clashes: your power and your allies' against theirs, plus a d6 each */
+function clash(w,say){
+  const r=rival(w.house);if(!r||w.since>H.cycle)return;
+  const al=warAllies(w.house),ap=Math.min(3,al.reduce((s,a)=>s+((rival(a)||{}).power||0),0));
+  const mine=playerPower()+ap+ri(1,6),theirs=r.power+ri(1,6),m=theirs-mine,withA=al.length?` and ${al.map(a=>'House '+a).join(', ')}`:'';
+  if(m>=4){const free=H.lands.filter(l=>!raidOn(l));w.losses++;
+    if(free.length){const L=pick(free);H.ops.defense.push(genSiege(r,L));say(`House ${r.name} overruns your levies and lays siege to your ${L.tier.toLowerCase()} of ${L.name}. Defend it this season or lose it.`,'bad')}
+    else rivalStrike(Object.assign({},r,{agenda:'revenge'}),say);
+    return}
+  if(m>=2){const g=Math.min(H.gold,ri(3,7));H.gold-=g;w.losses++;say(`Riders of House ${r.name} break through and burn your storehouses: −${g} gold.`,'bad');return}
+  if(m<=-4){const g=ri(4,8);H.gold+=g;w.wins++;let t=`Your levies${withA} rout the host of House ${r.name} and carry off ${g} gold in spoils`;
+    if(r.lands>1){r.lands--;t+='. Their borderlands are laid waste'}say(t+'.','good');return}
+  if(m<=-2){const g=ri(2,5);H.gold+=g;w.wins++;say(`Your levies${withA} win a skirmish against House ${r.name}: +${g} gold in spoils.`,'good');return}
+  say(`Skirmishes along the border with House ${r.name} settle nothing.`,'');
+}
+function warTurn(say){
+  const d=H.dip;
+  d.wars=d.wars.filter(w=>rival(w.house));d.allies=d.allies.filter(a=>rival(a.house));
+  d.truces=d.truces.filter(t=>t.until>H.cycle+1);
+  /* a bitter house may declare war on you */
+  H.rivals.forEach(r=>{if(atWar(r.name)||hasPeace(r.name)||r.hostility<4)return;
+    if(Math.random()<.1*(r.hostility-3)+(r.agenda==='land'?.05:0))aiDeclare(r,say)});
+  d.wars.slice().forEach(w=>clash(w,say));
+  tradeTurn(say);
+  if(seasonOf(H.cycle+1)==='Winter')d.wars.forEach(w=>enemyDemand(w,say));
+  /* allies at war call on you */
+  d.allies.forEach(a=>H.rivals.forEach(x=>{
+    if(x.name===a.house||relation(a.house,x.name)!=='war'||atWar(x.name)||alliedWith(x.name)||inTruce(x.name))return;
+    if(d.calls.some(c=>c.from===a.house&&c.against===x.name)||d.wars.some(w=>w.joined&&w.house===a.house))return;
+    if(Math.random()<.4){d.calls.push({from:a.house,against:x.name,due:H.cycle+1});say(`House ${a.house} calls on you to join its war against House ${x.name}. Answer in The Realm next season.`,'warn')}}));
+}
+function refusePenalty(c,unanswered){
+  const r=rival(c.from);bump(r,1);let t;
+  if(H.influence>=2){H.influence-=2;t=`${unanswered?'You leave':'You refuse'} House ${c.from}'s call to arms against House ${c.against}. Smoothing it over costs 2 influence.`}
+  else{H.dip.allies=H.dip.allies.filter(a=>a.house!==c.from);t=`${unanswered?'You leave':'You refuse'} House ${c.from}'s call to arms against House ${c.against}. With no influence to soothe them, they end the alliance.`}
+  return t;
+}
+function expireCalls(say){
+  H.dip.demands=H.dip.demands.filter(x=>{if(!atWar(x.house))return false;if(x.due>H.cycle)return true;say(`You leave the terms of House ${x.house} unanswered. The war goes on.`,'warn');return false});
+  H.dip.calls=H.dip.calls.filter(c=>{
+    if(!alliedWith(c.from)||relation(c.from,c.against)!=='war'||atWar(c.against)||inTruce(c.against))return false;
+    if(c.due>H.cycle)return true;
+    say(refusePenalty(c,true),'bad');return false});
+}
+function answerCall(i){
+  const c=H.dip.calls[i];if(!c||inTruce(c.against))return;H.dip.calls.splice(i,1);
+  declareWar(c.against,{cause:`Answered House ${c.from}'s call to arms`,with:c.from});render();
+}
+function refuseCall(i){const c=H.dip.calls[i];if(!c)return;H.dip.calls.splice(i,1);H.log.push({cycle:H.cycle,text:refusePenalty(c,false)});render()}
+function breakAlliance(n){
+  if(!alliedWith(n))return;H.dip.allies=H.dip.allies.filter(a=>a.house!==n);bump(rival(n),2);pendingBreak=null;
+  H.log.push({cycle:H.cycle,text:`House ${H.house.name} ends its alliance with House ${n}. They take it badly.`});render();
+}
+
+/* ---------- envoys: a member of age rolls Insight, plus or minus the house's leanings; away for the season ---------- */
+const TENSION_MOD=[1,0,-1,-2,-3,-4];
+function envoyMods(kind,n,against){
+  const r=rival(n);if(!r)return {block:'That house is gone.'};
+  const M=[],add=(l,v)=>{if(v)M.push([l,v])},h=r.hostility,you=playerPower();
+  const wed=H.pacts.some(p=>p.house===n&&p.kind==='Marriage alliance');
+  if(H.dip.heard[n]===H.cycle)return {block:`House ${n} has already heard an envoy this season.`};
+  if(kind==='ally'){
+    if(atWar(n))return {block:'You are at war with them. Sue for peace first.'};
+    if(alliedWith(n))return {block:'They are already your allies.'};
+    if(h>=4)return {block:`Tension is ${TENSION[h].toLowerCase()}. Ease it before proposing an alliance.`};
+    const fa=warFoes().find(f=>relation(f,n)==='ally');if(fa)return {block:`They are allied with House ${fa}, your enemy.`};
+    add(`Tension: ${TENSION[h]}`,TENSION_MOD[h]);
+    if(wed)add('Bound by marriage',2);
+    if(H.pacts.some(p=>p.house===n&&p.kind.startsWith('Pact of peace')))add('A pact of peace',1);
+    if(hasRoute(n))add('Trade partners',1);
+    if(H.members.some(m=>m.hostage===n&&!m.dead))add('You hold their child as a ward',1);
+    warFoes().filter(f=>relation(f,n)==='war').forEach(f=>add(`A common enemy: House ${f}`,2));
+    add('Your strength against theirs',clamp(you-r.power,-2,1));
+    if(!H.realm.yours&&H.realm.favor>=7)add('Your standing at court',1);
+    if(H.realm.yours)add('You hold the throne',1);
+    if(r.agenda==='crown')add('They covet the throne and want no rivals',-1);
+  }else if(kind==='call'){
+    const e=rival(against);if(!e)return {block:'That enemy is gone.'};
+    if(!alliedWith(n))return {block:'They are not your allies.'};
+    if(relation(n,against)==='ally')return {block:`They are allied with House ${against} and will not fight them.`};
+    if(warAllies(against).includes(n))return {block:'They already fight beside you.'};
+    add('Bound by your alliance',2);
+    add(`Tension: ${TENSION[h]}`,TENSION_MOD[h]);
+    if(relation(n,against)==='war')add(`Already at war with House ${against}`,3);
+    add(`Their strength against House ${against}`,clamp(r.power-e.power,-2,2));
+    if(wed)add('Bound by marriage',1);
+    if(r.agenda==='land')add('Hungry for land',1);
+    if(r.agenda==='wealth')add('Loath to spend gold on war',-1);
+    H.rivals.filter(o=>o.name!==against&&relation(n,o.name)==='war').forEach(o=>add(`Already fighting House ${o.name}`,-1));
+  }else if(kind==='peace'){
+    const w=warWith(n);if(!w)return {block:'You are not at war with them.'};
+    if(h>=4)add(`Tension: ${TENSION[h]}`,h>=5?-2:-1);
+    add(`The war so far: ${w.wins} won, ${w.losses} lost`,clamp(w.wins-w.losses,-3,3));
+    const len=Math.max(0,H.cycle-w.since);add(`War-weariness: ${len} season${len===1?'':'s'}`,Math.min(2,Math.floor(len/3)));
+    add('Your strength and allies against theirs',clamp(you+warAllies(n).length-r.power,-2,2));
+    if(r.agenda==='wealth')add('Counting the cost of war',1);
+    if(r.agenda==='revenge')add('Bent on revenge',-1);
+    if(H.members.some(m=>m.origin==='married'&&m.from===n&&!m.dead))add('Blood ties through marriage',1);
+    if(H.secrets.some(s=>s.house===n))add('You hold their secrets',1);
+  }
+  return {mods:M,sum:M.reduce((a,x)=>a+x[1],0)};
+}
+const envoyBase=m=>m.st.Insight+gearBonus(m,'Insight','Intrigue')+(H.realm&&H.realm.office==='chancellor'?1:0);
+const ENVOY_TITLE={ally:n=>`Propose an alliance to House ${n}`,call:(n,a)=>`Call House ${n} to arms against House ${a}`,peace:n=>`Sue House ${n} for peace`};
+function envoyPanel(){
+  if(!envoy)return '';const {kind,house:n,against}=envoy,r=rival(n);if(!r){envoy=null;return ''}
+  const E=envoyMods(kind,n,against);
+  const what={ally:'Success: a military alliance. They will not strike at you, they join any war declared on you, and you can call them to arms. Failure: tension rises.',
+    call:`Success: House ${n} goes to war with House ${against} and fights beside you (+1 to Might rolls in war operations, up to +2 with two allies, and their power joins yours in each season’s clash). Failure: tension rises.`,
+    peace:'Success: the war ends and a truce holds for a year. Failure: the war goes on, and on a roll of 10 your envoy is seized.'}[kind];
+  const mods=E.mods?(E.mods.length?`<ul class="mods">${E.mods.map(([l,v])=>`<li><span>${esc(l)}</span><b class="${v>0?'okc':'hot'}">${v>0?'+':'−'}${Math.abs(v)}</b></li>`).join('')}<li><span><b>Total</b></span><b>${E.sum>0?'+':E.sum<0?'−':''}${Math.abs(E.sum)}</b></li></ul>`:'<p class="muted" style="margin:0">No modifiers either way.</p>'):'';
+  const avail=H.members.filter(available).sort((a,b)=>envoyBase(b)-envoyBase(a));
+  const pickHtml=E.block?`<p class="hot" style="margin:0">${esc(E.block)}</p>`:avail.length?`<div class="teampick scroll" role="group" aria-label="Choose the envoy">${avail.map(m=>{const b=envoyBase(m),t=b+E.sum,g=gearBonus(m,'Insight','Intrigue');
+      return `<button data-sendenvoy="${m.id}">${portrait(m,48)}<span>${esc(m.given)} <span class="muted">· Insight ${m.st.Insight}${g?', gear +'+g:''}${H.realm.office==='chancellor'?', chancellor +1':''}</span></span><b>${clamp(t,1,9)} or under</b></button>`}).join('')}</div>
+      <p class="muted" style="margin:0;font-size:14px">A 1 always succeeds and a 10 always fails. The envoy is away for the season and cannot join an operation.</p>`:'<p class="muted" style="margin:0">No one of age is free to go. Members on operations this season are away.</p>';
+  return `<section class="pane crisis" id="envoyPanel"><div class="boardhead"><h2>${esc(ENVOY_TITLE[kind](n,against))}</h2><button class="sm" data-envoy="">Cancel</button></div>
+    <div class="hhead" style="margin-bottom:10px"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'ev'+n)}</svg><p style="margin:0;font-size:16px;min-width:0">${esc(what)}</p></div>
+    <div class="two"><div><h3 style="margin-top:0">How House ${esc(n)} leans</h3>${mods}</div><div><h3 style="margin-top:0">Send an envoy</h3>${pickHtml}</div></div></section>`;
+}
+function sendEnvoy(id){
+  if(!envoy)return;const m=mem(id),{kind,house:n,against}=envoy,r=rival(n);if(!m||!available(m)||!r)return;
+  const E=envoyMods(kind,n,against);if(E.block)return;
+  const t=envoyBase(m)+E.sum,roll=1+Math.floor(Math.random()*10),ok=roll===1||(roll!==10&&roll<=t),rl=`(rolled ${roll} against ${clamp(t,1,9)})`;
+  m.onOp=H.cycle;H.dip.heard[n]=H.cycle;let text;
+  if(kind==='ally'){
+    if(ok){H.dip.allies.push({house:n,since:H.cycle});r.hostility=Math.max(0,r.hostility-1);text=`${m.given} wins House ${n} as your ally ${rl}. Each will defend the other.`}
+    else{bump(r,roll===10?2:1);text=`House ${n} turns ${m.given} away ${rl}.${roll===10?' The proposal is taken as an insult.':''} Tension rises.`}
+  }else if(kind==='call'){
+    const w=warWith(against);
+    if(ok&&w){setRel(n,against,'war');if(!w.allies.includes(n))w.allies.push(n);text=`House ${n} answers ${m.given}'s call ${rl} and marches on House ${against}.`}
+    else{bump(r,roll===10?2:1);text=`House ${n} will not fight House ${against} ${rl}. Tension rises.`}
+  }else{
+    if(ok){H.dip.wars=H.dip.wars.filter(w=>w.house!==n);H.dip.truces=H.dip.truces.filter(x=>x.house!==n);H.dip.truces.push({house:n,until:H.cycle+4});r.hostility=Math.max(0,r.hostility-1);
+      H.ops.defense=(H.ops.defense||[]).filter(d=>!(d.siege&&d.target===n));
+      text=`House ${n} accepts ${m.given}'s terms ${rl}. The war ends, and a truce holds until ${seasonOf(H.cycle+4)}, year ${yearOf(H.cycle+4)}.`}
+    else if(roll===10){m.captive={house:n,ransom:10+2*r.power};text=`House ${n} seizes ${m.given} under the flag of truce ${rl}. They hold ${m.sex==='f'?'her':'him'} for ${m.captive.ransom} gold.`}
+    else text=`House ${n} will not make peace yet ${rl}. The war goes on.`;
+  }
+  H.dip.last={text,ok,cycle:H.cycle};H.log.push({cycle:H.cycle,text});envoy=null;render();
+}
+
+
+/* ---------- peace treaties (diplomacy phase 2) ---------- */
+/* you set the terms; the more you ask, the higher the danger: Low 2 stages, Middling 3, High 4, each at the danger penalty, like operations */
+const TERM_W={gold:[0,1,2],land:[0,1,2,3]};
+const treatyWeight=t=>TERM_W.gold[t.gold]+TERM_W.land[t.land]+(t.ward?1:0)+(t.marriage?1:0);
+const treatyDanger=(w,t)=>t&&t.dissolve?3:w<=1?1:w<=3?2:3;
+const isRoyalRival=n=>H.realm&&!H.realm.yours&&H.realm.royal.name===n;
+const dissolveBlock=r=>isRoyalRival(r.name)?'The royal house cannot be dissolved':r.lands>0?`They still hold ${r.lands} land${r.lands===1?'':'s'}. Only a house with no lands left can be dissolved`:'';
+const repAmt=(r,lvl)=>lvl===1?6+2*r.power:lvl===2?12+4*r.power:0;
+const TALK_STAGES=['Ride in under a flag of truce','Lay out your terms','Answer their grievances','Haggle over every clause','Win over their council'];
+const talksOn=n=>H.ops.underway.some(x=>!x.done&&x.op.kind==='treaty'&&x.op.target===n);
+const wardOwed=n=>H.members.some(m=>m.hostage===n&&!m.dead)||H.hostageClaims.some(c=>c.house===n);
+function termsList(r,t){
+  const out=[];if(t.dissolve)return [`the dissolution of their house: ${r.seat} becomes your castle`];
+  if(t.gold)out.push(`${repAmt(r,t.gold)} gold in reparations`);
+  if(t.land)out.push(`a ${LAND_TIER[t.land-1][0].toLowerCase()} of their lands`);
+  if(t.ward)out.push('a child of their house as your ward');
+  if(t.marriage)out.push('a marriage into your house');
+  return out;
+}
+function treatyPanel(){
+  if(!treaty)return '';const n=treaty.house,r=rival(n);if(!r||!atWar(n)){treaty=null;return ''}
+  const E=envoyMods('peace',n),w=treatyWeight(treaty),diff=treatyDanger(w,treaty),pen=diff-1,dz=treaty.dissolve;
+  const opt=(k,v,label,dis)=>{if(dz&&k!=='dissolve'&&v)dis=dis||'Dissolving their house replaces every other term';
+    return `<button data-tterm="${k}|${v}" aria-pressed="${(k==='ward'||k==='marriage'||k==='dissolve')?(v===1)===!!treaty[k]:treaty[k]===v}" ${dis?`disabled title="${esc(dis)}"`:''}>${esc(label)}</button>`};
+  const noLand=r.lands<1?'They have no lands left to give':'';
+  const rows=`<div class="terms">
+    <div class="termrow"><span>Reparations</span><div class="opts">${opt('gold',0,'None')}${opt('gold',1,`${repAmt(r,1)} gold · +1`)}${opt('gold',2,`${repAmt(r,2)} gold · +2`)}</div></div>
+    <div class="termrow"><span>Cede land</span><div class="opts">${opt('land',0,'None')}${LAND_TIER.map((x,i)=>opt('land',i+1,`A ${x[0].toLowerCase()} (+${x[1]} gold a season) · +${i+1}`,noLand)).join('')}</div></div>
+    <div class="termrow"><span>Hostage ward</span><div class="opts">${opt('ward',0,'None')}${opt('ward',1,'A child as your ward · +1',wardOwed(n)?'You already hold or are owed a ward of theirs':'')}</div></div>
+    <div class="termrow"><span>Marriage bonds</span><div class="opts">${opt('marriage',0,'None')}${opt('marriage',1,'They send one of theirs to wed into your house · +1',H.offers.some(o=>o.house===n)?'They already owe or offer you a match':'')}</div></div>
+    <div class="termrow"><span>Dissolve their house</span><div class="opts">${opt('dissolve',0,'No')}${opt('dissolve',1,`Dissolve House ${n} · always High danger, replaces all terms`,dissolveBlock(r))}</div>${dissolveBlock(r)?`<span class="muted" style="font:15px var(--f-body);letter-spacing:0;text-transform:none">${esc(dissolveBlock(r))}.</span>`:''}</div></div>`;
+  const read=`<p class="danger-read"><b>Danger</b> <span class="dpip">${'◆'.repeat(diff)}${'◇'.repeat(3-diff)}</span> ${DIFF_NAME[diff]} · ${diff+1} stages${pen?` · −${pen} to every roll`:''} <span class="muted">· ${dz?'dissolving a house is always High':`terms weigh ${w}: 0–1 Low, 2–3 Middling, 4+ High`}</span></p>`;
+  const mods=E.mods?(E.mods.length?`<ul class="mods">${E.mods.map(([l,v])=>`<li><span>${esc(l)}</span><b class="${v>0?'okc':'hot'}">${v>0?'+':'−'}${Math.abs(v)}</b></li>`).join('')}<li><span><b>Total</b></span><b>${E.sum>0?'+':E.sum<0?'−':''}${Math.abs(E.sum)}</b></li></ul>`:'<p class="muted" style="margin:0">No leaning either way.</p>'):'';
+  const team=treaty.team.map(mem).filter(m=>m&&available(m));treaty.team=team.map(m=>m.id);
+  const assist=Math.min(2,Math.max(0,team.length-1));
+  const avail=H.members.filter(available).sort((a,b)=>envoyBase(b)-envoyBase(a));
+  const pickHtml=E.block?`<p class="hot" style="margin:0">${esc(E.block)}</p>`:avail.length?`<div class="teampick scroll" role="group" aria-label="Choose the envoys">${avail.map(m=>{const g=gearBonus(m,'Insight','Intrigue'),t=envoyBase(m)+E.sum+assist-pen;
+      return `<button data-tpick="${m.id}" aria-pressed="${treaty.team.includes(m.id)}">${portrait(m,48)}<span>${esc(m.given)} <span class="muted">· Insight ${m.st.Insight}${g?', gear +'+g:''}${H.realm.office==='chancellor'?', chancellor +1':''}</span></span><b>${clamp(t,1,9)} or under</b></button>`}).join('')}</div>
+      <p class="muted" style="margin:0;font-size:14px">Up to three envoys. Each extra envoy adds +1 to every roll, up to +2. They are away for the season.</p>`:'<p class="muted" style="margin:0">No one of age is free to go this season.</p>';
+  const tl=termsList(r,treaty);
+  return `<section class="pane crisis" id="treatyPanel"><div class="boardhead"><h2>Peace talks with House ${esc(n)}</h2><button class="sm" data-treaty="">Cancel</button></div>
+    <div class="hhead" style="margin-bottom:10px"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'tp'+n)}</svg><p style="margin:0;font-size:16px;min-width:0">Complete success: ${dz?`House ${esc(n)} is dissolved. ${esc(r.seat)} becomes your castle, royal favor +2 and influence +3, and every other house grows warier. A new house rises in its place.`:`peace${tl.length?' and '+esc(tl.join(', ')):''}.`} Partial success: peace without terms. Failure: the war goes on, and on a roll of 10 an envoy is seized. Peace brings a binding truce for a year.</p></div>
+    ${rows}${read}
+    <div class="two"><div><h3 style="margin-top:0">How House ${esc(n)} leans</h3>${mods}</div><div><h3 style="margin-top:0">Send envoys</h3>${pickHtml}</div></div>
+    <div class="acts" style="margin-top:12px"><button class="main" data-tsend="1" ${E.block||!treaty.team.length?'disabled':''}>Send ${treaty.team.length||'the'} envoy${treaty.team.length===1?'':'s'}</button></div></section>`;
+}
+function launchTreaty(){
+  if(!treaty)return;const n=treaty.house,r=rival(n);if(!r||!atWar(n)||talksOn(n))return;
+  const E=envoyMods('peace',n);if(E.block)return;
+  const team=treaty.team.map(mem).filter(m=>m&&available(m));if(!team.length)return;
+  const dz=!!treaty.dissolve&&!dissolveBlock(r);
+  const terms=dz?{gold:0,land:0,ward:false,marriage:false,dissolve:true}:{gold:treaty.gold,land:r.lands>0?treaty.land:0,ward:treaty.ward&&!wardOwed(n),marriage:treaty.marriage&&!H.offers.some(o=>o.house===n)};
+  const diff=treatyDanger(treatyWeight(terms),terms);
+  const stages=shuffle(TALK_STAGES).slice(0,diff).concat(['Seal the treaty']).map(x=>({name:x,stat:'Insight'}));
+  const op={id:H.ops.nextOp++,type:'Intrigue',kind:'treaty',diff,target:n,title:`Peace talks with House ${n}`,stages,terms,lean:E.sum};
+  team.forEach(m=>{m.onOp=H.cycle});H.dip.heard[n]=H.cycle;
+  H.ops.underway.push({id:op.id,op,team:team.map(m=>m.id),stage:0,results:[],done:false});
+  treaty=null;render();const el=document.getElementById('talks');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function applyPeace(n){
+  const r=rival(n);
+  H.dip.wars=H.dip.wars.filter(w=>w.house!==n);H.dip.truces=H.dip.truces.filter(x=>x.house!==n);H.dip.truces.push({house:n,until:H.cycle+4});
+  H.dip.demands=H.dip.demands.filter(x=>x.house!==n);
+  H.ops.defense=(H.ops.defense||[]).filter(d=>!(d.siege&&d.target===n));
+  if(r)r.hostility=Math.max(0,r.hostility-1);
+}
+function finishTreaty(ms,grade,out){
+  const op=ms.op,n=op.target,r=rival(n);
+  if(!r||!atWar(n)){out.push('The war had already ended.');return}
+  if(grade==='fail'){out.push(`House ${n} will not make peace. The war goes on.`);return}
+  if(grade==='full'&&op.terms.dissolve&&!dissolveBlock(r)){dissolveHouse(n,out);return}
+  applyPeace(n);
+  const t=op.terms,any=termsList(r,t).length;
+  if(grade==='partial'){out.push(any?`House ${n} agrees to peace, but not to your terms.`:`House ${n} agrees to peace.`)}
+  else{
+    out.push(`House ${n} agrees to peace${any?' on your terms':''}.`);
+    if(t.gold){const g=repAmt(r,t.gold);H.gold+=g;out.push(`+${g} gold in reparations`)}
+    if(t.land&&r.lands>0){const T=LAND_TIER[t.land-1],L={name:pick(LAND_A)+pick(LAND_B),tier:T[0],income:T[1],peasants:T[2]+ri(-10,30),from:n,cycle:H.cycle};H.lands.push(L);r.lands=Math.max(0,r.lands-1);out.push(`They cede the ${L.tier.toLowerCase()} of ${L.name}: +${L.income} gold each season, ${L.peasants} peasants`)}
+    if(t.ward&&!wardOwed(n)){const w=yieldWard(n);out.push(`They yield ${w.given}, age ${w.age}, as your ward`)}
+    if(t.marriage&&!H.offers.some(o=>o.house===n)){H.offers.push({house:n,cycle:H.cycle,treaty:true});out.push('They owe you a match. Choose who weds in Bloodlines; there is no dowry')}
+  }
+  out.push(`A binding truce holds until ${seasonOf(H.cycle+4)}, year ${yearOf(H.cycle+4)}`);
+}
+function talksHtml(){
+  const ms=H.ops.underway.filter(x=>x.op.kind==='treaty');
+  return ms.length?`<h3 id="talks">Talks underway</h3><div class="opgrid">${ms.map(missionCard).join('')}</div>`:'';
+}
+
+/* ---------- terms demanded of you: when you are losing, each enemy sends terms once a year, in Winter ---------- */
+const bestLand=()=>H.lands.slice().sort((a,b)=>b.income-a.income||tierStep(b)-tierStep(a))[0]||null;
+const bestWardChild=()=>living().filter(m=>!isAdult(m)&&m.origin==='born'&&!m.ruler&&!m.hostage&&!m.captive).sort((a,b)=>b.age-a.age)[0]||null;
+const statSum=m=>STATS.reduce((a,k)=>a+m.st[k],0);
+const bestSpouse=()=>living().filter(m=>isAdult(m)&&!isMarried(m)&&!m.ruler&&m.origin==='born'&&!m.captive&&!(H.regency&&H.regency.regent===m.id)).sort((a,b)=>statSum(b)-statSum(a))[0]||null;
+function enemyDemand(w,say){
+  const r=rival(w.house),m=w.losses-w.wins;if(!r||w.since>H.cycle||m<2||H.dip.demands.some(x=>x.house===w.house))return;
+  if(!H.lands.length&&m>=4){H.dip.demands.push({house:w.house,terms:{dissolve:true},due:H.cycle+1});say(`House ${w.house} holds every advantage and demands that House ${H.house.name} be dissolved. Answer in The Realm this Winter.`,'bad');return}
+  const want=m>=6?3:m>=4?2:1,opts=[];
+  if(H.lands.length)opts.push('land');
+  if(H.gold>0)opts.push('gold');
+  if(bestWardChild())opts.push('ward');
+  if(bestSpouse())opts.push('marriage');
+  if(!opts.length)return;
+  const terms={};shuffle(opts).slice(0,want).forEach(k=>{
+    if(k==='gold')terms.gold=Math.min(H.gold,6+3*r.power+2*m);
+    if(k==='land')terms.land=bestLand().name;
+    if(k==='ward')terms.ward=bestWardChild().id;
+    if(k==='marriage')terms.marriage=bestSpouse().id;});
+  H.dip.demands.push({house:w.house,terms,due:H.cycle+1});
+  say(`Winning the war, House ${w.house} sends its terms for peace. Answer them in The Realm this Winter.`,'warn');
+}
+function demandLines(x){
+  const t=x.terms,out=[];if(t.dissolve)return [`Dissolve House ${esc(H.house.name)}. <span class="hot">Your house ends, and the game with it.</span>`];
+  if(t.gold)out.push(`Pay ${t.gold} gold${H.gold<t.gold?` <span class="hot">(you have ${H.gold}; they take all of it)</span>`:''}`);
+  if(t.land){const L=H.lands.find(l=>l.name===t.land)||bestLand();if(L)out.push(`Cede the ${esc(L.tier.toLowerCase())} of ${esc(L.name)} (+${landIncome(L)} gold a season, ${L.peasants} peasants)`)}
+  if(t.ward!=null){const c=mem(t.ward);const ok=c&&!c.dead&&!c.captive&&!isAdult(c)?c:bestWardChild();if(ok)out.push(`Send ${esc(ok.given)}, age ${ok.age}, to live with them as a ward`)}
+  if(t.marriage!=null){const c=mem(t.marriage);const ok=c&&!c.dead&&!c.captive&&!isMarried(c)?c:bestSpouse();if(ok)out.push(`Give ${esc(ok.given)}, age ${ok.age}, in marriage to their house. ${ok.sex==='f'?'She':'He'} leaves your house; a marriage alliance binds you`)}
+  return out;
+}
+function demandsHtml(){
+  const D=H.dip.demands.filter(x=>atWar(x.house));if(!D.length)return '';
+  return `<h3>Terms demanded of you</h3><ul class="offices">${D.map(x=>{const i=H.dip.demands.indexOf(x);return `<li><span style="flex:1;min-width:0"><b>House ${esc(x.house)} will make peace if you:</b><ul class="demand">${demandLines(x).map(l=>`<li>${l}</li>`).join('')}</ul><span class="muted" style="font-size:15px">Accept for a sure peace and a binding truce for a year, or refuse and fight on. Their terms lapse when Winter ends.</span></span>
+    <span class="acts">${x.terms.dissolve&&pendingDissolve===i?`<button class="sm danger" data-dyes="${i}">Yes, dissolve House ${esc(H.house.name)}</button><button class="sm" data-dcancel="1">Keep fighting</button>`:`<button class="sm danger" data-dyes="${i}">${x.terms.dissolve?'Accept and dissolve':'Accept their terms'}</button><button class="sm" data-dno="${i}">Refuse</button>`}</span></li>`}).join('')}</ul>`;
+}
+function acceptDemand(i){
+  const x=H.dip.demands[i];if(!x||!atWar(x.house))return;const n=x.house,r=rival(n),t=x.terms,done=[];
+  if(t.dissolve){if(pendingDissolve!==i){pendingDissolve=i;render();return}
+    pendingDissolve=null;H.dip.demands.splice(i,1);H.fallen=true;H.dissolvedBy=n;
+    H.log.push({cycle:H.cycle,text:`House ${H.house.name} accepts the terms of House ${n} and is dissolved. Its banners are burned and its seat given away.`});render();return}
+  if(t.gold){const g=Math.min(H.gold,t.gold);H.gold-=g;done.push(`${g} gold paid`)}
+  if(t.land){const L=H.lands.find(l=>l.name===t.land)||bestLand();if(L){H.lands.splice(H.lands.indexOf(L),1);refundBuild(L,s=>done.push(s));if(r)r.lands++;done.push(`the ${L.tier.toLowerCase()} of ${L.name} ceded`)}}
+  if(t.ward!=null){let c=mem(t.ward);if(!c||c.dead||c.captive||isAdult(c))c=bestWardChild();if(c){c.dead=true;c.givenTo=n;c.givenAs='ward';c.fell=`Given as a ward to House ${n}`;done.push(`${c.given} sent to them as a ward`)}}
+  if(t.marriage!=null){let c=mem(t.marriage);if(!c||c.dead||c.captive||isMarried(c))c=bestSpouse();if(c){c.dead=true;c.givenTo=n;c.givenAs='spouse';c.fell=`Wed into House ${n} under treaty`;H.pacts.push({house:n,kind:'Marriage alliance'});done.push(`${c.given} weds into their house`)}}
+  applyPeace(n);if(r&&t.marriage!=null)r.hostility=0;
+  H.log.push({cycle:H.cycle,text:`House ${H.house.name} accepts the terms of House ${n}: ${done.join(', ')||'peace'}. A binding truce holds until ${seasonOf(H.cycle+4)}, year ${yearOf(H.cycle+4)}.`});
+  if(mem(sel)&&mem(sel).givenTo){const ru=H.members.find(m=>m.ruler&&!m.dead);if(ru)sel=ru.id}
+  render();
+}
+function refuseDemand(i){const x=H.dip.demands[i];if(!x)return;H.dip.demands.splice(i,1);H.log.push({cycle:H.cycle,text:`House ${H.house.name} refuses the terms of House ${x.house}. The war goes on.`});render()}
+
+
+/* ---------- dissolving a house: its seat becomes your castle; a new house rises in its place ---------- */
+function dissolveHouse(n,out){
+  const r=rival(n);if(!r)return;const seat=r.seat,d=H.dip;
+  const L={name:seat,tier:'Castle',income:7,peasants:300+ri(0,60),from:n,cycle:H.cycle};H.lands.push(L);
+  fav(2);H.influence+=3;bumpOthers(n);
+  /* every tie to the dissolved house is cut */
+  d.wars=d.wars.filter(w=>w.house!==n);d.wars.forEach(w=>{w.allies=w.allies.filter(a=>a!==n)});
+  d.allies=d.allies.filter(a=>a.house!==n);d.truces=d.truces.filter(t=>t.house!==n);
+  d.calls=d.calls.filter(c=>c.from!==n&&c.against!==n);d.demands=d.demands.filter(x=>x.house!==n);delete d.heard[n];d.griev=d.griev.filter(g=>g.house!==n);
+  H.realm.alliances=H.realm.alliances.filter(k=>!k.split('|').includes(n));H.realm.wars=H.realm.wars.filter(k=>!k.split('|').includes(n));
+  Object.keys(H.realm.warFrom||{}).forEach(k=>{if(k.split('|').includes(n))delete H.realm.warFrom[k]});
+  d.routes=d.routes.filter(x=>x.house!==n);d.embargo=d.embargo.filter(x=>x!==n);d.embargoedBy=d.embargoedBy.filter(x=>x.house!==n);
+  H.pacts=H.pacts.filter(p=>p.house!==n);H.offers=H.offers.filter(o=>o.house!==n);H.hostageClaims=H.hostageClaims.filter(c=>c.house!==n);
+  H.secrets=H.secrets.filter(x=>x.house!==n);H.plans=H.plans.filter(x=>x.house!==n);H.informants=H.informants.filter(x=>x.house!==n);
+  const freed=H.captives.filter(c=>c.house===n).length;H.captives=H.captives.filter(c=>c.house!==n);
+  H.members.forEach(m=>{if(m.captive&&m.captive.house===n&&!m.dead){m.captive=null;out.push(`${m.given} is freed from their dungeons and comes home`)}
+    if(m.hostage===n&&!m.dead){m.hostage=null;m.returnDue=false;m.kept=true}});
+  H.ops.board=H.ops.board.filter(o=>o.target!==n);H.ops.defense=(H.ops.defense||[]).filter(o=>o.target!==n);
+  if(H.realm.crisis)H.realm.crisis.claimants=H.realm.crisis.claimants.filter(c=>c.key!==n);
+  out.push(`House ${n} is dissolved. Its banners are burned and its lands parceled out`);
+  out.push(`${seat} becomes your castle: +7 gold each season, ${L.peasants} peasants`);
+  out.push(`Your renown grows: ${H.realm.yours?'':'royal favor +2, '}+3 influence. Every other house grows warier of you`);
+  if(freed)out.push(`${freed} of their captives in your keeping are turned loose`);
+  H.log.push({cycle:H.cycle,text:`House ${H.house.name} dissolves House ${n}. ${seat} becomes its castle.`});
+  replaceHouse(r);
+  out.push(`A new power rises in the realm: House ${r.name} of ${r.seat}`);
+}
+
+
+/* ---------- trade (diplomacy phase 3): routes, tolls, embargoes, raids ---------- */
+const ROUTE_SIZE=['small','standard','grand'];
+/* a route's worth: its size, plus the reach of both houses' lands, plus a great house's markets */
+const routeIncome=(n,diff)=>{const r=rival(n);return diff*2-1+Math.floor((H.lands.length+1+(r?r.lands:0))/5)+(r&&r.power>=3?1:0)};
+const hasRoute=n=>!!(H.dip&&H.dip.routes.some(x=>x.house===n));
+const embargoedBy=n=>!!(H.dip&&H.dip.embargoedBy.some(x=>x.house===n));
+const canTradeWith=n=>!!rival(n)&&!atWar(n)&&!(H.dip&&H.dip.embargo.includes(n))&&!embargoedBy(n);
+function routeStatus(x){
+  if(!rival(x.house))return 'gone';
+  if(atWar(x.house))return 'suspended by war';
+  if(H.dip.embargo.includes(x.house))return 'stopped by your embargo';
+  if(embargoedBy(x.house))return 'stopped by their embargo';
+  if(x.cutUntil>H.cycle)return `cut by raiders until ${seasonOf(x.cutUntil)}`;
+  return 'open';
+}
+const routeActive=x=>routeStatus(x)==='open';
+const tradeIncome=()=>H.dip?H.dip.routes.filter(routeActive).reduce((a,x)=>a+x.income,0):0;
+/* tolls on your roads: per holding (your seat counts), up to six */
+const TOLL=[['None',0,0],['Low',1,.08],['High',2,.18]];
+const tollIncome=()=>H.dip?TOLL[H.dip.toll||0][1]*Math.min(6,H.lands.length+1):0;
+function addRoute(n,income,size){H.dip.routes.push({house:n,income,size:size||'small',since:H.cycle,cutUntil:0});const r=rival(n);if(r)r.hostility=Math.max(0,r.hostility-1)}
+function cancelRoute(i){const x=H.dip.routes[i];if(!x)return;H.dip.routes.splice(i,1);bump(rival(x.house),1);H.log.push({cycle:H.cycle,text:`House ${H.house.name} closes its trade route with House ${x.house}. They take offense.`});render()}
+function toggleEmbargo(n){
+  const r=rival(n);if(!r)return;const d=H.dip;
+  if(d.embargo.includes(n)){d.embargo=d.embargo.filter(x=>x!==n);H.log.push({cycle:H.cycle,text:`House ${H.house.name} lifts its embargo on House ${n}.`})}
+  else{d.embargo.push(n);bump(r,1);H.log.push({cycle:H.cycle,text:`House ${H.house.name} lays an embargo on House ${n}. No goods pass between you${hasRoute(n)?', and your route with them falls silent':''}.`})}
+  render();
+}
+function tradeTurn(say){
+  const d=H.dip;
+  d.routes=d.routes.filter(x=>rival(x.house));d.embargo=d.embargo.filter(n=>rival(n));
+  /* embargoes on you lapse with time or when tempers cool */
+  d.embargoedBy=d.embargoedBy.filter(x=>{const r=rival(x.house);if(!r)return false;if(x.until<=H.cycle+1||r.hostility<=1){say(`House ${x.house} lifts its embargo on you.`,'good');return false}return true});
+  /* a hostile house may embargo you */
+  H.rivals.forEach(r=>{if(atWar(r.name)||embargoedBy(r.name)||alliedWith(r.name)||r.hostility<3)return;
+    if(Math.random()<.08*(r.hostility-2)+(r.agenda==='wealth'?.05:0)){d.embargoedBy.push({house:r.name,until:H.cycle+5});
+      say(`House ${r.name} lays an embargo on your house${hasRoute(r.name)?'. Your trade route with them falls silent':''}.`,'bad')}});
+  /* your embargoes bite: each Winter, a house under embargo may lose power */
+  if(seasonOf(H.cycle+1)==='Winter')d.embargo.forEach(n=>{const r=rival(n);if(r&&r.power>1&&Math.random()<.25){r.power--;say(`Your embargo starves the markets of House ${n}. Their power falls.`,'good')}});
+  /* tolls irritate the houses whose merchants pay them */
+  const tl=TOLL[d.toll||0];if(tl[1]){const angry=H.rivals.filter(r=>!alliedWith(r.name)&&Math.random()<tl[2]);
+    angry.forEach(r=>bump(r,1));if(angry.length)say(`Merchants grumble at your ${tl[0].toLowerCase()} tolls. Tension rises with ${angry.map(r=>'House '+r.name).join(', ')}.`,'warn')}
+}
+function tradeActs(r){
+  const n=r.name,on=H.dip.embargo.includes(n);
+  return `<button class="sm ${on?'':'danger'}" data-embargo="${esc(n)}">${on?'Lift embargo':'Embargo'}</button>`;
+}
+function tradeView(){
+  const d=H.dip,inc=tradeIncome(),ti=tollIncome();
+  const routes=d.routes.length?`<ul class="offices">${d.routes.map((x,i)=>{const r=rival(x.house);if(!r)return '';const on=routeActive(x);
+    return `<li><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'tr'+i+r.name)}</svg><span style="flex:1;min-width:0"><b>A ${esc(x.size)} route with House ${esc(x.house)}</b><br><span class="muted" style="font-size:15px">Open since ${seasonOf(x.since)}, year ${yearOf(x.since)} · ${on?`<span class="okc">+${x.income} gold each season</span>`:`<span class="hot">${esc(routeStatus(x))}</span>`}</span></span><button class="sm" data-cutroute="${i}">Close it · +1 tension</button></li>`}).join('')}</ul>`
+    :'<p class="muted" style="margin:0;font-size:15px">No trade routes yet. Each Winter the Intrigue board offers one: small, standard or grand, at Low, Middling or High danger.</p>';
+  const tolls=`<div class="termrow"><div class="opts">${TOLL.map((t,i)=>`<button data-toll="${i}" aria-pressed="${(d.toll||0)===i}">${t[0]}${t[1]?` · +${t[1]*Math.min(6,H.lands.length+1)} gold`:''}</button>`).join('')}</div>
+    <span class="muted" style="font:15px var(--f-body);letter-spacing:0;text-transform:none">${(d.toll||0)?`Each season, every house that is not your ally has a ${Math.round(TOLL[d.toll][2]*100)}% chance to grow more tense with you.`:'Tolls pay per holding (your seat counts), up to six. Merchants resent them.'}</span></div>`;
+  const emb=d.embargo.length?`<p style="margin:0;font-size:16px">You hold under embargo: ${d.embargo.map(n=>`House ${esc(n)}`).join(', ')}. <span class="muted">Each Winter, a 25% chance their power falls.</span></p>`:'<p class="muted" style="margin:0;font-size:15px">You hold no house under embargo. Lay one from a house’s card: it costs you any route with them and raises tension, but each Winter it may sap their power.</p>';
+  const by=d.embargoedBy.length?`<p class="hot" style="margin:6px 0 0;font-size:16px">Under embargo by ${d.embargoedBy.map(x=>`House ${esc(x.house)} (until ${seasonOf(x.until)}, year ${yearOf(x.until)}, or until they cool)`).join(', ')}.</p>`:'';
+  const sum=`${d.routes.filter(routeActive).length} route${d.routes.filter(routeActive).length===1?'':'s'} · +${inc+ti} gold a season`;
+  return `<section class="pane fold dip"><details data-fold="trade" ${foldOpen('trade')?'open':''}><summary><h2>Trade</h2><span class="muted">${sum}</span></summary><div class="foldbody">
+    <div class="tally" style="margin-bottom:6px"><div>From routes<b>+${inc}</b></div><div>From tolls<b>+${ti}</b></div></div>
+    <h3>Trade routes</h3>${routes}<p class="muted" style="font-size:15px;margin:8px 0 0">Routes fall silent while at war or under embargo. Raiders may cut them for two seasons. Summer’s Battle board may offer to waylay a rival’s trade.</p>
+    <h3>Tolls</h3>${tolls}<h3>Embargoes</h3>${emb}${by}</div></details></section>`;
+}
+
+/* ---------- the War & alliances section of The Realm ---------- */
+function warCard(w){
+  const r=rival(w.house);if(!r)return '';
+  const fight=warAllies(w.house),idle=H.dip.allies.map(a=>a.house).filter(a=>!fight.includes(a)&&rival(a)&&relation(a,w.house)!=='ally');
+  const ap=Math.min(3,fight.reduce((s,a)=>s+rival(a).power,0)),heard=x=>H.dip.heard[x]===H.cycle;
+  return `<article class="hcard warcard"><div class="hhead"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'wr'+r.name)}</svg><div style="min-width:0;flex:1"><h3>War with House ${esc(r.name)}</h3>
+      <p class="muted" style="margin:0;font-size:15px">${w.since>H.cycle?'Begins this season':'Since '+seasonOf(w.since)+', year '+yearOf(w.since)} · ${WAR_BY[w.by]||''}</p></div></div>
+    <dl class="opdl"><dt>Cause</dt><dd>${w.just?esc(w.cause):'<span class="hot">No just cause</span>'}</dd>
+      <dt>Strength</dt><dd>Yours ${playerPower()}${ap?` + allies ${ap}`:''} against their ${r.power} <span class="muted">· plus a d6 each, every season</span></dd>
+      <dt>Beside you</dt><dd>${fight.length?fight.map(a=>'House '+esc(a)).join(', '):'<span class="muted">No one yet</span>'}</dd>
+      <dt>Record</dt><dd>${w.wins} won · ${w.losses} lost</dd></dl>
+    <div class="acts"><button class="sm" data-treaty="${esc(w.house)}" ${heard(w.house)||talksOn(w.house)?'disabled title="They have heard envoys this season"':''}>Negotiate peace · envoys</button>${idle.map(a=>`<button class="sm" data-envoy="call|${esc(a)}|${esc(w.house)}" ${heard(a)?'disabled title="They have heard an envoy this season"':''}>Call House ${esc(a)} to arms · envoy</button>`).join('')}</div></article>`;
+}
+function diploView(){
+  const d=H.dip;
+  const last=d.last&&d.last.cycle===H.cycle?`<p class="rolled ${d.last.ok?'hit':'miss'}" role="status" style="margin-bottom:10px">${esc(d.last.text)}</p>`:'';
+  const calls=d.calls.length?`<h3>Calls to arms</h3><ul class="offices">${d.calls.map((c,i)=>{const r=rival(c.against),oaths=r?oathsWith(c.against):[];
+    return `<li><span style="flex:1;min-width:0"><b>House ${esc(c.from)} calls you to arms against House ${esc(c.against)}</b><br><span class="muted" style="font-size:15px">Answering declares war on House ${esc(c.against)} with just cause, and House ${esc(c.from)} fights beside you.${oaths.length?` <span class="hot">It breaks ${esc(oaths.join(' and '))} with them.</span>`:''} Refusing, or leaving it past the season, costs ${H.influence>=2?'2 influence':'the alliance (you have under 2 influence)'}.</span></span>
+      <span class="acts"><button class="sm main" data-answer="${i}" ${inTruce(c.against)?'disabled title="A binding truce holds with them"':''}>Answer the call</button><button class="sm" data-refuse="${i}">Refuse</button></span></li>`}).join('')}</ul>`:'';
+  const wars=d.wars.filter(w=>rival(w.house));
+  const warHtml=wars.length?`<div class="hgrid">${wars.map(warCard).join('')}</div>`:'<p class="muted" style="margin:0">You are at war with no one. Declare war from a house’s card below; a just cause spares you the realm’s anger.</p>';
+  const allies=d.allies.filter(a=>rival(a.house));
+  const allyHtml=allies.length?`<ul class="offices">${allies.map(a=>{const r=rival(a.house),theirWars=H.rivals.filter(o=>relation(a.house,o.name)==='war').map(o=>'House '+o.name);
+    return `<li><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'al'+r.name)}</svg><span style="flex:1;min-width:0"><b>House ${esc(a.house)}</b><br><span class="muted" style="font-size:15px">Allied since ${seasonOf(a.since)}, year ${yearOf(a.since)} · power ${'◆'.repeat(r.power)} · ${TENSION[r.hostility]}${theirWars.length?' · <span class="hot">at war with '+esc(theirWars.join(', '))+'</span>':''}</span></span>
+      ${pendingBreak===a.house?`<span class="acts"><button class="sm danger" data-breakyes="${esc(a.house)}">End it · +2 tension</button><button class="sm" data-breakno="1">Keep it</button></span>`:`<button class="sm" data-breakally="${esc(a.house)}">End the alliance</button>`}</li>`}).join('')}</ul>`:'<p class="muted" style="margin:0">No allies yet. Send an envoy from a house’s card below to propose an alliance.</p>';
+  const sum=[d.demands.length?`${d.demands.length} demand${d.demands.length>1?'s':''} for peace`:'',wars.length?`${wars.length} war${wars.length>1?'s':''}`:'',allies.length?`${allies.length} all${allies.length>1?'ies':'y'}`:'',d.calls.length?`${d.calls.length} call${d.calls.length>1?'s':''} to arms`:''].filter(Boolean).join(' · ')||'At peace';
+  return `<section class="pane fold dip ${wars.length||d.calls.length||d.demands.length?'crisis':''}"><details data-fold="diplo" ${foldOpen('diplo')?'open':''}><summary><h2>War &amp; alliances</h2><span class="muted">${sum}</span></summary><div class="foldbody">
+    <p class="muted" style="font-size:15px;margin:0 0 10px">Envoys are members of age you send to another house. They roll Insight, shifted by how that house leans toward you, and are away for the season. Each house hears envoys once a season. At war, both sides clash every season, power against power, and war operations against your enemies come up in Summer and Fall. Peace is negotiated: the harsher your terms, the more dangerous the talks. An enemy that is winning sends you its terms each Winter. Truces are binding.</p>
+    ${last}${demandsHtml()}${calls}${talksHtml()}<h3>Wars</h3>${warHtml}<h3>Alliances</h3>${allyHtml}</div></details></section>`;
+}
+function dipActs(r){
+  const n=r.name,b=[];
+  if(atWar(n))b.push(`<button class="sm" data-treaty="${esc(n)}" ${talksOn(n)?'disabled title="Talks are already underway"':''}>Negotiate peace · envoys</button>`);
+  else{
+    if(!alliedWith(n))b.push(`<button class="sm" data-envoy="ally|${esc(n)}">Propose an alliance · envoy</button>`);
+    if(inTruce(n))b.push(`<span class="muted" style="font-size:14px;align-self:center">A binding truce: no war until ${seasonOf(H.dip.truces.find(t=>t.house===n).until)}</span>`);
+    else b.push(`<button class="sm danger" data-warask="${esc(n)}">Declare war</button>`);
+    H.rivals.filter(o=>o!==r&&relation(n,o.name)==='war'&&!atWar(o.name)&&!alliedWith(o.name)&&!inTruce(o.name)).forEach(o=>b.push(`<button class="sm" data-joinwar="${esc(n)}|${esc(o.name)}">Join their war on House ${esc(o.name)}</button>`));
+  }
+  return b.join('');
+}
+function warConfirm(r){
+  if(!pendingWar||pendingWar.card!==r.name)return '';
+  const tgt=rival(pendingWar.house);if(!tgt)return '';const n=tgt.name;
+  const C=pendingWar.with?[`Joining House ${pendingWar.with}'s war against them`]:causesAgainst(tgt),oaths=oathsWith(n),Rz=H.realm;
+  const theirAllies=H.rivals.filter(o=>o.name!==n&&relation(o.name,n)==='ally'&&!alliedWith(o.name)&&!atWar(o.name)).map(o=>'House '+o.name);
+  const lines=[C.length?`<p><b class="okc">Just cause:</b> ${esc(C.join('; '))}.</p>`:'<p><b class="hot">No just cause.</b> Royal favor −2, and every other house grows warier (+1 tension).</p>'];
+  if(oaths.length)lines.push(`<p class="hot">You are bound to them by ${esc(oaths.join(' and '))}. Declaring war breaks it: royal favor −1 and +1 tension with every other house.</p>`);
+  if(!Rz.yours&&Rz.royal.name===n)lines.push('<p class="hot">They are the royal house. Your royal favor drops to 0.</p>');
+  if(theirAllies.length)lines.push(`<p>Their allies may join them against you: ${esc(theirAllies.join(', '))}.</p>`);
+  lines.push('<p class="muted">Every season the two of you clash, power against power. War operations against them come up in Summer and Fall. Peace must be negotiated by envoys.</p>');
+  return `<div class="confirm col" role="alert"><b>Declare war on House ${esc(n)}?</b>${lines.join('')}<div class="acts"><button class="sm danger" data-wargo="1">Declare war</button><button class="sm" data-warno="1">Hold</button></div></div>`;
 }
 
 /* ---------- leverage and court ---------- */
@@ -2455,9 +3031,9 @@ function playerPower(){const hale=living().filter(m=>isAdult(m)&&!m.captive).len
 function powerOf(n){return n===H.house.name?playerPower():(rival(n)||{power:1}).power}
 function landsOf(n){return n===H.house.name?H.lands.length+1:(rival(n)||{lands:0}).lands}
 function alliesOf(n){
-  if(n===H.house.name)return [...new Set(H.pacts.filter(BINDING).map(p=>p.house))].filter(x=>rival(x));
+  if(n===H.house.name)return [...new Set(H.pacts.filter(BINDING).map(p=>p.house).concat(H.dip.allies.map(a=>a.house)))].filter(x=>rival(x)&&!atWar(x));
   const a=H.rivals.filter(o=>o.name!==n&&relation(n,o.name)==='ally').map(o=>o.name);
-  if(H.pacts.some(p=>p.house===n&&BINDING(p)))a.push(H.house.name);
+  if(!atWar(n)&&(H.pacts.some(p=>p.house===n&&BINDING(p))||alliedWith(n)))a.push(H.house.name);
   return a;
 }
 function rankings(){
@@ -2487,10 +3063,10 @@ function webView(){
   /* your house and each rival: tension, treaties, marriages, wards */
   const me=pos[H.house.name];
   H.rivals.forEach(r=>{const p=pos[r.name],g=guards(r.name).length,ties=[...new Set(tiesWith(r.name).map(t=>t.group))];
-    const cls=g?'e-bound':'e-t'+r.hostility;
+    const cls=atWar(r.name)?'e-war':alliedWith(r.name)?'e-ally':g?'e-bound':'e-t'+r.hostility;
     edges+=`<line class="e-you ${cls}" x1="${me[0]}" y1="${me[1]}" x2="${p[0]}" y2="${p[1]}"><title>${esc(stanceOf(r))}, ${TENSION[r.hostility]}${ties.length?': '+ties.join(', '):''}</title></line>`;
     const [lx,ly]=lerp(me,p,.6);
-    labels+=`<text class="elab ${cls}" x="${lx}" y="${ly-4}">${esc(TENSION[r.hostility])}</text>${ties.length?`<text class="elab sub" x="${lx}" y="${ly+11}">${esc(ties.join(' · '))}</text>`:''}`});
+    labels+=`<text class="elab ${cls}" x="${lx}" y="${ly-4}">${esc(atWar(r.name)?'At war':alliedWith(r.name)?'Allied':TENSION[r.hostility])}</text>${ties.length?`<text class="elab sub" x="${lx}" y="${ly+11}">${esc(ties.join(' · '))}</text>`:''}`});
   /* the crown at the center */
   if(holder){const [x,y]=pos[holder];edges+=`<line class="e-throne" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"><title>House ${esc(holder)} holds the throne</title></line>`}
   if(!Rz.yours){edges+=`<line class="e-favor" x1="${cx}" y1="${cy}" x2="${me[0]}" y2="${me[1]}"><title>Royal favor ${Rz.favor} of 10</title></line>`;
@@ -2532,8 +3108,7 @@ function realmView(){
       <ul class="claim">${C.claimants.map(c=>`<li><span style="flex:1;min-width:0"><b>${esc(c.label)}</b>${C.backed===c.key?' <span class="status ok">You back them</span>':''}<br><span class="muted">Strength ${c.str} · about ${Math.round(c.str/tot*100)}%</span></span>${!done&&c.key!=='you'?`<button class="sm" data-back="${esc(c.key)}" ${H.influence>=3?'':'disabled'}>Back them</button>`:''}</li>`).join('')}</ul>
       ${!done?`<div class="acts" style="margin-top:10px"><button class="main" data-claim="1" ${canClaim()?'':'disabled'}>Press your own claim</button><span class="muted" style="font-size:14px">Every great house grows more hostile. Lose, and the new crown will hate you.</span></div>`:''}</div></details></section>`}
   const houses=H.rivals.map(houseCard).join('');
-  return `${news}${crisis}<div class="two">${crown}${court}</div>
-    <section class="pane fold"><details data-fold="web" ${foldOpen('web')?'open':''}><summary><h2>The web of houses</h2></summary><div class="foldbody">${webView()}</div></details></section>
+  return `${news}${crisis}${envoyPanel()}${treatyPanel()}${diploView()}<div class="two">${crown}${court}</div>
     <section class="pane fold"><details data-fold="rank" ${foldOpen('rank')?'open':''}><summary><h2>Power rankings</h2></summary><div class="foldbody">${rankingsTable()}</div></details></section>
     <section class="pane fold "><details data-fold="relations" ${foldOpen('relations')?'open':''}><summary><h2>Your house and the great houses</h2></summary><div class="foldbody"><p class="muted" style="font-size:15px;margin:0 0 10px">Tension rises when you attack or are caught scheming, and cools with time, gifts and treaties. A house that is not held in check by a treaty, a marriage or a ward may strike at you between seasons.</p>${relationsOverview()}</div></details></section>
     <section class="pane fold "><details data-fold="houses" ${foldOpen('houses')?'open':''}><summary><h2>The houses in detail</h2></summary><div class="foldbody"><div class="hgrid">${houses}</div></div></details></section>`;
@@ -2655,7 +3230,7 @@ function checkSuccession(){
 function dowryFor(r){
   const p=r?r.power:1;
   if(p>=3)return {kind:'land',text:'A holdfast as dowry'};
-  if(p===2)return {kind:'pact',text:'A trade pact worth 2 gold each season'};
+  if(p===2)return {kind:'pact',text:'A small trade route worth 2 gold each season'};
   return {kind:'gold',text:'A dowry of 8 gold'};
 }
 const marriageable=()=>living().filter(m=>isAdult(m)&&!m.captive&&!isMarried(m)&&m.origin!=='married');
@@ -2666,9 +3241,10 @@ function arrangeMatch(i,memberId){
   const sp={id:H.nextId++,given,sex,sp:ssp,age,title:sex==='f'?'Lady '+H.house.name:'Lord consort',origin:'married',from:o.house,parents:[],spouse:m.id,ruler:false,st,wounds:0,dead:false,
     gear:{weapon:'Dagger',armor:'None',heirloom:'',specialty:'Kin in House '+o.house},traits:traitsFor(ssp),look:(Math.floor(Math.random()*4294967295)>>>0)||1};
   sp.kit=pick(KIT_BY[topStat(st)]);m.spouse=sp.id;H.members.push(sp);
-  const d=dowryFor(r);let dt='';
-  if(d.kind==='gold'){H.gold+=8;dt='8 gold'}
-  else if(d.kind==='pact'){H.pacts.push({house:o.house,kind:'Trade pact',income:2});dt='a trade pact worth 2 gold each season'}
+  const d=o.treaty?{kind:'none'}:dowryFor(r);let dt='';
+  if(d.kind==='none')dt='nothing, as the treaty set down';
+  else if(d.kind==='gold'){H.gold+=8;dt='8 gold'}
+  else if(d.kind==='pact'){addRoute(o.house,2,'small');dt='a small trade route worth 2 gold each season'}
   else{const L={name:pick(LAND_A)+pick(LAND_B),tier:'Holdfast',income:4,peasants:ri(100,150),from:o.house,cycle:H.cycle};H.lands.push(L);if(r)r.lands=Math.max(0,r.lands-1);dt=`the Holdfast of ${L.name}`}
   H.pacts.push({house:o.house,kind:'Marriage alliance'});if(r)r.hostility=0;
   H.offers.splice(i,1);matchPick[i]=undefined;
@@ -2677,14 +3253,17 @@ function arrangeMatch(i,memberId){
 }
 function declineMatch(i){const o=H.offers[i];if(!o)return;bump(rival(o.house),1);H.offers.splice(i,1);H.log.push({cycle:H.cycle,text:`House ${H.house.name} refuses a match with House ${o.house}, who take it as an insult.`});render()}
 function demandWard(i){
-  const c=H.hostageClaims[i];if(!c)return;const r=rival(c.house);const ruler0=H.members.find(m=>m.ruler&&!m.dead);
+  const c=H.hostageClaims[i];if(!c)return;H.hostageClaims.splice(i,1);const w=yieldWard(c.house);sel=w.id;render();
+}
+function yieldWard(house){
+  const c={house};const r=rival(c.house);const ruler0=H.members.find(m=>m.ruler&&!m.dead);
   const wsp=(r&&r.sp)||'Kin',sex=Math.random()<SPECIES[wsp].male?'m':'f',taken=new Set(H.members.map(x=>x.given));let given,t=0;do{given=nameFor(sex,wsp)}while(taken.has(given)&&++t<60);
   const age=toSpAge(ri(6,14),wsp),st={};STATS.forEach(k=>st[k]=1);
   const w={id:H.nextId++,given,sex,sp:wsp,age,title:'Ward',origin:'adopted',from:c.house,hostage:c.house,parents:ruler0?[ruler0.id].concat(isMarried(ruler0)?[ruler0.spouse]:[]):[],spouse:null,ruler:false,st,wounds:0,dead:false,
     gear:{weapon:'None',armor:'None',heirloom:'',specialty:''},traits:traitsFor(wsp),look:(Math.floor(Math.random()*4294967295)>>>0)||1};
-  w.kit=pick(KIT_BY[pick(STATS)]);growChild(w);H.members.push(w);bump(r,1);H.hostageClaims.splice(i,1);
+  w.kit=pick(KIT_BY[pick(STATS)]);growChild(w);H.members.push(w);bump(r,1);
   H.log.push({cycle:H.cycle,text:`House ${c.house} yields ${given}, age ${age}, as a ward. While the child lives under your roof, they will not strike at you.`});
-  sel=w.id;render();
+  return w;
 }
 const RETURN_OPTS={
   honor:['Send home with honor','Intrigue','+2 influence, their hostility drops by 2, and a pact of peace with House {H}.'],
@@ -2725,7 +3304,7 @@ function bloodView(){
     <h3>Line of succession</h3>${line.length?`<ol class="line">${line.map((m,i)=>`<li><button class="linkish" data-sel="${m.id}" data-go="house">${esc(m.given)}</button> <span class="muted">· ${m.age}${i===0?' · heir apparent':''}${m.captive?' · captive':''}</span></li>`).join('')}</ol>`:'<p class="hot">No heir of the blood. If the ruler dies, a ward or the eldest member inherits.</p>'}
     <p class="muted" style="font-size:15px;margin:10px 0 0">Every Winter the house ages a year. Married couples may have a child, children grow toward their full stats, and the old may die. An heir who has not come of age inherits under a regent, and rival houses grow bolder.</p></section>`;
   const cands=marriageable();
-  const offers=H.offers.length?H.offers.map((o,i)=>{const rv=rival(o.house),d=dowryFor(rv);const chosen=matchPick[i]!=null?matchPick[i]:(cands[0]&&cands[0].id);
+  const offers=H.offers.length?H.offers.map((o,i)=>{const rv=rival(o.house),d=o.treaty?{text:'No dowry: the match is owed under treaty'}:dowryFor(rv);const chosen=matchPick[i]!=null?matchPick[i]:(cands[0]&&cands[0].id);
     return `<article class="hcard"><div class="hhead">${rv?`<svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(rv.sigil,'mo'+i)}</svg>`:''}<div style="min-width:0;flex:1"><h3>House ${esc(o.house)} offers a match</h3><p class="muted" style="margin:0;font-size:15px">Power ${rv?'◆'.repeat(rv.power):'?'} · ${esc(d.text)}</p></div></div>
       <p style="margin:0;font-size:15px">The match binds the houses: their hostility ends and they will not strike at you while the alliance holds.</p>
       ${cands.length?`<label class="fld"><span>Who will marry?</span><select id="match-${i}" data-match="${i}">${cands.map(m=>`<option value="${m.id}" ${m.id===chosen?'selected':''}>${esc(m.given)} · ${m.age}${m.ruler?' · the ruler':''}</option>`).join('')}</select></label>`:'<p class="muted">No one of age is free to marry.</p>'}
@@ -2879,11 +3458,10 @@ function exchange(dir,n){
 }
 function exchangePane(){
   const left=exLeft(),b=exBuy(),sl=exSell();
-  return `<section class="pane" style="padding:10px 14px"><div style="display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center">
-    <h2 style="margin:0;font-size:18px">Moneylender &amp; court</h2>
+  return `<section class="pane fold"><details data-fold="exch" ${foldOpen('exch')?'open':''}><summary><h2>Moneylender &amp; court</h2><span class="muted">${left} of ${EX_CAP} left this season</span></summary><div class="foldbody"><div style="display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center">
     <button class="sm" style="margin:0" data-exch="buy|1" ${left&&H.gold>=b?'':'disabled'} title="${isTreasurer()?'Lord Treasurer rate':'The Lord Treasurer pays 4'}">+1 influence · ${b} gold</button>
     <button class="sm" style="margin:0" data-exch="sell|1" ${left&&H.influence>=1?'':'disabled'} title="${isTreasurer()?'Lord Treasurer rate':'The Lord Treasurer gets 4'}">+${sl} gold · 1 influence</button>
-    <span class="muted" style="font-size:14px">${left} of ${EX_CAP} left this season${isTreasurer()?' · <span class="okc">Treasurer’s rate</span>':''}</span></div></section>`;
+    ${isTreasurer()?'<span class="okc" style="font-size:14px">Treasurer’s rate</span>':''}</div></div></details></section>`;
 }
 function marketView(){
   const row=(slot,n,p)=>{const own=H.armory.filter(x=>x.slot===slot&&x.name===n).length;
@@ -2896,19 +3474,23 @@ function marketView(){
       <span class="give">${(()=>{const who=alive.filter(m=>isAdult(m)&&!m.captive&&improves(m,it.slot,it.name));
         return who.length?`<select id="give-${i}" aria-label="Give ${esc(it.name)} to">${who.map(m=>`<option value="${m.id}">${esc(m.given)} · ${m.gear[it.slot]&&m.gear[it.slot]!=='None'?'replaces '+esc(m.gear[it.slot]):'empty slot'}</option>`).join('')}</select><button class="sm" data-give="${i}">Equip</button>`:'<span class="muted" style="font-size:14px">No one would be better off with it</span>'})()}<button class="sm" data-sell="${i}">Sell · ${sellPrice(it.slot,it.name)}</button></span></li>`).join('')}</ul>`
     :'<p class="muted">Empty. What you buy lands here, along with anything a member takes off.</p>';
-  return `<section class="pane"><div class="cyclebar"><div><span class="eyebrow">The market · ${seasonOf(H.cycle)}, year ${yearOf(H.cycle)}</span><p style="margin:4px 0 0">Every season the weaponsmith and armorer bring three new pieces each, from +1 to +3. Heirlooms and specialists come and go with the seasons too.</p></div>
-      <div class="tally"><div>Gold<b>${H.gold}</b></div><div>In the armory<b>${H.armory.length}</b></div></div></div></section>
+  const F=(k,title,sub,body)=>`<section class="pane fold"><details data-fold="${k}" ${foldOpen(k)?'open':''}><summary><h2>${title}</h2>${sub?`<span class="muted">${sub}</span>`:''}</summary><div class="foldbody">${body}</div></details></section>`;
+  return `${F('mkt','The market',`${seasonOf(H.cycle)}, year ${yearOf(H.cycle)} · ${H.gold} gold`,`<div class="cyclebar"><p style="margin:0;flex:1;min-width:14em">Every season the weaponsmith and armorer bring three new pieces each, from +1 to +3. Heirlooms and specialists come and go with the seasons too.</p>
+      <div class="tally"><div>Gold<b>${H.gold}</b></div><div>In the armory<b>${H.armory.length}</b></div></div></div>`)}
     ${exchangePane()}
     <section class="pane fold"><details data-fold="armory" ${foldOpen('armory')?'open':''}><summary><h2>The armory</h2><span class="muted">${H.armory.length} item${H.armory.length===1?'':'s'}</span></summary><div class="foldbody"><p class="muted" style="font-size:15px;margin:0 0 10px">Items your house owns but nobody is using. Equip them here or from a member’s dossier. Selling returns half the price.</p>${arm}</div></details></section>
-    <div class="two"><section class="pane"><h2>Weaponsmith this season</h2><ul class="wares">${stock('weapon')}</ul></section><section class="pane"><h2>Armorer this season</h2><ul class="wares">${stock('armor')}</ul></section></div>
-    <div class="two"><section class="pane"><h2>Heirlooms this season</h2><ul class="wares">${stock('heirloom')}</ul></section><section class="pane"><h2>Specialists this season</h2><ul class="wares">${stock('specialty')}</ul></section></div>`;
+    <div class="two">${F('smith','Weaponsmith this season','',`<ul class="wares">${stock('weapon')}</ul>`)}${F('armorer','Armorer this season','',`<ul class="wares">${stock('armor')}</ul>`)}</div>
+    <div class="two">${F('heir','Heirlooms this season','',`<ul class="wares">${stock('heirloom')}</ul>`)}${F('spec','Specialists this season','',`<ul class="wares">${stock('specialty')}</ul>`)}</div>
+    ${tradeView()}`;
 }
 
 /* ---------- relations with each house ---------- */
 const TENSION=['Cordial','Cool','Wary','Hostile','Bitter','Blood feud'];
 const STRIKE_HOW={land:'seize your land or send assassins',revenge:'send assassins',crown:'slander you at court',wealth:'raid your storehouses'};
 function guards(n){
-  const g=[];
+  const g=[];if(atWar(n))return g;
+  if(alliedWith(n))g.push('a military alliance');
+  H.dip.truces.filter(t=>t.house===n&&t.until>H.cycle).forEach(t=>g.push(`a truce until ${seasonOf(t.until)}, year ${yearOf(t.until)}`));
   H.pacts.filter(p=>p.house===n&&p.kind.startsWith('Pact of peace')).forEach(p=>g.push(p.kind.includes('coerced')?'a coerced pact of peace':'a pact of peace'));
   if(H.pacts.some(p=>p.house===n&&p.kind==='Marriage alliance'))g.push('a marriage alliance');
   H.members.filter(m=>m.hostage===n&&!m.dead).forEach(m=>g.push(`you hold ${m.given} as a ward`));
@@ -2916,12 +3498,21 @@ function guards(n){
 }
 function tiesWith(n){
   const t=[];const add=(group,text,tone)=>t.push({group,text,tone:tone||''});
+  const w=warWith(n);if(w)add('War',`At war since ${seasonOf(w.since)}, year ${yearOf(w.since)} · ${w.wins} won, ${w.losses} lost`,'bad');
+  if(alliedWith(n))add('Treaties','Military alliance: each defends the other','good');
+  H.dip.routes.filter(x=>x.house===n).forEach(x=>add('Trade',`A ${x.size} trade route: ${routeActive(x)?`+${x.income} gold each season`:routeStatus(x)}`,routeActive(x)?'good':'warn'));
+  if(H.dip.embargo.includes(n))add('Trade','You hold them under embargo','bad');
+  H.dip.embargoedBy.filter(x=>x.house===n).forEach(()=>add('Trade','They hold you under embargo','bad'));
+  H.dip.truces.filter(t=>t.house===n&&t.until>H.cycle).forEach(t=>add('Treaties',`Truce until ${seasonOf(t.until)}, year ${yearOf(t.until)}`,'good'));
+  H.dip.calls.filter(c=>c.from===n).forEach(c=>add('Treaties',`They call you to arms against House ${c.against}`,'warn'));
   H.pacts.filter(p=>p.house===n).forEach(p=>add('Treaties',p.kind+(p.income?` · +${p.income} gold each season`:''),'good'));
   H.members.filter(m=>m.origin==='married'&&m.from===n).forEach(m=>{const s=spouseOf(m);add('Marriages',`${m.given} of House ${n} is wed to ${s?s.given:'one of yours'}${m.dead?' (dead)':''}`,m.dead?'':'good')});
   H.offers.filter(o=>o.house===n).forEach(()=>add('Marriages','They have offered a marriage. Arrange it in Bloodlines.','warn'));
   H.members.filter(m=>m.hostage===n&&!m.dead).forEach(m=>add('Wards',`You hold ${m.given}, age ${m.age}, as hostage${m.returnDue?'. Decision due':''}`,'good'));
   H.members.filter(m=>m.kept&&m.from===n&&!m.dead).forEach(m=>add('Wards',`${m.given}, once their ward, chose to stay with you`,'bad'));
   H.members.filter(m=>m.returned===n).forEach(m=>add('Wards',`${m.given} was sent home to them`));
+  H.members.filter(m=>m.givenTo===n).forEach(m=>add(m.givenAs==='ward'?'Wards':'Marriages',m.givenAs==='ward'?`${m.given} was given to them as a ward under treaty`:`${m.given} wed into their house under treaty`,'bad'));
+  H.dip.demands.filter(d=>d.house===n).forEach(()=>add('War','They have sent terms for peace. Answer in The Realm this Winter.','warn'));
   H.members.filter(m=>m.origin==='adopted'&&!m.hostage&&!m.kept&&!m.returned&&m.from===n&&!m.dead).forEach(m=>add('Wards',`${m.given} was born to them and raised by you`));
   H.hostageClaims.filter(c=>c.house===n).forEach(()=>add('Wards','They owe you a ward. Claim it in Bloodlines.','warn'));
   H.informants.filter(i=>i.house===n).forEach(i=>add('Spies',`${i.name} reports to you from inside their hall`,'good'));
@@ -2933,6 +3524,8 @@ function tiesWith(n){
   return t;
 }
 function stanceOf(r){
+  if(atWar(r.name))return 'At war';
+  if(alliedWith(r.name))return 'Allied';
   const g=guards(r.name);
   const wed=H.pacts.some(p=>p.house===r.name&&p.kind==='Marriage alliance');
   if(g.length&&r.hostility>=3)return wed?'Bound by marriage, but resentful':'Held in check';
@@ -2943,6 +3536,7 @@ function stanceOf(r){
   return r.hostility?'Uneasy':'Neutral';
 }
 function threatLine(r){
+  if(atWar(r.name))return `<span class="hot">At war.</span> Each season their power clashes with yours${warAllies(r.name).length?' and your allies’':''}.`;
   const g=guards(r.name);
   if(g.length)return `<span class="okc">Will not strike at you</span> while ${g.join(', and ')}.`;
   if(!r.hostility)return 'No reason to strike at you yet.';
@@ -2955,7 +3549,7 @@ function relationsOverview(){
     return `<tr><th scope="row"><span class="relname"><svg class="mini" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'ov'+r.name)}</svg>${esc(r.name)}</span></th>
       <td>${stanceOf(r)}</td><td>${tensionMeter(r)}</td>
       <td>${groups.length?groups.map(gr=>`<span class="chip">${gr}${t.filter(x=>x.group===gr).length>1?' ×'+t.filter(x=>x.group===gr).length:''}</span>`).join(''):'<span class="muted">None</span>'}</td>
-      <td>${guards(r.name).length?'<span class="okc">Held in check</span>':r.hostility?`<span class="hot">${r.hostility*6}% a season</span>`:'<span class="muted">None</span>'}</td></tr>`}).join('')}</tbody></table></div>`;
+      <td>${atWar(r.name)?'<span class="hot">At war</span>':guards(r.name).length?'<span class="okc">Held in check</span>':r.hostility?`<span class="hot">${r.hostility*6}% a season</span>`:'<span class="muted">None</span>'}</td></tr>`}).join('')}</tbody></table></div>`;
 }
 /* rerolling a rival: only a house with no ties to yours, so nothing in your chronicle points at it */
 function rerollBlock(r){
@@ -2966,7 +3560,10 @@ function rerollBlock(r){
   return null;
 }
 function rerollHouse(n){
-  const r=rival(n);if(!r||rerollBlock(r))return;
+  const r=rival(n);if(!r||rerollBlock(r))return;replaceHouse(r);
+}
+function replaceHouse(r){
+  const n=r.name;
   const taken=new Set([H.house.name,H.realm&&H.realm.royal&&H.realm.royal.name].concat(H.rivals.map(x=>x.name)));
   const sp=pick(SPECIES_KEYS);let pool=HOUSES_BY[sp].filter(x=>!taken.has(x));if(!pool.length)pool=HOUSES.filter(x=>!taken.has(x));if(!pool.length)return;
   const name=pick(pool),nsp=houseSp(name)||sp,sx=Math.random()<.7?'m':'f';
@@ -2993,7 +3590,7 @@ function houseCard(r){
     <dl class="opdl">${tieHtml||'<dt>Ties</dt><dd class="muted">None yet. Intrigue, marriage, wards and spies all bind houses together.</dd>'}</dl>
     <dl class="opdl theirs"><dt>Agenda</dt><dd>${AGENDAS[r.agenda]}</dd><dt>Power</dt><dd>${'◆'.repeat(r.power)}${'◇'.repeat(3-r.power)} · ${r.lands} land${r.lands===1?'':'s'}</dd>${rels?`<dt>Realm</dt><dd>${rels}</dd>`:''}</dl>
     ${hist.length?`<details class="hist"><summary>Recent dealings</summary><ul>${hist.map(l=>`<li><span class="cy">${seasonOf(l.cycle)}, yr ${yearOf(l.cycle)}</span>${esc(l.text)}</li>`).join('')}</ul></details>`:''}
-    <div class="acts"><button class="sm" data-calm="${esc(r.name)}" ${H.influence>=2&&r.hostility?'':'disabled'}>Ease tensions · 2 influence</button></div>${secretHtml}</article>`;
+    <div class="acts"><button class="sm" data-calm="${esc(r.name)}" ${H.influence>=2&&r.hostility?'':'disabled'}>Ease tensions · 2 influence</button>${dipActs(r)}${tradeActs(r)}</div>${warConfirm(r)}${secretHtml}</article>`;
 }
 
 /* ---------- events ---------- */
@@ -3033,6 +3630,27 @@ document.addEventListener('click',e=>{
   if(t.dataset.expose!=null){expose(+t.dataset.expose);return}
   if(t.dataset.lev!=null){leverage=t.dataset.lev||null;render();return}
   if(t.dataset.calm){calm(t.dataset.calm);return}
+  if(t.dataset.envoy!=null){if(!t.dataset.envoy){envoy=null;render();return}const [k,n,a]=t.dataset.envoy.split('|');envoy={kind:k,house:n,against:a||null};pendingWar=null;render();const el=$('envoyPanel');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(t.dataset.sendenvoy){sendEnvoy(+t.dataset.sendenvoy);return}
+  if(t.dataset.treaty!=null){if(!t.dataset.treaty){treaty=null;render();return}treaty={house:t.dataset.treaty,gold:0,land:0,ward:false,marriage:false,dissolve:false,team:[]};envoy=null;pendingWar=null;render();const el=$('treatyPanel');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(t.dataset.tterm){if(treaty){const [k,v]=t.dataset.tterm.split('|');treaty[k]=k==='ward'||k==='marriage'||k==='dissolve'?v==='1':+v;if(k==='dissolve'&&treaty.dissolve)Object.assign(treaty,{gold:0,land:0,ward:false,marriage:false})}render();return}
+  if(t.dataset.tpick!=null){if(treaty){const id=+t.dataset.tpick;treaty.team=treaty.team.includes(id)?treaty.team.filter(x=>x!==id):treaty.team.concat(id).slice(-3)}render();return}
+  if(t.dataset.tsend){launchTreaty();return}
+  if(t.dataset.dyes!=null){acceptDemand(+t.dataset.dyes);return}
+  if(t.dataset.dno!=null){refuseDemand(+t.dataset.dno);return}
+  if(t.dataset.dcancel){pendingDissolve=null;render();return}
+  if(t.dataset.toll!=null){H.dip.toll=+t.dataset.toll;H.log.push({cycle:H.cycle,text:`House ${H.house.name} sets ${['no tolls','low tolls','high tolls'][H.dip.toll]} on its roads.`});render();return}
+  if(t.dataset.embargo){toggleEmbargo(t.dataset.embargo);return}
+  if(t.dataset.cutroute!=null){cancelRoute(+t.dataset.cutroute);return}
+  if(t.dataset.warask){pendingWar={house:t.dataset.warask,card:t.dataset.warask};render();return}
+  if(t.dataset.joinwar){const [w,x]=t.dataset.joinwar.split('|');pendingWar={house:x,with:w,card:w};render();return}
+  if(t.dataset.wargo){if(pendingWar){const p=pendingWar;pendingWar=null;declareWar(p.house,p.with?{cause:`Joined House ${p.with}'s war against them`,with:p.with}:{})}render();return}
+  if(t.dataset.warno){pendingWar=null;render();return}
+  if(t.dataset.answer!=null){answerCall(+t.dataset.answer);return}
+  if(t.dataset.refuse!=null){refuseCall(+t.dataset.refuse);return}
+  if(t.dataset.breakally){pendingBreak=t.dataset.breakally;render();return}
+  if(t.dataset.breakyes){breakAlliance(t.dataset.breakyes);return}
+  if(t.dataset.breakno){pendingBreak=null;render();return}
   if(t.dataset.petition){petition();return}
   if(t.dataset.office){seekOffice(t.dataset.office);return}
   if(t.dataset.back){backClaim(t.dataset.back);return}
