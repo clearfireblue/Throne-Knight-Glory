@@ -76,6 +76,13 @@ ul.roster li.grp>details>summary::-webkit-details-marker{display:none}
 ul.roster li.grp>details>summary::before{content:"▸";transition:transform .15s}
 ul.roster li.grp>details[open]>summary::before{transform:rotate(90deg)}
 ul.roster li.grp:first-child .ghead{margin-top:0}
+details.lgrp{margin:0 0 8px}
+details.lgrp>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;min-height:32px;font:600 13px var(--f-display);letter-spacing:.1em;text-transform:uppercase}
+details.lgrp>summary::-webkit-details-marker{display:none}
+details.lgrp>summary::before{content:"▸";color:var(--gold);transition:transform .15s}
+details.lgrp[open]>summary::before{transform:rotate(90deg)}
+details.lgrp .gn{margin-left:auto;font:500 13px var(--f-body);color:var(--muted);letter-spacing:.04em;text-transform:none}
+details.lgrp>ul.hl{margin-top:6px}
 ul.roster .gn{margin-left:auto;font:500 12px var(--f-body);color:var(--muted);letter-spacing:.06em}
 ul.roster li.grp>details>ul.roster{margin-top:4px}
 ul.roster button{width:100%;display:flex;gap:10px;align-items:center;text-align:left;background:none;border:1px solid transparent;padding:6px 8px}
@@ -2290,7 +2297,10 @@ function investRow(l,i){
   return `<br><button class="sm" data-invest="${i}" ${canInvest(l)?'':'disabled'}${why}>Build up to ${esc(to[0].toLowerCase())} · ${cost} gold · ${to[3]} season${to[3]>1?'s':''}</button> <span class="muted" style="font-size:14px">+${gi} income, +${gp} peasants${(l.unrest||0)?' · must be peaceful':''}</span>`;
 }
 function holdingsPane(){
-  const lands=H.lands.length?`<ul class="hl">${H.lands.map(l=>`<li><b>${esc(l.tier)} of ${esc(l.name)}</b> <span class="muted">· ${l.wild?'claimed from '+esc(l.from):l.from==='the crown'?'granted by the crown':'taken from House '+esc(l.from)}${raidOn(l)?' · <span class="hot">under attack</span>':''}</span><br>+${landIncome(l)} gold each cycle${landIncome(l)<l.income?` <span class="muted">(${l.income} at peace)</span>`:''} · ${l.peasants} peasants · <span class="${(l.unrest||0)?'hot':'okc'}">${UNREST[l.unrest||0]}</span>${routRow(l,H.lands.indexOf(l))}${investRow(l,H.lands.indexOf(l))}</li>`).join('')}</ul>`:'<p class="muted">No lands beyond the seat yet. Conquest takes them.</p>';
+  const landLi=l=>`<li><b>${esc(l.tier)} of ${esc(l.name)}</b> <span class="muted">· ${l.wild?'claimed from '+esc(l.from):l.from==='the crown'?'granted by the crown':'taken from House '+esc(l.from)}${raidOn(l)?' · <span class="hot">under attack</span>':''}</span><br>+${landIncome(l)} gold each cycle${landIncome(l)<l.income?` <span class="muted">(${l.income} at peace)</span>`:''} · ${l.peasants} peasants · <span class="${(l.unrest||0)?'hot':'okc'}">${UNREST[l.unrest||0]}</span>${routRow(l,H.lands.indexOf(l))}${investRow(l,H.lands.indexOf(l))}</li>`;
+  const quiet=H.lands.filter(l=>!(l.unrest||0)),troubled=H.lands.filter(l=>l.unrest||0);
+  const lgrp=(k,t,ls,hot)=>ls.length?`<details class="lgrp" data-fold="${k}" ${foldOpen(k)?'open':''}><summary><span class="${hot?'hot':'okc'}">${t}</span> <span class="gn">${ls.length} · +${ls.reduce((a,l)=>a+landIncome(l),0)} gold</span></summary><ul class="hl">${ls.map(landLi).join('')}</ul></details>`:'';
+  const lands=H.lands.length?lgrp('lands-peace','Peaceful',quiet)+lgrp('lands-trouble','Restless, in unrest or revolt',troubled,true):'<p class="muted">No lands beyond the seat yet. Conquest takes them.</p>';
   const caps=H.captives.length?`<ul class="hl">${H.captives.map((c,i)=>`<li><b>${esc(c.name)}</b>, ${esc(c.rank)} <span class="muted">· House ${esc(c.house)}</span><br><button class="sm" data-ransom="${i}">Ransom for ${c.ransom} gold</button></li>`).join('')}</ul>`:'<p class="muted">None held. Battle takes prisoners.</p>';
   const ours=H.members.filter(m=>m.captive&&!m.dead);
   const held=ours.length?`<h3>Held by rivals</h3><ul class="hl">${ours.map(m=>`<li><b>${esc(fullName(m))}</b> <span class="muted">· held by House ${esc(m.captive.house)}</span><br><button class="sm" data-payransom="${m.id}" ${H.gold<m.captive.ransom?'disabled':''}>Pay ${m.captive.ransom} gold to free them</button></li>`).join('')}</ul>`:'';
@@ -2757,7 +2767,7 @@ function treatyPanel(){
       <p class="muted" style="margin:0;font-size:14px">Up to three envoys. Each extra envoy adds +1 to every roll, up to +2. They are away for the season.</p>`:'<p class="muted" style="margin:0">No one of age is free to go this season.</p>';
   const tl=termsList(r,treaty);
   return `<section class="pane crisis" id="treatyPanel"><div class="boardhead"><h2>Peace talks with House ${esc(n)}</h2><button class="sm" data-treaty="">Cancel</button></div>
-    <div class="hhead" style="margin-bottom:10px"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'tp'+n)}</svg><p style="margin:0;font-size:16px;min-width:0">Complete success: ${dz?`House ${esc(n)} is dissolved. ${esc(r.seat)} becomes your castle, royal favor +2 and influence +3, and every other house grows warier. A new house rises in its place.`:`peace${tl.length?' and '+esc(tl.join(', ')):''}.`} Partial success: peace without terms. Failure: the war goes on, and on a roll of 10 an envoy is seized. Peace brings a binding truce for a year.</p></div>
+    <div class="hhead" style="margin-bottom:10px"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'tp'+n)}</svg><p style="margin:0;font-size:16px;min-width:0">Complete success: ${dz?`House ${esc(n)} is dissolved. ${esc(r.seat)} becomes your castle, royal favor +2 and influence +3, and every other house grows warier. A new house rises in its place. Partial success or failure: the talks break down and the war goes on. On a roll of 10 an envoy is seized.`:`peace${tl.length?' and '+esc(tl.join(', ')):''}. Partial success: peace without terms. Failure: the war goes on, and on a roll of 10 an envoy is seized. Peace brings a binding truce for a year.`}</p></div>
     ${rows}${read}
     <div class="two"><div><h3 style="margin-top:0">How House ${esc(n)} leans</h3>${mods}</div><div><h3 style="margin-top:0">Send envoys</h3>${pickHtml}</div></div>
     <div class="acts" style="margin-top:12px"><button class="main" data-tsend="1" ${E.block||!treaty.team.length?'disabled':''}>Send ${treaty.team.length||'the'} envoy${treaty.team.length===1?'':'s'}</button></div></section>`;
@@ -2787,6 +2797,7 @@ function finishTreaty(ms,grade,out){
   if(!r||!atWar(n)){out.push('The war had already ended.');return}
   if(grade==='fail'){out.push(`House ${n} will not make peace. The war goes on.`);return}
   if(grade==='full'&&op.terms.dissolve&&!dissolveBlock(r)){dissolveHouse(n,out);return}
+  if(op.terms.dissolve){out.push(`House ${n} will not hear of its own dissolution. The talks break down and the war goes on.`);return}
   applyPeace(n);
   const t=op.terms,any=termsList(r,t).length;
   if(grade==='partial'){out.push(any?`House ${n} agrees to peace, but not to your terms.`:`House ${n} agrees to peace.`)}
