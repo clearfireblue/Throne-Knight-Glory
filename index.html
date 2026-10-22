@@ -3027,6 +3027,7 @@ function resolveCrisis(say){
     else if(C.own){Rz.favor=0;bump(winR,2);say('Your claim failed. The new crown will not forget it.','bad')}
     else if(C.backed){Rz.favor=Math.max(0,Rz.favor-3);bump(winR,2);say('You backed the losing claimant. Royal favor falls.','bad')}
     else Rz.favor=3;
+    if(C.suspect){const sr=winR||rival(Rz.royal.name);if(sr)bump(sr,2);say('The new crown holds you to account for the old crown’s death.','bad')}
   }
   Rz.crisis=null;
 }
@@ -3089,7 +3090,7 @@ function setAssassinMark(op,mark){
   const r=rival(op.target);op.title=mark==='lord'&&r?`Assassinate ${lordWord(r.lord)} ${r.lord.given} of House ${op.target}`:`Assassinate a kinsman of House ${op.target}`;
 }
 function darkReward(op){
-  if(op.kind==='assassin')return op.mark==='lord'?'Their lord dies, and a new lord takes over: their power may fall, and your claims by blood can come due. Partial success: the lord survives, wounded':'Their power falls by 1. Partial success: the kinsman survives, wounded';
+  if(op.kind==='assassin')return op.mark==='lord'&&isRoyalRival(op.target)?'The monarch and their lord die, and the throne is settled as after a natural death, with or without a succession crisis. No one suspects you. Partial success: even odds the monarch dies, and you are suspected (royal favor gone, every house warier, backing a claimant costs 5 influence), otherwise they survive, wounded':op.mark==='lord'?'Their lord dies, and a new lord takes over: their power may fall, and your claims by blood can come due. Partial success: the lord survives, wounded':'Their power falls by 1. Partial success: the kinsman survives, wounded';
   if(op.kind==='slander')return 'Their power falls by 1, and the crown grants them no lands for a year. Partial success: +1 influence';
   if(op.kind==='burn')return `About ${op.gold} gold in loot, and a 50% chance their power falls by 1. Partial success: half the loot`;
   return `A kinsman held for about ${op.ransom} gold in ransom. Partial success: a lesser retainer, for half`;
@@ -3104,10 +3105,27 @@ function lordSlain(r,out){
   out.push(`${lordWord(old)} ${old.given} of House ${n} is dead. ${r.lord.given} now leads the house`);
   if(r.power>1&&Math.random()<.5){r.power--;out.push('Leaderless for a time, their power falls')}
 }
+/* the royal house's lord is the crown: the monarch dies with him and the succession is decided as for a natural death. Partial success is even odds; if the monarch dies, you are suspected. */
+function royalLordSlain(r,grade,out){
+  const Rz=H.realm,k=Rz.king,n=r.name;
+  if(!k||Rz.crisis){lordSlain(r,out);return}
+  const partial=grade==='partial';
+  if(partial&&Math.random()<.5){out.push(`${crownWord(k)} ${k.given} survives the knife, wounded. House ${n} suspects you`);return}
+  const old=r.lord,sx=Math.random()<.65?'m':'f';
+  r.lord={given:nameFor(sx,r.sp),sex:sx,age:toSpAge(ri(15,40),r.sp)};
+  kingDies((t)=>out.push(String(t).replace(/\.$/,'')),'at an assassin’s hand');
+  out.push(`${old.given}, lord of House ${n}, dies with the crown, and ${r.lord.given} now leads the house`);
+  if(partial){
+    Rz.favor=0;H.rivals.forEach(x=>bump(x,1));
+    if(Rz.crisis){Rz.crisis.suspect=true;out.push('The claimants name you as the hand behind the killing. Royal favor is gone, every great house grows warier, and backing a claimant now costs 5 influence')}
+    else out.push('The court names you as the hand behind the killing. Royal favor is gone, and every great house grows warier');
+  }else out.push('No one suspects you');
+}
 function darkFinish(op,grade,r,out){
   const n=op.target;if(!r){out.push('That house is gone.');return}
   bump(r,1);
   if(op.kind==='assassin'){
+    if(op.mark==='lord'&&isRoyalRival(n)&&grade!=='fail'){royalLordSlain(r,grade,out);return}
     if(grade==='full'){if(op.mark==='lord')lordSlain(r,out);else{const was=r.power;r.power=Math.max(1,r.power-1);out.push(`A kinsman of House ${n} is found dead${was>r.power?'. Their power falls':''}`)}}
     else out.push(`${op.mark==='lord'?`${lordWord(r.lord)} ${r.lord.given}`:'The kinsman'} survives the knife, wounded. House ${n} suspects you`);
   }else if(op.kind==='slander'){
@@ -4127,7 +4145,7 @@ function courtSpendHtml(){
 function calm(n){const r=rival(n);if(!r||H.influence<2||!r.hostility)return;H.influence-=2;r.hostility--;H.log.push({cycle:H.cycle,text:`Gifts and kind words ease tensions with House ${n}.`});render()}
 function petition(){if(H.influence<3||H.realm.favor>=10||H.realm.yours||!H.realm.king)return;H.influence-=3;H.realm.favor++;H.log.push({cycle:H.cycle,text:'You petition the crown and win royal favor.'});render()}
 function seekOffice(k){const Rz=H.realm;const free=Rz.yours;if(!free&&(H.influence<6||Rz.favor<5||!Rz.king))return;if(!free)H.influence-=6;Rz.office=k;H.log.push({cycle:H.cycle,text:`A member of House ${H.house.name} is named ${OFFICES[k][0]}.`});render()}
-function backClaim(key){const C=H.realm.crisis;if(!C||C.backed||C.own||H.influence<3)return;H.influence-=3;C.backed=key;const c=C.claimants.find(x=>x.key===key);if(c)c.str+=3;render()}
+function backClaim(key){const C=H.realm.crisis,cost=C&&C.suspect?5:3;if(!C||C.backed||C.own||H.influence<cost)return;H.influence-=cost;C.backed=key;const c=C.claimants.find(x=>x.key===key);if(c)c.str+=3;render()}
 function pressClaim(){const C=H.realm.crisis;if(!C||C.backed||C.own||!canClaim())return;const r0=ruler();
   C.own=true;C.claimants.push({key:'you',label:`${r0.given} of House ${H.house.name}`,str:2+Math.floor(H.influence/3)+H.lands.length+Math.floor(r0.st.Insight/3)});
   H.rivals.forEach(r=>bump(r,1));H.log.push({cycle:H.cycle,text:`House ${H.house.name} presses its own claim to the throne. Every great house takes note.`});render()}
@@ -4218,8 +4236,8 @@ function realmView(){
     <h3>Royal offices</h3><ul class="offices">${offs}</ul></div></details></section>`;
   let crisis='';
   if(Rz.crisis){const C=Rz.crisis,tot=C.claimants.reduce((a,c)=>a+c.str,0),done=C.backed||C.own;
-    crisis=`<section class="pane fold crisis"><details data-fold="crisis" ${foldOpen('crisis')?'open':''}><summary><h2>Succession crisis</h2></summary><div class="foldbody"><p class="muted" style="margin:0 0 10px">Decided at the end of this season. Each claimant’s chance follows their strength. Back one for 3 influence (+3 strength), or press your own claim with influence 10 or royal favor 7.</p>
-      <ul class="claim">${C.claimants.map(c=>`<li><span style="flex:1;min-width:0"><b>${esc(c.label)}</b>${C.backed===c.key?' <span class="status ok">You back them</span>':''}<br><span class="muted">Strength ${c.str} · about ${Math.round(c.str/tot*100)}%</span></span>${!done&&c.key!=='you'?`<button class="sm" data-back="${esc(c.key)}" ${H.influence>=3?'':'disabled'}>Back them</button>`:''}</li>`).join('')}</ul>
+    crisis=`<section class="pane fold crisis"><details data-fold="crisis" ${foldOpen('crisis')?'open':''}><summary><h2>Succession crisis</h2></summary><div class="foldbody"><p class="muted" style="margin:0 0 10px">Decided at the end of this season. Each claimant’s chance follows their strength. Back one for ${C.suspect?5:3} influence (+3 strength)${C.suspect?' (you are suspected of the killing, so it costs more)':''}, or press your own claim with influence 10 or royal favor 7.</p>
+      <ul class="claim">${C.claimants.map(c=>`<li><span style="flex:1;min-width:0"><b>${esc(c.label)}</b>${C.backed===c.key?' <span class="status ok">You back them</span>':''}<br><span class="muted">Strength ${c.str} · about ${Math.round(c.str/tot*100)}%</span></span>${!done&&c.key!=='you'?`<button class="sm" data-back="${esc(c.key)}" ${H.influence>=(C.suspect?5:3)?'':'disabled'}>Back them</button>`:''}</li>`).join('')}</ul>
       ${!done?`<div class="acts" style="margin-top:10px"><button class="main" data-claim="1" ${canClaim()?'':'disabled'}>Press your own claim</button><span class="muted" style="font-size:14px">Every great house grows more hostile. Lose, and the new crown will hate you.</span></div>`:''}</div></details></section>`}
   const houses=H.rivals.map(houseCard).join('');
   const detail=`<section class="pane fold "><details data-fold="houses" ${foldOpen('houses')?'open':''}><summary><h2>The houses in detail</h2></summary><div class="foldbody"><div class="hgrid">${houses}</div></div></details></section>`;
