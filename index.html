@@ -1584,7 +1584,7 @@ function generate(seed){
 /* ---------- state + saving ---------- */
 /* ---------- save slots ---------- */
 const KEY='wrathOfKings.v1',SLOTS_KEY='wrathOfKings.slots',SLOT_KEY=id=>'wrathOfKings.slot.'+id,MAX_SLOTS=6;
-let planning=null,planTeam=[],leverage=null,ravensOpen=true,envoy=null,pendingWar=null,pendingBreak=null,treaty=null,pendingDissolve=null;
+let planning=null,planTeam=[],leverage=null,ravensOpen=true,envoy=null,pendingWar=null,pendingBreak=null,treaty=null,pendingDissolve=null,dissMinor=null;
 let H=null,sel=0,section='house',lastRoll=null,pendingConfirm=null,activeSlot=null,savesOpen=false,pendingDelete=null;
 function readMeta(){try{const m=JSON.parse(localStorage.getItem(SLOTS_KEY)||'null');if(m&&Array.isArray(m.slots))return m}catch(e){}return {active:null,slots:[]}}
 function writeMeta(m){try{localStorage.setItem(SLOTS_KEY,JSON.stringify(m))}catch(e){}}
@@ -1612,7 +1612,7 @@ function load(){
   for(const s of meta.slots)if(loadSlot(s.id))return true;
   return false;
 }
-function resetView(){planning=null;planTeam=[];leverage=null;lastRoll=null;pendingConfirm=null;envoy=null;pendingWar=null;pendingBreak=null;treaty=null;$('confirmBox').innerHTML=''}
+function resetView(){planning=null;planTeam=[];leverage=null;lastRoll=null;pendingConfirm=null;envoy=null;pendingWar=null;pendingBreak=null;treaty=null;dissMinor=null;$('confirmBox').innerHTML=''}
 function switchSlot(id){if(id===activeSlot)return;save();if(loadSlot(id)){ensureState();resetView();if(!mem(sel)){const r=H.members.find(m=>m.ruler&&!m.dead);sel=r?r.id:H.members[0].id}render()}}
 function newGameSlot(){
   const meta=readMeta();if(meta.slots.length>=MAX_SLOTS)return;save();
@@ -2218,11 +2218,90 @@ function estateOp(n){
   op.land={name:x.estate.name,tier:'Estate',income:10,peasants:500};op.estate=x.id;op.def=x.power;op.war=true;return op;
 }
 const estateDef=op=>op&&op.estate?((minorById(op.estate)||{}).power||op.def||0):0;
+/* storming the Estate of an independent house: no liege and no war needed. Their strength defends it; taken, they are landless and resentful of you */
+const indieHolders=()=>(H.minors||[]).filter(x=>!x.liege&&x.estate&&!x.rebel);
+function indieEstateOp(x){
+  const T=OPS.Conquest;
+  return {id:H.ops.nextOp++,type:'Conquest',kind:'indie',indie:true,diff:3,target:null,place:`${x.estate.name} Estate`,estate:x.id,def:x.power,
+    title:`Storm ${x.estate.name} Estate, held by independent House ${x.name}`,
+    stages:T.stages.map(s=>({name:s,stat:'Might'})).concat([{name:pick(T.holdStages),stat:'Ability'}]),
+    land:{name:x.estate.name,tier:'Estate',income:10,peasants:500}};
+}
+function finishIndieEstate(ms,grade,out){
+  const op=ms.op,x=minorById(op.estate);
+  if(!x||!x.estate||x.liege){out.push('The Estate has changed hands, and the assault finds no one to storm.');return}
+  if(grade==='fail'){out.push(`House ${x.name} holds ${x.estate.name} Estate. You may try again.`);return}
+  const L={name:x.estate.name,tier:'Estate',income:10,peasants:500,from:x.name,cycle:H.cycle};
+  if(grade==='partial'){L.unrest=1;L.peasants=Math.round(L.peasants/2);out.push('Taken, but restless: half the peasants fled.')}
+  H.lands.push(L);lk(L);
+  x.estate=null;x.landless=true;x.resentful=true;
+  out.unshift(`${L.name} Estate taken from House ${x.name}: +${L.income} gold each cycle, ${L.peasants} peasants. It is yours to hold, or to grant to a house sworn to you`);
+  out.push(`House ${x.name} is driven out: landless now, and resentful of you`);
+}
+/* ---------- dissolving a minor house: an Intrigue plot against a landless house. Danger follows its strength; a full success ends the house for good ---------- */
+const DISS_STAGES=['Sow doubt among their retainers','Cut off their credit','Turn their last friends against them','Shame them before the court','Buy up their old debts'];
+const dissOn=x=>H.ops.underway.some(u=>u.op&&u.op.kind==='minordiss'&&u.op.minor===x.id);
+function minorDissBlock(x){
+  if(x.estate)return 'They still hold an Estate. Only a landless house can be dissolved';
+  if(x.loyal)return 'Bound to you by marriage';
+  if(dissOn(x))return 'A plot against them is already underway';
+  if(x.dissTried===H.cycle)return 'You have already moved against them this season';
+  return '';
+}
+function dissBtn(x){const why=minorDissBlock(x);return `<button data-minor="dissolve|${x.id}" ${why?`disabled title="${esc(why)}"`:'title="An Intrigue plot to end this house for good. The danger follows its strength."'}>Dissolve</button>`}
+function startMinorDiss(x){
+  if(!x||minorDissBlock(x))return;
+  dissMinor=dissMinor&&dissMinor.id===x.id?null:{id:x.id,team:[]};treaty=null;envoy=null;pendingWar=null;
+  setTimeout(()=>{const el=$('xdissPanel');if(el)el.scrollIntoView({behavior:'smooth',block:'start'})},0);
+}
+function minorDissPanel(){
+  if(!dissMinor)return '';const x=minorById(dissMinor.id);
+  if(!x||minorDissBlock(x)){dissMinor=null;return ''}
+  const diff=clamp(x.power,1,3),pen=diff-1;
+  const team=dissMinor.team.map(mem).filter(m=>m&&available(m));dissMinor.team=team.map(m=>m.id);
+  const assist=Math.min(2,Math.max(0,team.length-1)),avail=H.members.filter(available).sort((a,b)=>envoyBase(b)-envoyBase(a));
+  const side=x.liege===YOU?'sworn to you':x.liege?`sworn to House ${esc(x.liege)}`:'independent';
+  const pickHtml=avail.length?`<div class="teampick scroll" role="group" aria-label="Choose who works the plot">${avail.map(m=>{const g=gearBonus(m,'Insight','Intrigue'),t=envoyBase(m)+assist-pen;
+      return `<button data-xdiss="pick|${m.id}" aria-pressed="${dissMinor.team.includes(m.id)}">${portrait(m,48)}<span>${esc(m.given)} <span class="muted">· Insight ${m.st.Insight}${g?', gear +'+g:''}${H.realm.office==='chancellor'?', chancellor +1':''}</span></span><b>${clamp(t,1,9)} or under</b></button>`}).join('')}</div>
+      <p class="muted" style="margin:0;font-size:14px">Up to three members. Each extra member adds +1 to every roll, up to +2. They are busy for the season.</p>`:'<p class="muted" style="margin:0">No one of age is free to work the plot this season.</p>';
+  return `<section class="pane crisis" id="xdissPanel"><div class="boardhead"><h2>Dissolve House ${esc(x.name)}</h2><button class="sm" data-xdiss="cancel">Cancel</button></div>
+    <div class="hhead" style="margin-bottom:10px"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(x.sigil,'xd'+x.id)}</svg><p style="margin:0;font-size:16px;min-width:0">House ${esc(x.name)} is landless and ${side}. Complete success: the house is dissolved and ends for good, and you gain 2 influence. Partial success: nothing comes of it. Failure: the house resents you, and a scandal costs 1 influence. You may try once a season.</p></div>
+    <p class="danger-read"><b>Danger</b> <span class="dpip">${'◆'.repeat(diff)}${'◇'.repeat(3-diff)}</span> ${DIFF_NAME[diff]} · ${diff+1} stages${pen?` · −${pen} to every roll`:''} <span class="muted">· set by the house’s strength (${x.power} of 3)</span></p>
+    <h3 style="margin-top:0">Who works the plot</h3>${pickHtml}
+    <div class="acts" style="margin-top:12px"><button class="main" data-xdiss="send" ${dissMinor.team.length?'':'disabled'}>Begin the plot${dissMinor.team.length?` with ${dissMinor.team.length}`:''}</button></div></section>`;
+}
+function launchMinorDiss(){
+  if(!dissMinor)return;const x=minorById(dissMinor.id);if(!x||minorDissBlock(x))return;
+  const team=dissMinor.team.map(mem).filter(m=>m&&available(m));if(!team.length)return;
+  const diff=clamp(x.power,1,3),stages=shuffle(DISS_STAGES).slice(0,diff).concat(['Break the house']).map(s=>({name:s,stat:'Insight'}));
+  const op={id:H.ops.nextOp++,type:'Intrigue',kind:'minordiss',diff,target:null,minor:x.id,houseName:x.name,title:`Dissolve House ${x.name}`,stages};
+  team.forEach(m=>{m.onOp=H.cycle});x.dissTried=H.cycle;
+  H.ops.underway.push({id:op.id,op,team:team.map(m=>m.id),stage:0,results:[],done:false});
+  dissMinor=null;render();
+}
+function dissolveMinor(x){
+  if(x.rebel)endRebel(x);
+  H.feuds=(H.feuds||[]).filter(f=>f.a!==x.id&&f.b!==x.id);
+  H.minors.forEach(y=>{if(y.wedTo&&y.wedTo.includes(x.id))y.wedTo=y.wedTo.filter(i=>i!==x.id)});
+  H.minors.splice(H.minors.indexOf(x),1);
+  if(minorUI&&minorUI.id===x.id)minorUI=null;
+  syncQuell();
+}
+function finishMinorDiss(ms,grade,out){
+  const op=ms.op,x=minorById(op.minor);
+  if(!x){out.push('The house was already gone.');return}
+  if(x.estate){out.push(`House ${x.name} holds an Estate again, and the plot comes to nothing.`);return}
+  if(grade==='fail'){x.resentful=true;H.influence=Math.max(0,H.influence-1);out.push(`The plot is traced to you. House ${x.name} resents you, and a scandal costs 1 influence`);return}
+  if(grade==='partial'){out.push(`The plot stalls short of its end. House ${x.name} stands.`);return}
+  dissolveMinor(x);H.influence+=2;
+  out.push(`House ${x.name} is dissolved. Its name is struck from the rolls and its retainers scatter`,'+2 influence');
+}
 function minorAct(kind,id,arg){
   const x=minorById(id);if(!x)return;
   if(kind==='reroll'){rerollMinor(x);return}
   if(kind==='back'){backRebels(x);return}
   if(kind==='treat'){treatRebels(x);return}
+  if(kind==='dissolve'){startMinorDiss(x);return}
   if(!canDeal(x))return;
   if(kind==='grant'){const L=H.lands.find(l=>l.lid===arg);if(!L||L.tier!=='Estate'||estateHeld(L)||x.estate||x.liege!==YOU)return;
     L.minor=x.id;x.estate={name:L.name,lid:L.lid};x.landless=false;const was=x.resentful;x.resentful=false;
@@ -2274,11 +2353,11 @@ function matchPanel(x){
 }
 function minorActs(x){
   const why=minorRerollBlock(x),rr=`<button data-minor="reroll|${x.id}" ${why?`disabled title="${esc(why)}"`:'title="New name, sigil, words and species"'}>Reroll</button>`;
-  if(!canDeal(x)){const bk=x.rebel&&x.liege?(x.rebel.backed?'<button disabled>Backed: they break away to you at season’s end</button>':`<button data-minor="back|${x.id}" ${H.gold>=backCost(x)?'':'disabled'} title="They break from House ${esc(x.liege)} at season’s end and swear to you. House ${esc(x.liege)} grows more hostile.">Back the rebels · ${backCost(x)}g</button>`):'';return `<span class="macts">${bk}${rr}</span>`}
+  if(!canDeal(x)){const bk=x.rebel&&x.liege?(x.rebel.backed?'<button disabled>Backed: they break away to you at season’s end</button>':`<button data-minor="back|${x.id}" ${H.gold>=backCost(x)?'':'disabled'} title="They break from House ${esc(x.liege)} at season’s end and swear to you. House ${esc(x.liege)} grows more hostile.">Back the rebels · ${backCost(x)}g</button>`):'';return `<span class="macts">${bk}${dissBtn(x)}${rr}</span>`}
   const b=[];
   if(x.rebel&&x.liege===YOU){const c=courtCost(x);
     b.push(`<button data-minor="treat|${x.id}" ${H.gold>=c.gold&&H.influence>=c.inf?'':'disabled'} title="They end the revolt and stay sworn, still resentful">Treat with them · ${c.gold}g ${c.inf} inf</button>`);
-    b.push(`<button data-minor="release|${x.id}" title="Let them go now, with their Estate">Release from oath</button>`,rr);
+    b.push(`<button data-minor="release|${x.id}" title="Let them go now, with their Estate">Release from oath</button>`,dissBtn(x),rr);
     return `<span class="macts">${b.join('')}</span>`}
   if(x.liege===YOU){
     if(!x.estate)freeEstates().forEach(L=>b.push(`<button data-minor="grant|${x.id}|${L.lid}">Grant ${esc(L.name)} Estate</button>`));
@@ -2287,7 +2366,7 @@ function minorActs(x){
     b.push(`<button data-minor="release|${x.id}">Release from oath</button>`);
   }else{const c=courtCost(x);b.push(`<button data-minor="court|${x.id}" ${H.gold>=c.gold&&H.influence>=c.inf?'':'disabled'}>Court · ${c.gold}g ${c.inf} inf</button>`)}
   if(!x.loyal)b.push(`<button data-minor="match|${x.id}" aria-expanded="${minorUI&&minorUI.id===x.id}">${minorUI&&minorUI.id===x.id?'Close match':'Seek a match'}</button>`);
-  b.push(rr);
+  b.push(dissBtn(x),rr);
   return `<span class="macts">${b.join('')}</span>`;
 }
 function rebelHtml(x){
@@ -2307,7 +2386,7 @@ function minorLi(x){
   const bond=x.liege===YOU?(x.loyal?' <span class="status ok" style="font-size:10px;padding:1px 6px">Bound by marriage</span>':x.courted?' <span class="status young" style="font-size:10px;padding:1px 6px">Courted</span>':''):'';
   const open=minorUI&&minorUI.id===x.id;
   return `<li class="${open?'open':''}"><svg viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(x.sigil,'mn'+x.id)}</svg><span style="min-width:0;flex:1"><b>House ${esc(x.name)}</b>${bond}${x.resentful?' <span class="status bad" style="font-size:10px;padding:1px 6px">Resentful</span>':''}${x.rebel?' <span class="status bad mrst">Rebel</span>':x.unrest?` <span class="status ${x.unrest>=2?'bad':'young'} mrst">${UNREST[x.unrest]}</span>`:''}
-    <span class="w">“${esc(x.words)}”</span><span class="m">${esc(x.sp)} · ${where} · strength ${'◆'.repeat(x.power)}${'◇'.repeat(3-x.power)}</span>${(x.ties||[]).map(t=>`<span class="mtie">${esc(t)}</span>`).join('')}${rebelHtml(x)}${oathHtml(x)}${feudHtml(x)}${petitionHtml(x)}${minorActs(x)}${open?matchPanel(x):''}</span></li>`;
+    <span class="w">“${esc(x.words)}”</span><span class="m">${esc(x.sp)} · ${where} · strength ${'◆'.repeat(x.power)}${'◇'.repeat(3-x.power)}</span>${(x.ties||[]).map(t=>`<span class="mtie">${esc(t)}</span>`).join('')}${rebelHtml(x)}${dissOn(x)?'<span class="rebel feud"><b>Plot underway.</b> A scheme to dissolve this house is under way on the Operations board.</span>':''}${oathHtml(x)}${feudHtml(x)}${petitionHtml(x)}${minorActs(x)}${open?matchPanel(x):''}</span></li>`;
 }
 function minorsPanel(){
   const M=H.minors||[];
@@ -2316,7 +2395,7 @@ function minorsPanel(){
     +H.rivals.map(r=>grp(`Sworn to House ${esc(r.name)}`,r.sigil,'mnr'+r.name,swornTo(r.name))).join('')
     +grp('Independent',null,'',M.filter(x=>!x.liege),'No house stands alone.');
   return `<section class="pane fold minors"><details data-fold="minors" ${foldOpen('minors')?'open':''}><summary><h2>Minor houses</h2><span class="muted">${M.length} houses · ${M.filter(x=>x.estate).length} estates${M.some(x=>x.petition&&x.liege===YOU)?` · <span class="hot">${M.filter(x=>x.petition&&x.liege===YOU).length} petition${M.filter(x=>x.petition&&x.liege===YOU).length>1?'s':''} waiting</span>`:''}${M.some(x=>x.rebel&&x.liege===YOU)?` · <span class="hot">${M.filter(x=>x.rebel&&x.liege===YOU).length} in rebellion</span>`:''}${(H.feuds||[]).length?` · <span class="hot">${H.feuds.length} feud${H.feuds.length>1?'s':''}</span>`:''}${M.some(x=>x.oath)?` · <span class="okc">${M.filter(x=>x.oath).length} oath${M.filter(x=>x.oath).length>1?'s':''} offered</span>`:''}</span></summary><div class="foldbody">
-    <p class="muted" style="font-size:15px;margin:0 0 10px">Lesser houses seated on Estates, the greatest tier of holding. An Estate held by a sworn house pays its liege half its gold and peasants. Raise a castle to an Estate in your holdings, then grant it to a house sworn to you. Court an independent house with gold and influence, or bind a house to you for good by marriage: wed one of yours out and they send a boon for your armory; bring one of theirs in and they carry a boon of their own blood. A house turned out of its Estate is landless, and resentful.</p>${body}</div></details></section>`;
+    <p class="muted" style="font-size:15px;margin:0 0 10px">Lesser houses seated on Estates, the greatest tier of holding. An Estate held by a sworn house pays its liege half its gold and peasants. Raise a castle to an Estate in your holdings, then grant it to a house sworn to you. Court an independent house with gold and influence, or bind a house to you for good by marriage: wed one of yours out and they send a boon for your armory; bring one of theirs in and they carry a boon of their own blood. A house turned out of its Estate is landless, and resentful. An independent house’s Estate can be stormed on the Fall Conquest board, with no war needed. A landless house, of any allegiance, can be dissolved with an Intrigue plot, once a season.</p>${body}</div></details></section>`;
 }
 /* ---------- sigil picker: edits apply instantly; the rule of tincture is enforced against the field ---------- */
 let sigilEdit=null; /* {kind:'mine'|'rival'|'royal', name} */
@@ -2414,7 +2493,11 @@ function genBoard(){const t=SEASON_OP[seasonOf(H.cycle)];
     const ops=foes.length?foes.map((n,i)=>{const o=genOp(t,hos[i],n);o.war=true;return o}):[genOp(t,hos[0])];
     ops.push(genPeaceOp(t,pe[0]));
     if(ops.length<3)ops.push(Math.random()<.5?genOp(t,hos[1]):genPeaceOp(t,pe[1]));
-    if(t==='Conquest'){const i=ops.findIndex(o=>o.war&&swornTo(o.target).some(x=>x.estate));if(i>=0)ops[i]=estateOp(ops[i].target);ops.sort((a,b)=>a.diff-b.diff)}return aidBoard(ops)}
+    if(t==='Conquest'){const i=ops.findIndex(o=>o.war&&swornTo(o.target).some(x=>x.estate));if(i>=0)ops[i]=estateOp(ops[i].target);
+      /* an independent house's Estate takes the place of one ordinary operation */
+      const ih=indieHolders(),slots=ops.map((o,j)=>j).filter(j=>!ops[j].war&&!ops[j].estate);
+      if(ih.length&&slots.length)ops[pick(slots)]=indieEstateOp(pick(ih));
+      ops.sort((a,b)=>a.diff-b.diff)}return aidBoard(ops)}
   if(t==='Intrigue'){/* a trade route is always on the Winter board, beside two other court plots */
     const all=OPS.Intrigue.objs,tr=all.find(o=>o[1]==='route'),rest=shuffle(all.filter(o=>o!==tr)).slice(0,2);
     return mixAllyOps((H.rivals.some(r=>canTradeWith(r.name))?[tr]:[]).concat(rest).concat(H.rivals.some(r=>canTradeWith(r.name))?[]:[shuffle(all.filter(o=>o!==tr&&!rest.includes(o)))[0]]).map(o=>genOp(t,o)))}
@@ -2728,7 +2811,7 @@ function rollStage(msId,memId){
       else note='Caught by a guard, '+m.given+' fights free. '+woundIn(ms,m,1)+'.';
       if(r&&!ms.raised){r.hostility=clamp(r.hostility+1,0,5);ms.raised=1}
     }else{
-      note='The words fall flat. House '+op.target+' takes offense.';
+      note='The words fall flat. House '+(op.houseName||op.target)+' takes offense.';
       if(op.kind==='treaty'&&roll===10&&!hasBoon(m,'mask')){m.captive={house:op.target,ransom:10+2*((r&&r.power)||1)};note+=' '+m.given+' is seized under the flag of truce.'}
       if(r&&!ms.raised){r.hostility=clamp(r.hostility+1,0,5);ms.raised=1}
       if(roll===10){H.influence=Math.max(0,H.influence-1);note+=' A scandal costs 1 influence.'}
@@ -2749,6 +2832,8 @@ function finishOpCore(ms){
   if(op.ally){finishAlly(ms,grade,out);ms.done=true;ms.grade=grade;ms.gains=out;return}
   if(op.peaceful){finishPeace(ms,grade,out);ms.done=true;ms.grade=grade;ms.gains=out;return}
   if(op.kind==='treaty'){finishTreaty(ms,grade,out);ms.done=true;ms.grade=grade;ms.gains=out;return}
+  if(op.indie){finishIndieEstate(ms,grade,out);ms.done=true;ms.grade=grade;ms.gains=out;return}
+  if(op.kind==='minordiss'){finishMinorDiss(ms,grade,out);ms.done=true;ms.grade=grade;ms.gains=out;return}
   const capName=()=>nameFor(pick(['m','f']),(rival(op.target)||{}).sp)+' '+op.target;
   if(op.war)warTally(op.target,grade);
   if(op.type==='Battle'||op.type==='Conquest'){if(r)r.hostility=clamp(r.hostility+1,0,5);
@@ -2834,9 +2919,9 @@ function opCard(op){
   return `<article class="opcard t-${op.type} ${planningThis?'planning':''}">
     <div class="optype">${op.type}${op.aid&&aidBonus(op)?' · with House '+esc(op.aid):''}${op.ally?' · '+(op.favorReq?'favor asked by an ally':op.ask?'ask of an ally':'aid to an ally'):''}${op.war?' · war':''}${op.kind==='defend'?' · defense':op.kind==='rout'||op.kind==='quell'?' · free action':op.peaceful?' · peaceful':''} · rolls ${T.stat}${op.type==='Conquest'?', then Ability':''}</div>
     <h3>${esc(op.title)}</h3>
-    <dl class="opdl">${op.target?`<dt>${op.siege?'Attacker':op.ally?'Ally':'Target'}</dt><dd>${miniSigil(op.target)} House ${esc(op.target)}</dd>`:`<dt>Where</dt><dd>${esc(op.kind==='quell'?'Rebels at '+op.place:op.kind==='defend'||op.kind==='rout'?'Your land at '+op.place:op.kind==='tourney'?'The royal lists':op.place)} <span class="okc">· no house is angered</span></dd>`}
+    <dl class="opdl">${op.target?`<dt>${op.siege?'Attacker':op.ally?'Ally':'Target'}</dt><dd>${miniSigil(op.target)} House ${esc(op.target)}</dd>`:`<dt>Where</dt><dd>${esc(op.kind==='quell'?'Rebels at '+op.place:op.kind==='indie'?op.place+', held by independent House '+((minorById(op.estate)||{}).name||''):op.kind==='defend'||op.kind==='rout'?'Your land at '+op.place:op.kind==='tourney'?'The royal lists':op.place)} ${op.kind==='indie'?'<span class="muted">· no great house is angered; the holder resents you</span>':'<span class="okc">· no house is angered</span>'}</dd>`}
       <dt>Danger</dt><dd><span class="dpip">${'◆'.repeat(op.diff)}${'◇'.repeat(3-op.diff)}</span> ${DIFF_NAME[op.diff]}${op.diff>1?' · −'+(op.diff-1)+' to rolls':''}</dd>
-      <dt>Stages</dt><dd>${stages}</dd>${H.ops.sabotage&&(H.ops.board.includes(op)||(H.ops.defense||[]).includes(op))?`<dt>Sabotage</dt><dd><span class="hot">House ${esc(H.ops.sabotage.by)} has sabotaged your next operation: −${SABOTAGE} to every roll</span></dd>`:''}<dt>Reward</dt><dd>${esc(rewardText(op))}</dd>${op.estate?`<dt>Defenders</dt><dd>${(()=>{const x=minorById(op.estate);return x?`House ${esc(x.name)}, strength ${x.power}: <span class="hot">−${x.power} to Might rolls</span>.${op.quell?'':` Taken, they are landless and resent House ${esc(op.target)} for failing them`}`:''})()}</dd>`:''}${op.ally?allyCardDl(op):''}${aidCardDl(op)}${(op.war||op.siege&&atWar(op.target))?`<dt>War</dt><dd>${warAllies(op.target).length?`<span class="okc">Allies at your side: +${Math.min(2,warAllies(op.target).length)} to Might rolls</span>`:'<span class="muted">No allies fighting beside you. Call them to arms in The Realm.</span>'}</dd>`:''}</dl>
+      <dt>Stages</dt><dd>${stages}</dd>${H.ops.sabotage&&(H.ops.board.includes(op)||(H.ops.defense||[]).includes(op))?`<dt>Sabotage</dt><dd><span class="hot">House ${esc(H.ops.sabotage.by)} has sabotaged your next operation: −${SABOTAGE} to every roll</span></dd>`:''}<dt>Reward</dt><dd>${esc(rewardText(op))}</dd>${op.estate?`<dt>Defenders</dt><dd>${(()=>{const x=minorById(op.estate);return x?`House ${esc(x.name)}, strength ${x.power}: <span class="hot">−${x.power} to Might rolls</span>.${op.quell?'':op.indie?' Taken, they are landless and resent you':` Taken, they are landless and resent House ${esc(op.target)} for failing them`}`:''})()}</dd>`:''}${op.ally?allyCardDl(op):''}${aidCardDl(op)}${(op.war||op.siege&&atWar(op.target))?`<dt>War</dt><dd>${warAllies(op.target).length?`<span class="okc">Allies at your side: +${Math.min(2,warAllies(op.target).length)} to Might rolls</span>`:'<span class="muted">No allies fighting beside you. Call them to arms in The Realm.</span>'}</dd>`:''}</dl>
     ${op.kind==='assassin'&&H.ops.board.includes(op)?`<div class="termrow"><span>The target</span><div class="opts"><button data-asmark="${op.id}|lord" aria-pressed="${op.mark==='lord'}">${(()=>{const r=rival(op.target);return r?`${lordWord(r.lord)} ${esc(r.lord.given)}`:'Their lord'})()} · High danger</button><button data-asmark="${op.id}|kin" aria-pressed="${op.mark==='kin'}">A kinsman · Middling danger</button></div></div>`:''}
     ${pickHtml}
     <div class="acts">${planningThis?`<button class="main" data-launch="${op.id}" ${planTeam.length&&!(op.cost&&H.gold<op.cost)?'':'disabled'}>Send ${planTeam.length||'the team'}</button><button data-plan="">Cancel</button>`:`<button data-plan="${op.id}">Choose a team</button>`}</div>
@@ -2891,10 +2976,13 @@ function investRow(l,i){
   return `<br><button class="sm" data-invest="${i}" ${canInvest(l)?'':'disabled'}${why}>Build up to ${esc(to[0].toLowerCase())} · ${cost} gold · ${to[3]} season${to[3]>1?'s':''}</button> <span class="muted" style="font-size:14px">+${gi} income, +${gp} peasants${(l.unrest||0)?' · must be peaceful':''}</span>`;
 }
 function holdingsPane(){
-  const landLi=l=>`<li><b>${esc(l.tier)} of <input class="lname" data-lname="${lk(l)}" value="${esc(l.name)}" size="${Math.max(3,l.name.length)}" aria-label="Name of the ${esc(l.tier.toLowerCase())}" title="Rename this hold"></b> <span class="muted">· ${l.wild?'claimed from '+esc(l.from):l.inherited?'inherited from House '+esc(l.from):l.from==='the crown'?'granted by the crown':'taken from House '+esc(l.from)}${raidOn(l)?' · <span class="hot">under attack</span>':''}${l.aidBy&&alliedWith(l.aidBy)?' · half its income to House '+esc(l.aidBy):''}</span><br>+${landIncome(l)} gold each cycle${(l.unrest||0)?` <span class="muted">(${l.income} at peace)</span>`:''} · ${landPeas(l)} peasants${estateHeld(l)?` <span class="muted">(half of ${l.income} gold and ${l.peasants} peasants: held for you by House ${esc(estateHeld(l).name)})</span>`:l.tier==='Estate'?' <span class="muted">(held directly: no minor house seated)</span>':''} · <span class="${(l.unrest||0)?'hot':'okc'}">${UNREST[l.unrest||0]}</span>${routRow(l,H.lands.indexOf(l))}${investRow(l,H.lands.indexOf(l))}</li>`;
+  const landLi=l=>`<li><b>${esc(l.tier)} of <input class="lname" data-lname="${lk(l)}" value="${esc(l.name)}" size="${Math.max(3,l.name.length)}" aria-label="Name of the ${esc(l.tier.toLowerCase())}" title="Rename this hold"></b> <span class="muted">· ${l.wild?'claimed from '+esc(l.from):l.inherited?'inherited from House '+esc(l.from):l.from==='the crown'?'granted by the crown':'taken from House '+esc(l.from)}${raidOn(l)?' · <span class="hot">under attack</span>':''}${l.aidBy&&alliedWith(l.aidBy)?' · half its income to House '+esc(l.aidBy):''}</span><br>+${landIncome(l)} gold each cycle${(l.unrest||0)?` <span class="muted">(${l.income} at peace)</span>`:''} · ${landPeas(l)} peasants${estateHeld(l)?` <span class="muted">(half of ${l.income} gold and ${l.peasants} peasants: held for you by House ${esc(estateHeld(l).name)})</span>`:l.tier==='Estate'?' <span class="muted">(held directly: no minor house seated)</span>':''} · <span class="${(l.unrest||0)?'hot':'okc'}">${UNREST[l.unrest||0]}</span>${routRow(l,H.lands.indexOf(l))}</li>`;
+  /* Improvement: peaceful holds that can still be built up, plus any with works underway */
+  const impLi=l=>`<li><b>${esc(l.tier)} of ${esc(l.name)}</b> <span class="muted">· +${landIncome(l)} gold each cycle · ${landPeas(l)} peasants</span>${investRow(l,H.lands.indexOf(l))}</li>`;
+  const improvable=H.lands.filter(l=>l.build||(!(l.unrest||0)&&tierStep(l)<LADDER.length-1));
   const quiet=H.lands.filter(l=>!(l.unrest||0)),troubled=H.lands.filter(l=>l.unrest||0);
-  const lgrp=(k,t,ls,hot)=>ls.length?`<details class="lgrp" data-fold="${k}" ${foldOpen(k)?'open':''}><summary><span class="${hot?'hot':'okc'}">${t}</span> <span class="gn">${ls.length} · +${ls.reduce((a,l)=>a+landIncome(l),0)} gold</span></summary><ul class="hl">${ls.map(landLi).join('')}</ul></details>`:'';
-  const lands=H.lands.length?routAllRow()+lgrp('lands-peace','Peaceful',quiet)+lgrp('lands-trouble','Restless, in unrest or revolt',troubled,true):'<p class="muted">No lands beyond the seat yet. Conquest takes them.</p>';
+  const lgrp=(k,t,ls,hot,li=landLi)=>ls.length?`<details class="lgrp" data-fold="${k}" ${foldOpen(k)?'open':''}><summary><span class="${hot?'hot':'okc'}">${t}</span> <span class="gn">${ls.length} · +${ls.reduce((a,l)=>a+landIncome(l),0)} gold</span></summary><ul class="hl">${ls.map(l=>li(l)).join('')}</ul></details>`:'';
+  const lands=H.lands.length?routAllRow()+lgrp('lands-peace','Peaceful',quiet)+lgrp('lands-trouble','Restless, in unrest or revolt',troubled,true)+lgrp('lands-improve','Improvement',improvable,false,impLi):'<p class="muted">No lands beyond the seat yet. Conquest takes them.</p>';
   const caps=H.captives.length?`<ul class="hl">${H.captives.map((c,i)=>`<li><b>${esc(c.name)}</b>, ${esc(c.rank)} <span class="muted">· House ${esc(c.house)}</span><br><button class="sm" data-ransom="${i}">Ransom for ${c.ransom} gold</button></li>`).join('')}</ul>`:'<p class="muted">None held. Battle takes prisoners.</p>';
   const ours=H.members.filter(m=>m.captive&&!m.dead);
   const held=ours.length?`<h3>Held by rivals</h3><ul class="hl">${ours.map(m=>`<li><b>${esc(fullName(m))}</b> <span class="muted">· held by House ${esc(m.captive.house)}</span><br><button class="sm" data-payransom="${m.id}" ${H.gold<m.captive.ransom?'disabled':''}>Pay ${m.captive.ransom} gold to free them</button></li>`).join('')}</ul>`:'';
@@ -4241,7 +4329,7 @@ function realmView(){
       ${!done?`<div class="acts" style="margin-top:10px"><button class="main" data-claim="1" ${canClaim()?'':'disabled'}>Press your own claim</button><span class="muted" style="font-size:14px">Every great house grows more hostile. Lose, and the new crown will hate you.</span></div>`:''}</div></details></section>`}
   const houses=H.rivals.map(houseCard).join('');
   const detail=`<section class="pane fold "><details data-fold="houses" ${foldOpen('houses')?'open':''}><summary><h2>The houses in detail</h2></summary><div class="foldbody"><div class="hgrid">${houses}</div></div></details></section>`;
-  return `${detail}${minorsPanel()}${news}${crisis}${envoyPanel()}${treatyPanel()}${diploView()}<div class="two">${crown}${court}</div>
+  return `${detail}${minorsPanel()}${news}${crisis}${envoyPanel()}${treatyPanel()}${minorDissPanel()}${diploView()}<div class="two">${crown}${court}</div>
     <section class="pane fold dip"><details data-fold="largesse" ${foldOpen('largesse')?'open':''}><summary><h2>Largesse &amp; royal decrees</h2><span class="muted">${H.gold} gold · favor ${H.realm.favor}</span></summary><div class="foldbody">${courtSpendHtml()}</div></details></section>
     <section class="pane fold"><details data-fold="rank" ${foldOpen('rank')?'open':''}><summary><h2>Power rankings</h2></summary><div class="foldbody">${rankingsTable()}</div></details></section>
     <section class="pane fold "><details data-fold="relations" ${foldOpen('relations')?'open':''}><summary><h2>Your house and the great houses</h2></summary><div class="foldbody"><p class="muted" style="font-size:15px;margin:0 0 10px">Tension rises when you attack or are caught scheming, and cools with time, gifts and treaties. A house that is not held in check by a treaty, a marriage or a ward may strike at you between seasons.</p>${relationsOverview()}</div></details></section>`;
@@ -4948,6 +5036,11 @@ document.addEventListener('click',e=>{
   if(t.dataset.sec){section=t.dataset.sec;render();return}
   if(t.dataset.oath){const [k,id]=t.dataset.oath.split('|');oathAct(minorById(id),k==='yes');save();render();return}
   if(t.dataset.feud){const [k,i,a]=t.dataset.feud.split('|');feudAct(k,(H.feuds||[])[+i],a);save();render();return}
+  if(t.dataset.xdiss){const [k,a]=t.dataset.xdiss.split('|');
+    if(k==='send'){launchMinorDiss();save();return}
+    if(k==='cancel')dissMinor=null;
+    else if(k==='pick'&&dissMinor){const id=+a;dissMinor.team=dissMinor.team.includes(id)?dissMinor.team.filter(z=>z!==id):dissMinor.team.concat(id).slice(-3)}
+    render();return}
   if(t.dataset.minor){const [k,id,a]=t.dataset.minor.split('|');minorAct(k,id,a);save();render();return}
   if(t.dataset.sel!=null){sel=+t.dataset.sel;if(t.dataset.go)section=t.dataset.go;lastRoll=null;render();if(t.dataset.go)window.scrollTo({top:0});return}
   if(t.dataset.sgopen){sigilEdit={kind:t.dataset.sgopen,name:t.dataset.sgname||null};render();return}
@@ -5074,4 +5167,5 @@ function start(d){
 try{window.claude?.hot?.snapshot(()=>({H,sel,section,activeSlot}))}catch(e){}
 window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
 </script>
+
 </body></html>
