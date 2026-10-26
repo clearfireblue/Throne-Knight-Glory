@@ -3072,6 +3072,8 @@ function ensureRealm(){
   H.rivals.forEach(r=>{if(!r.lord){const sx=Math.random()<.7?'m':'f';r.lord={given:nameFor(sx,r.sp),sex:sx,age:toSpAge(ri(28,64),r.sp)}}if(!r.agenda)r.agenda=pick(Object.keys(AGENDAS))});
   if(!H.realm){const royal=pick(ROYAL_HOUSES.filter(n=>n!==H.house.name));
     H.realm={royal:{name:royal,sigil:newSigil()},king:newMonarch(),heir:Math.random()<.85?newHeir():null,favor:3,office:null,crisis:null,alliances:[],wars:[],yours:false}}
+  {const Rz=H.realm,rr=!Rz.yours&&Rz.king&&!Rz.crisis?H.rivals.find(r=>r.name===Rz.royal.name):null;
+    if(rr&&rr.lord.given!==Rz.king.given)rr.lord={given:Rz.king.given,sex:Rz.king.sex,age:Rz.king.age}}
   if(!Array.isArray(H.news))H.news=[];
   if(!H.ops.season){H.ops.season=H.cycle;if(!H.ops.underway.length)H.ops.board=genBoard()}
 }
@@ -3083,20 +3085,22 @@ const officeBonus=type=>{const o=H.realm&&H.realm.office;return o==='spymaster'&
 const ruler=()=>H.members.find(m=>m.ruler&&!m.dead)||H.members.find(m=>!m.dead&&isAdult(m));
 function bump(r,n){if(r)r.hostility=clamp(r.hostility+n,0,5)}
 
-function kingDies(say,how){
-  const Rz=H.realm,k=Rz.king;
+function kingDies(say,how,quiet){
+  const Rz=H.realm,k=Rz.king,rr=!Rz.yours?rival(Rz.royal.name):null;
   say(`${crownWord(k)} ${k.given} of House ${Rz.royal.name} has died ${how}.`,'bad');
   widowConsorts(w=>w.kind==='crown',say);
   if(Rz.heir&&Rz.heir.member!=null){const c=mem(Rz.heir.member);if(!c||c.dead)Rz.heir=null;else Rz.heir.age=c.age}
   const crownSeekers=H.rivals.filter(r=>r.agenda==='crown'||r.power>=3);
   const contested=!Rz.heir||Rz.heir.age<COME_OF_AGE&&Math.random()<.7||crownSeekers.length&&Math.random()<.45;
-  if(!contested&&Rz.heir.member!=null){crownYourChild(mem(Rz.heir.member),say);return}
+  if(!contested&&Rz.heir.member!=null){crownYourChild(mem(Rz.heir.member),say);syncRoyalLord(rr,say,quiet);return}
   if(!contested){
-    Rz.king={given:Rz.heir.given,sex:Rz.heir.sex,age:Rz.heir.age,health:3};Rz.heir=Math.random()<.8?{...newHeirR(),age:ri(0,8)}:null;
-    say(`${Rz.king.given} is crowned without challenge.`,'');
+    const oh=Rz.heir;Rz.king={given:oh.given,sex:oh.sex,age:oh.age,health:3};Rz.heir=Math.random()<.8?{...newHeirR(),age:ri(0,8)}:null;
+    say(`${heirWord(oh)} ${oh.given}, heir to the throne, is crowned ${crownWord(Rz.king)} ${oh.given} without challenge.`,'');
+    syncRoyalLord(rr,say,quiet);heirNote(say);
     Rz.favor=Math.round((Rz.favor+3)/2);if(Rz.office&&Rz.favor<6){say(`The new ${crownWord(Rz.king).toLowerCase()} names a favorite in your place: you lose the office of ${OFFICES[Rz.office][0]}.`,'bad');Rz.office=null}
     return;
   }
+  Rz.king=null;syncRoyalLord(rr,say,quiet);
   const cl=[];
   if(Rz.heir)cl.push({key:'heir',person:{...Rz.heir},label:Rz.heir.member!=null?`${heirWord(Rz.heir)} ${Rz.heir.given} of House ${H.house.name}, child of the royal consort`:`${heirWord(Rz.heir)} ${Rz.heir.given}, heir of House ${Rz.royal.name}`,str:Rz.heir.age>=COME_OF_AGE?6:3});
   shuffle(crownSeekers).slice(0,2).forEach(r=>cl.push({key:r.name,label:`Lord ${r.lord.given} of House ${r.name}`,str:r.power*2+(r.agenda==='crown'?1:0)}));
@@ -3104,6 +3108,14 @@ function kingDies(say,how){
   Rz.king=null;Rz.crisis={claimants:cl,backed:null,own:false};
   say(`The succession is contested. ${cl.map(c=>c.label).join(', ')} each claim the throne. It will be decided at the end of next season.`,'warn');
 }
+function heirNote(say){const Rz=H.realm;if(!Rz.king||Rz.yours)return;
+  if(Rz.heir)say(`A new heir is named: ${heirWord(Rz.heir)} ${Rz.heir.given}, age ${Rz.heir.age}${Rz.heir.member!=null?', of your house':''}.`,'');
+  else say(`${crownWord(Rz.king)} ${Rz.king.given} has no heir. The succession is open.`,'warn')}
+/* the royal house's lord and the monarch are one person: keep them in step */
+function syncRoyalLord(rr,say,quiet){if(!rr)return;const Rz=H.realm;
+  if(Rz.king&&!Rz.yours&&Rz.royal.name===rr.name){rr.lord={given:Rz.king.given,sex:Rz.king.sex,age:Rz.king.age};Rz.king.sp=Rz.king.sp||rr.sp;return}
+  const sx=Math.random()<.65?'m':'f';rr.lord={given:nameFor(sx,rr.sp),sex:sx,age:toSpAge(ri(15,40),rr.sp)};
+  if(!quiet)say(`${rr.lord.given} now leads House ${rr.name}.`,'')}
 function newHeirR(){const sex=Math.random()<.6?'m':'f';return {given:nameFor(sex,pick(SPECIES_KEYS)),sex,age:0}}
 function resolveCrisis(say){
   const Rz=H.realm,C=Rz.crisis,tot=C.claimants.reduce((a,c)=>a+c.str,0);let x=Math.random()*tot,win=C.claimants[0];
@@ -3117,13 +3129,13 @@ function resolveCrisis(say){
     H.rivals.forEach(r=>{if(r.agenda==='crown')bump(r,2)});
     say(`House ${H.house.name} takes the throne. ${r0.given} is crowned, and the realm bends the knee, for now.`,'good');
   }else{
-    if(win.key==='heir'){const hp=win.person||Rz.heir||newMonarch();Rz.king={given:hp.given,sex:hp.sex,age:hp.age,health:3};Rz.heir=Math.random()<.7?newHeirR():null}
+    if(win.key==='heir'){const hp=win.person||Rz.heir||newMonarch();Rz.king={given:hp.given,sex:hp.sex,age:hp.age,health:3};Rz.heir=Math.random()<.7?newHeirR():null;syncRoyalLord(rival(Rz.royal.name),say,true)}
     else{const r=rival(win.key);Rz.royal={name:r.name,sigil:r.sigil};Rz.king={given:r.lord.given,sex:r.lord.sex,age:r.lord.age,health:3,sp:r.sp,free:r.lord.free};Rz.heir=null;
       /* a consort of their lord becomes royal consort, and a child of the match heir to the throne */
       H.members.forEach(m=>{if(!m.dead&&m.wedTo&&m.wedTo.kind==='lord'&&m.wedTo.house===r.name){m.wedTo.kind='crown';Rz.king.free=false;
         const ch=living().filter(c=>c.consortChild&&c.parents.includes(m.id)).sort((a,b)=>b.age-a.age)[0];if(ch){Rz.heir={given:ch.given,sex:ch.sex,age:ch.age,member:ch.id};H.claims=(H.claims||[]).filter(x=>!(x.house===r.name&&x.via===ch.id))}}});
-      const sx=Math.random()<.6?'m':'f';r.lord={given:nameFor(sx,r.sp),sex:sx,age:toSpAge(ri(16,34),r.sp)};r.power=Math.min(3,r.power+1);r.agenda=pick(['land','wealth','revenge'])}
-    say(`${win.label} wins the throne and is crowned ${crownWord(Rz.king)} ${Rz.king.given}.`,'');
+      r.power=Math.min(3,r.power+1);r.agenda=pick(['land','wealth','revenge'])}
+    say(`${win.label} wins the throne and is crowned ${crownWord(Rz.king)} ${Rz.king.given}.`,'');heirNote(say);
     const winR=win.key==='heir'?null:rival(win.key);
     if(C.backed===win.key){Rz.favor=Math.min(10,Rz.favor+3);Rz.office=prevOffice;say('You backed the winner. Royal favor rises.','good')}
     else if(C.own){Rz.favor=0;bump(winR,2);say('Your claim failed. The new crown will not forget it.','bad')}
@@ -3140,6 +3152,7 @@ const EVENTS=[
     const r=pick(H.rivals),old=r.lord,sx=Math.random()<.65?'m':'f';
     const wid=H.members.filter(m=>!m.dead&&m.wedTo&&m.wedTo.kind==='lord'&&m.wedTo.house===r.name);widowConsorts(w=>w.kind==='lord'&&w.house===r.name);
     const widSay=()=>wid.forEach(m=>say(`${m.given} of your house is widowed.`,'warn'));
+    if(isRoyalRival(r.name)&&Rz.king&&!Rz.crisis){widSay();kingDies(say,pick(DEATHS));return}
     const cl=claimOn(r.name);if(cl&&!isRoyalRival(r.name)&&!(H.disputes||[]).some(d=>d.house===r.name)){inheritDeath(r,old,cl,say);widSay();return}
     r.lord={given:nameFor(sx,r.sp),sex:sx,age:toSpAge(ri(15,40),r.sp)};
     let t=`${old.sex==='f'?'Lady':'Lord'} ${old.given} of House ${r.name} has died ${pick(DEATHS)}. ${r.lord.given} now leads the house`;
@@ -3213,9 +3226,8 @@ function royalLordSlain(r,grade,out){
   if(!k||Rz.crisis){lordSlain(r,out);return}
   const partial=grade==='partial';
   if(partial&&Math.random()<.5){out.push(`${crownWord(k)} ${k.given} survives the knife, wounded. House ${n} suspects you`);return}
-  const old=r.lord,sx=Math.random()<.65?'m':'f';
-  r.lord={given:nameFor(sx,r.sp),sex:sx,age:toSpAge(ri(15,40),r.sp)};
-  kingDies((t)=>out.push(String(t).replace(/\.$/,'')),'at an assassin’s hand');
+  const old=r.lord;
+  kingDies((t)=>out.push(String(t).replace(/\.$/,'')),'at an assassin’s hand',true);
   out.push(`${old.given}, lord of House ${n}, dies with the crown, and ${r.lord.given} now leads the house`);
   if(partial){
     Rz.favor=0;H.rivals.forEach(x=>bump(x,1));
