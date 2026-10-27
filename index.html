@@ -243,6 +243,37 @@ ul.rivals li{display:flex;gap:12px;align-items:center}
 .host i{width:10px;height:10px;border:1px solid var(--blood);transform:rotate(45deg)}
 .host i.on{background:var(--blood)}
 ul.chron{margin:0;padding:0;list-style:none;display:grid;gap:6px;font-size:16px}
+/* the passing of years */
+.skippanel{max-width:680px}
+li.stead{border-left:3px solid var(--gold);padding-left:10px}
+details.parts{margin-top:4px}
+details.parts>summary{cursor:pointer;font-size:15px;color:var(--muted);list-style:none;display:flex;gap:6px;align-items:center;min-height:28px}
+details.parts>summary::-webkit-details-marker{display:none}
+details.parts>summary::before{content:"▸";color:var(--gold);transition:transform .15s}
+details.parts[open]>summary::before{transform:rotate(90deg)}
+details.parts ul.hl{margin:4px 0 0;font-size:15px}
+.gather{margin-top:6px;padding:8px 10px;background:var(--field);border:1px solid var(--line);border-radius:3px}
+.glink{font-size:15px;color:var(--accent)}
+.gpicks{display:flex;flex-wrap:wrap;gap:6px}
+.gpicks button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow);font-weight:600}
+.skipbody .yr{margin:0 0 12px}
+.skipbody .yr .cy{display:block;margin:0 0 4px;font-size:12px}
+details.skiprec{margin:0 0 8px;padding:8px 12px;background:var(--field);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:3px}
+details.skiprec summary{cursor:pointer;min-height:32px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;list-style:none}
+details.skiprec summary::-webkit-details-marker{display:none}
+details.skiprec summary::before{content:"▸";color:var(--gold);transition:transform .15s}
+details.skiprec[open] summary::before{transform:rotate(90deg)}
+details.skiprec .skipbody{margin-top:8px}
+#years button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
+#years .bar small{color:var(--muted);font-size:13px}
+.stgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+.stpick h3{font:600 13px var(--f-display)!important;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.stbtn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:8px 12px}
+.stbtn b{font:600 17px var(--f-display);letter-spacing:.03em}
+.stbtn span{font-size:15px}
+.stbtn small{font-size:13px;color:var(--muted);line-height:1.3}
+.skipsum{margin:0 0 10px;padding:8px 12px;background:var(--field);border-left:3px solid var(--accent);font-size:16px}
+
 .cy{font:600 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-right:6px}
 
 /* seasons + realm */
@@ -1727,6 +1758,7 @@ function render(){
   settleTraining();
   if(H&&H.lands)syncMinors();
   if(H&&H.members)checkSuccession();
+  if(H&&H.lands)steadSync();
   renderHeader();renderNav();
   const main=$('main');
   if(section==='house')main.innerHTML=houseView();
@@ -1738,6 +1770,7 @@ function render(){
   else main.innerHTML=laterView(section);
   if(H.fallen&&section!=='blood')main.innerHTML=`<section class="pane crisis"><h2>House ${esc(H.house.name)} ${H.dissolvedBy?'is dissolved':'has fallen'}</h2><p style="margin:0">${H.dissolvedBy?`You accepted the terms of House ${esc(H.dissolvedBy)}. Your house is no more.`:'No one remains to carry the name.'} Found a new House to play again.</p></section>`+main.innerHTML;
   renderSigilPicker();
+  renderSkipBox();
   save();
   try{fitNames()}catch(e){}
 }
@@ -2654,11 +2687,11 @@ function mercsLeave(ids,say){
 }
 function hostPane(){
   ensureArmy();const A=H.army,cap=levyCap(),f=fieldLevies(),g=garrisoned(),ap=armyPower(),need=2-(f%2);
-  const holds=H.lands.slice().sort((a,b)=>(b.unrest||0)-(a.unrest||0)||tierStep(b)-tierStep(a));
-  const gl=holds.length?`<ul class="hl">${holds.map(l=>{const i=H.lands.indexOf(l);return `<li style="display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center"><span style="flex:1;min-width:12em"><b>${esc(l.tier)} of <input class="lname" data-lname="${lk(l)}" value="${esc(l.name)}" size="${Math.max(3,l.name.length)}" aria-label="Name of the ${esc(l.tier.toLowerCase())}" title="Rename this hold"></b> <span class="muted">· <span class="${(l.unrest||0)?'hot':'okc'}">${UNREST[l.unrest||0]}</span>${l.garrison?' · <span class="okc">garrisoned</span>':''}</span></span>${l.garrison?`<button class="sm" style="margin:0" data-garrison="${i}|0">Withdraw</button>`:`<button class="sm" style="margin:0" data-garrison="${i}|1" ${ownField()?'':'disabled title="None of your own companies in the field"'}>Station a company</button>`}</li>`}).join('')}</ul>`:'<p class="muted" style="margin:0">No holds beyond your seat to garrison.</p>';
+  const holds=units().sort((a,b)=>(b.unrest||0)-(a.unrest||0)||tierStep(b)-tierStep(a));
+  const gl=holds.length?`<ul class="hl">${holds.map(l=>{const i=H.lands.indexOf(l);if(steadOf(l))return steadGarLi(steadOf(l));return `<li style="display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center"><span style="flex:1;min-width:12em"><b>${esc(l.tier)} of <input class="lname" data-lname="${lk(l)}" value="${esc(l.name)}" size="${Math.max(3,l.name.length)}" aria-label="Name of the ${esc(l.tier.toLowerCase())}" title="Rename this hold"></b> <span class="muted">· <span class="${(l.unrest||0)?'hot':'okc'}">${UNREST[l.unrest||0]}</span>${l.garrison?' · <span class="okc">garrisoned</span>':''}</span></span>${l.garrison?`<button class="sm" style="margin:0" data-garrison="${i}|0">Withdraw</button>`:`<button class="sm" style="margin:0" data-garrison="${i}|1" ${ownField()?'':'disabled title="None of your own companies in the field"'}>Station a company</button>`}</li>`}).join('')}</ul>`:'<p class="muted" style="margin:0">No holds beyond your seat to garrison.</p>';
   return `<section class="pane fold"><details data-fold="host" ${foldOpen('host')?'open':''}><summary><h2>The host</h2><span class="muted">${A.levies} compan${A.levies===1?'y':'ies'}${borrowedN()?' + '+borrowedN()+' borrowed':''} · upkeep ${upkeep()} gold a season</span></summary><div class="foldbody">
     <div class="tally" style="margin-bottom:8px"><div>In the field<b>${f}</b></div><div>Garrisoned<b>${g}</b></div>${lentN()?`<div>Lent out<b>${lentN()}</b></div>`:''}${borrowedN()?`<div>Borrowed<b>${borrowedN()}</b></div>`:''}<div>War strength<b>+${ap}</b></div><div>Upkeep<b>${upkeep()}</b></div></div>
-    <p class="muted" style="font-size:15px;margin:0 0 10px">Every two companies in the field add +1 to your power in each season’s war clash, up to +3${ap<3?` (${need} more for +${ap+1})`:''}. A garrisoned hold falls into unrest a third as often, and raids on it strike one danger lower; a garrison drives off a low-danger raid on its own. Each company costs ${LEVY_UPKEEP} gold a season. Companies you cannot pay desert. Your peasants can fill ${cap} companies.</p>
+    <p class="muted" style="font-size:15px;margin:0 0 10px">Every two companies in the field add +1 to your power in each season’s war clash, up to +3${ap<3?` (${need} more for +${ap+1})`:''}. A garrisoned hold falls into unrest a third as often, and raids on it strike one danger lower; a garrison drives off a low-danger raid on its own. A steading may garrison one company per hold: each eases its unrest, and with half or more garrisoned its raids strike one danger lower. Each company costs ${LEVY_UPKEEP} gold a season. Companies you cannot pay desert. Your peasants can fill ${cap} companies.</p>
     <div class="acts" style="margin-bottom:10px"><button class="sm" data-levy="1" ${A.levies<cap&&H.gold>=LEVY_COST?'':'disabled'} ${A.levies>=cap?'title="Your peasants can fill no more companies"':''}>Raise a company · ${LEVY_COST} gold</button><button class="sm" data-levy="-1" ${ownField()?'':'disabled'}>Disband a company</button></div>
     <h3>Garrisons</h3>${gl}
     <p class="muted" style="font-size:15px;margin:10px 0 0">Sellsword captains are hired at the Market. Each fights in one operation this season, then leaves.</p></div></details></section>`;
@@ -2666,8 +2699,8 @@ function hostPane(){
 function genDefense(L,lvlOver){return withAid(genDefenseCore(L,lvlOver))}
 function genDefenseCore(L,lvlOver){
   const lvl=clamp(lvlOver||L.unrest||1,1,3),diff=lvl; /* Low 2 stages, Middling 3, High 4 */
-  return {id:H.ops.nextOp++,type:'Battle',kind:'defend',diff,target:null,peaceful:true,place:L.name,landName:lk(L),created:H.cycle,unrest:lvl,
-    title:`${DANGER[lvl]}-danger raid on the ${L.tier.toLowerCase()} of ${L.name}`,stages:PEACE_STAGES.defend.slice(0,diff+1).map(s=>({name:s,stat:'Might'})),gold:2*diff};
+  return {id:H.ops.nextOp++,type:'Battle',kind:'defend',diff,target:null,peaceful:true,place:holdPlace(L),landName:lk(L),created:H.cycle,unrest:lvl,
+    title:`${DANGER[lvl]}-danger raid on ${holdLabel(L)}`,stages:PEACE_STAGES.defend.slice(0,diff+1).map(s=>({name:s,stat:'Might'})),gold:2*diff};
 }
 /* ---------- investment: climb the tier ladder; 5x peaceful income; builds only while peaceful ---------- */
 const LADDER=[['Wild clearing',1,25,0],['Hamlet',2,35,1],['Village',3,40,2],['Holdfast',5,120,3],['Castle',8,300,6],['Estate',10,500,8]]; /* name, income, peasants, seasons to build; an Estate is the seat of a minor house */
@@ -2688,16 +2721,106 @@ function buildTurn(say){
     say(`Work is done: the ${old.toLowerCase()} of ${L.name} is now ${aOr(to[0].toLowerCase())} (+${to[1]-from[1]} income, +${to[2]-from[2]} peasants).`,'good')});
 }
 function refundBuild(L,say){if(L&&L.build){H.gold+=L.build.cost;say(`The unfinished works at ${L.name} are abandoned. ${L.build.cost} gold is recovered.`,'warn');delete L.build}}
+/* ---------- steadings: peaceful holds gathered around a core hold into one line. A steading shares one unrest and is raided as one; it may hold one company of levies per hold in it. If it falls into revolt one hold breaks away and the rest return to unrest. Each hold can still be built up on its own. ---------- */
+let gatherUI=null; /* {core:lid} to form a new steading, or {stead:id} to add to one; picks: lids */
+const steadById=id=>(H.steads||[]).find(s=>s.id===id);
+const steadOf=L=>L&&L.stead?steadById(L.stead):null;
+const steadParts=s=>H.lands.filter(l=>l.stead===s.id);
+const steadCore=s=>H.lands.find(l=>lk(l)===s.core);
+const isPart=L=>{const s=steadOf(L);return !!s&&s.core!==lk(L)}; /* in a steading but not its core */
+const holdLabel=L=>{const s=steadOf(L);return s?`the steading of ${s.name}`:`the ${L.tier.toLowerCase()} of ${L.name}`};
+const holdPlace=L=>{const s=steadOf(L);return s?s.name:L.name};
+const garFrac=L=>{const s=steadOf(L);if(!s)return L.garrison?1:0;const p=steadParts(s);return p.length?p.filter(l=>l.garrison).length/p.length:0};
+const holdGuarded=L=>garFrac(L)>=.5;
+const unrestChance=L=>UNREST_CHANCE-(UNREST_CHANCE-GARRISON_UNREST)*garFrac(L);
+const canGather=L=>!!L&&!L.stead&&!(L.unrest||0)&&!raidOn(L)&&!routOn(L);
+const units=()=>H.lands.filter(l=>!isPart(l)); /* single holds plus one core per steading */
+const unitIncome=L=>{const s=steadOf(L);return s?steadParts(s).reduce((a,l)=>a+landIncome(l),0):landIncome(L)};
+/* keep steadings whole: drop lost holds, find a new core, dissolve below two holds, and share the core's unrest */
+function steadSync(){
+  if(!H||!H.lands)return;H.steads=H.steads||[];
+  H.lands.forEach(l=>{if(l.stead&&!steadById(l.stead))delete l.stead});
+  H.steads=H.steads.filter(s=>{const p=steadParts(s);
+    if(p.length<2){p.forEach(l=>delete l.stead);return false}
+    if(!steadCore(s)){const c=p.slice().sort((a,b)=>tierStep(b)-tierStep(a))[0];s.core=lk(c)}
+    const u=steadCore(s).unrest||0;p.forEach(l=>{l.unrest=u});return true});
+}
+function tierCounts(ls){const c={};ls.forEach(l=>{c[l.tier]=(c[l.tier]||0)+1});
+  return Object.entries(c).sort((a,b)=>(TIER_STEP[b[0]]||0)-(TIER_STEP[a[0]]||0)).map(([t,n])=>`${n} ${n>1?(t.endsWith('y')?t.slice(0,-1)+'ies':t+'s'):t}`.toLowerCase()).join(', ')}
+function formSteading(){
+  if(!gatherUI||!gatherUI.picks.length)return;
+  if(gatherUI.stead){const s=steadById(gatherUI.stead);if(!s)return;const add=gatherUI.picks.map(id=>H.lands.find(l=>lk(l)===id)).filter(canGather);
+    add.forEach(l=>{l.stead=s.id;l.unrest=steadCore(s).unrest||0});
+    if(add.length)H.log.push({cycle:H.cycle,text:`${add.map(l=>l.name).join(', ')} join${add.length===1?'s':''} the steading of ${s.name}.`})}
+  else{const core=H.lands.find(l=>lk(l)===gatherUI.core);if(!canGather(core))return;const add=gatherUI.picks.map(id=>H.lands.find(l=>lk(l)===id)).filter(l=>l!==core&&canGather(l));if(!add.length)return;
+    H.steadSeq=(H.steadSeq||0)+1;const s={id:'S'+H.steadSeq,name:core.name,core:lk(core)};H.steads=(H.steads||[]).concat([s]);
+    [core].concat(add).forEach(l=>{l.stead=s.id});
+    H.log.push({cycle:H.cycle,text:`${add.map(l=>l.name).join(', ')} ${add.length===1?'is':'are'} gathered with ${core.name} into the steading of ${s.name}.`})}
+  gatherUI=null;steadSync();
+}
+function splitSteading(id){const s=steadById(id);if(!s)return;steadParts(s).forEach(l=>delete l.stead);H.steads=H.steads.filter(x=>x!==s);
+  H.log.push({cycle:H.cycle,text:`The steading of ${s.name} is broken up into its holds again.`});if(gatherUI&&gatherUI.stead===id)gatherUI=null}
+function renameStead(id,raw){const s=steadById(id);if(!s)return;const nw=String(raw||'').replace(/\s+/g,' ').trim().slice(0,28);if(!nw||nw===s.name)return;
+  const old=s.name;s.name=nw;
+  (H.ops.defense||[]).concat(H.ops.underway.map(x=>x.op)).forEach(op=>{if(op&&op.landName===s.core){if(op.place===old)op.place=nw;op.title=op.title.split(old).join(nw)}});
+  H.log.push({cycle:H.cycle,text:`The steading of ${old} is now called ${nw}.`})}
+/* a steading in revolt: one hold breaks away, the rest fall back to unrest */
+function steadRevolt(L,say){
+  const s=steadOf(L),p=steadParts(s),others=p.filter(l=>lk(l)!==s.core),gone=pick(others.length?others:p);
+  say(`The steading of ${s.name} rises in revolt.`,'bad');loseHold(gone,say);
+  const c=steadCore(s)||H.lands.find(l=>l.stead===s.id);if(c)c.unrest=2;steadSync();
+  if(steadById(s.id))say(`The rest of the steading of ${s.name} is held, but stays in unrest.`,'warn');
+  else{const left=H.lands.find(l=>lk(l)===lk(c));if(left){left.unrest=2;say(`Only ${left.name} is left of the steading, and it stays in unrest.`,'warn')}}
+}
+function steadGarLi(s){const p=steadParts(s),g=p.filter(l=>l.garrison).length,u=steadCore(s).unrest||0;
+  return `<li style="display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center"><span style="flex:1;min-width:12em"><b>Steading of ${esc(s.name)}</b> <span class="muted">· ${p.length} holds · <span class="${u?'hot':'okc'}">${UNREST[u]}</span> · <span class="${g?'okc':''}">${g} of ${p.length} garrisoned</span></span></span><button class="sm" style="margin:0" data-sgar="${s.id}|0" ${g?'':'disabled'}>Withdraw one</button><button class="sm" style="margin:0" data-sgar="${s.id}|1" ${g<p.length&&ownField()?'':'disabled'}${!ownField()?' title="None of your own companies in the field"':''}>Station one</button></li>`}
+function stationStead(id,on){const s=steadById(id);if(!s)return;const p=steadParts(s);
+  const L=on?p.find(l=>!l.garrison):p.slice().reverse().find(l=>l.garrison);if(L)setGarrison(L,on)}
+/* the steading's line in Holdings */
+function steadLi(s){
+  const p=steadParts(s),core=steadCore(s),u=core.unrest||0,inc=p.reduce((a,l)=>a+landIncome(l),0),peace=p.reduce((a,l)=>a+l.income,0),peas=p.reduce((a,l)=>a+landPeas(l),0),g=p.filter(l=>l.garrison).length;
+  const parts=p.slice().sort((a,b)=>(lk(a)===s.core?-1:lk(b)===s.core?1:tierStep(b)-tierStep(a))).map(l=>`<li><b>${esc(l.tier)} of <input class="lname" data-lname="${lk(l)}" value="${esc(l.name)}" size="${Math.max(3,l.name.length)}" aria-label="Name of the ${esc(l.tier.toLowerCase())}"></b>${lk(l)===s.core?' <span class="muted">(core)</span>':''} <span class="muted">· +${landIncome(l)} gold · ${landPeas(l)} peasants${estateHeld(l)?` · held for you by House ${esc(estateHeld(l).name)}`:''}${l.build?' · building':''}${l.garrison?' · garrisoned':''}</span></li>`).join('');
+  const open=gatherUI&&gatherUI.stead===s.id;
+  return `<li class="stead"><b>Steading of <input class="lname" data-sname="${s.id}" value="${esc(s.name)}" size="${Math.max(3,s.name.length)}" aria-label="Name of the steading" title="Rename this steading"></b> <span class="muted">· ${tierCounts(p)}${raidOn(core)?' · <span class="hot">under attack</span>':''}</span><br>+${inc} gold each cycle${u?` <span class="muted">(${peace} at peace)</span>`:''} · ${peas} peasants · <span class="${u?'hot':'okc'}">${UNREST[u]}</span>${g?` · <span class="okc">${g} of ${p.length} garrisoned</span>`:''}
+    <details class="parts" data-fold="stead-${s.id}" ${H.ui&&H.ui.folds&&H.ui.folds['stead-'+s.id]?'open':''}><summary>${p.length} holds</summary><ul class="hl">${parts}</ul></details>
+    <div class="acts" style="margin-top:4px">${!u&&H.lands.some(canGather)?`<button class="sm" data-gather="stead|${s.id}">${open?'Choosing…':'Gather more lands'}</button>`:''}<button class="sm" data-splitstead="${s.id}">Split</button></div>${open?gatherPick():''}${routRow(core,H.lands.indexOf(core))}</li>`;
+}
+function gatherBtn(l){
+  if(!canGather(l)||!H.lands.some(o=>o!==l&&canGather(o)))return '';
+  const open=gatherUI&&gatherUI.core===lk(l);
+  return ` · <button class="linkish glink" data-gather="core|${lk(l)}">${open?'choosing…':'gather lands'}</button>${open?gatherPick():''}`;
+}
+function gatherPick(){
+  const core=gatherUI.core,cands=H.lands.filter(l=>canGather(l)&&lk(l)!==core);
+  const n=gatherUI.picks.length,s=gatherUI.stead?steadById(gatherUI.stead):null,cl=core&&H.lands.find(l=>lk(l)===core);
+  return `<div class="gather"><p class="muted" style="margin:0 0 6px;font-size:14px">${s?`Choose peaceful holds to join the steading of ${esc(s.name)}.`:`Choose peaceful holds to gather around ${esc(cl.name)}. The steading takes its name.`} It will share one unrest, be raided as one, and may garrison one company per hold.</p>
+    <div class="gpicks">${cands.map(l=>`<button class="sm" data-gpick="${lk(l)}" aria-pressed="${gatherUI.picks.includes(lk(l))}">${esc(l.tier)} of ${esc(l.name)} <span class="muted">· +${landIncome(l)}</span></button>`).join('')}</div>
+    <div class="acts" style="margin-top:6px"><button class="sm main" data-gform="1" ${n?'':'disabled'}>${s?`Add ${n||''} hold${n===1?'':'s'}`:`Form the steading${n?` (${n+1} holds)`:''}`}</button>${cands.length>1?`<button class="sm" data-gall="1">Choose all ${cands.length}</button>`:''}<button class="sm" data-gcancel="1">Cancel</button></div></div>`;
+}
+/* the skip's new hamlets, offered for gathering when the chronicle closes */
+function skipGatherOffer(s){
+  if(!s.newL||s.gathered)return '';const ls=s.newL.map(id=>H.lands.find(l=>lk(l)===id)).filter(canGather);if(!ls.length)return '';
+  const st=(H.steads||[]).filter(x=>!(steadCore(x).unrest||0)).slice(0,3);
+  if(ls.length<2&&!st.length)return '';
+  return `<div class="gather" style="margin-top:8px"><p style="margin:0 0 6px"><b>${ls.length} new hamlet${ls.length>1?'s':''}</b> were cleared in these years: ${esc(ls.map(l=>l.name).join(', '))}.</p><div class="acts">${ls.length>=2?`<button class="sm main" data-skipgather="new">Gather them into a steading</button>`:''}${st.map(x=>`<button class="sm" data-skipgather="${x.id}">Add to the steading of ${esc(x.name)}</button>`).join('')}<button class="sm" data-skipgather="no">Leave them be</button></div></div>`;
+}
+function skipGather(how){
+  const s=H.skips&&H.skips[skipShow];if(!s)return;s.gathered=true;if(how==='no')return;
+  const ls=(s.newL||[]).map(id=>H.lands.find(l=>lk(l)===id)).filter(canGather);if(!ls.length)return;
+  if(how==='new'){if(ls.length<2)return;gatherUI={core:lk(ls[0]),picks:ls.slice(1).map(lk)}}else gatherUI={stead:how,picks:ls.map(lk)};
+  formSteading();
+}
+
 /* ---------- routing out bandits: a free action that returns a troubled hold to peace ---------- */
 const ROUT_STAGES=['Find their camp','Rout the outlaws','Hang the ringleaders','Burn the last hideouts'];
 const isRaid=d=>!d.rout&&!d.quell;
 const raidOn=L=>(H.ops.defense||[]).some(d=>isRaid(d)&&d.landName===lk(L));
 const routOn=L=>(H.ops.defense||[]).find(d=>d.rout&&d.landName===lk(L));
-const canRout=L=>(L.unrest||0)>0&&!raidOn(L)&&!routOn(L)&&L.routed!==H.cycle;
+const canRout=L=>(L.unrest||0)>0&&!isPart(L)&&!raidOn(L)&&!routOn(L)&&L.routed!==H.cycle;
 function planRout(L){
   if(!L||!canRout(L))return;const lvl=clamp(L.unrest,1,3);
-  H.ops.defense.push({id:H.ops.nextOp++,type:'Battle',kind:'rout',rout:true,diff:lvl,target:null,peaceful:true,place:L.name,landName:lk(L),created:H.cycle,unrest:lvl,
-    title:`Rout the bandits from the ${L.tier.toLowerCase()} of ${L.name}`,stages:ROUT_STAGES.slice(0,lvl+1).map(s=>({name:s,stat:'Might'})),gold:0});
+  H.ops.defense.push({id:H.ops.nextOp++,type:'Battle',kind:'rout',rout:true,diff:lvl,target:null,peaceful:true,place:holdPlace(L),landName:lk(L),created:H.cycle,unrest:lvl,
+    title:`Rout the bandits from ${holdLabel(L)}`,stages:ROUT_STAGES.slice(0,lvl+1).map(s=>({name:s,stat:'Might'})),gold:0});
 }
 function callOffRout(L){H.ops.defense=H.ops.defense.filter(d=>!(d.rout&&d.landName===lk(L)))}
 function loseHold(L,say){
@@ -2709,8 +2832,8 @@ function loseHold(L,say){
 }
 /* a raid that is failed or left unanswered: worse unrest, or the hold is lost if it was already in revolt */
 function raidLost(L,say){
-  if((L.unrest||0)>=3)loseHold(L,say);
-  else{L.unrest=(L.unrest||0)+1;say(`The raiders hold sway in the ${L.tier.toLowerCase()} of ${L.name}. It falls into ${UNREST[L.unrest].toLowerCase()}.`,'bad')}
+  if((L.unrest||0)>=3){if(steadOf(L))steadRevolt(L,say);else loseHold(L,say)}
+  else{L.unrest=(L.unrest||0)+1;steadSync();say(`The raiders hold sway in ${holdLabel(L)}. It falls into ${UNREST[L.unrest].toLowerCase()}.`,'bad')}
 }
 function peaceRewardText(op){
   if(op.kind==='quell')return `The revolt ends. Win, and they lose their Estate to you and are left landless and resentful (a partial win leaves the Estate restless). Fail, and you may try again next season`;
@@ -2724,7 +2847,7 @@ function finishPeace(ms,grade,out){
   if(op.kind==='quell'){finishQuell(op,grade,out);return}
   if(op.kind==='rout'){const L=H.lands.find(l=>lk(l)===op.landName);
     if(grade==='fail'||!L){out.push(`The bandits slip away from ${op.place}. Nothing changes.`);return}
-    L.unrest=0;out.push(`The bandits are routed. The ${L.tier.toLowerCase()} of ${L.name} is at peace.`);return}
+    L.unrest=0;steadSync();out.push(`The bandits are routed. ${holdLabel(L)[0].toUpperCase()+holdLabel(L).slice(1)} is at peace.`);return}
   if(op.kind==='defend'){
     const i=H.lands.findIndex(l=>lk(l)===op.landName);
     if(op.siege){const r=rival(op.target);
@@ -2734,7 +2857,7 @@ function finishPeace(ms,grade,out){
       return;}
     const L=i>=0?H.lands[i]:null,said=t=>out.push(t);
     if(grade==='fail'){if(L)raidLost(L,said)}
-    else{const g=grade==='full'?op.gold:Math.ceil(op.gold/2);H.gold+=g;if(L)L.unrest=(op.unrest||L.unrest)>=3?1:0;out.push(`The raid on ${op.place} is broken. +${g} gold in loot. The hold is now ${UNREST[L?L.unrest:0].toLowerCase()}.`)}
+    else{const g=grade==='full'?op.gold:Math.ceil(op.gold/2);H.gold+=g;if(L){L.unrest=(op.unrest||L.unrest)>=3?1:0;steadSync()}out.push(`The raid on ${op.place} is broken. +${g} gold in loot. The hold is now ${UNREST[L?L.unrest:0].toLowerCase()}.`)}
     return;
   }
   if(grade==='fail'){out.push('Nothing gained.');return}
@@ -2761,15 +2884,17 @@ function banditTurn(say){
     else{say(`No one rode out against the raid on ${L.name}.`,'bad');raidLost(L,say)}});
   H.ops.defense=(H.ops.defense||[]).filter(op=>op.created===H.cycle||op.quell);
   buildTurn(say);
-  H.lands.filter(l=>!raidOn(l)).forEach(L=>{
-    if(Math.random()>=(L.garrison?GARRISON_UNREST:UNREST_CHANCE))return;
-    const u=L.unrest||0,where=`the ${L.tier.toLowerCase()} of ${L.name}`;
+  steadSync();
+  H.lands.filter(l=>!raidOn(l)&&!isPart(l)).forEach(L=>{
+    if(Math.random()>=unrestChance(L))return;
+    const u=L.unrest||0,where=holdLabel(L);
     if(u===0){L.unrest=1;say(`Grumbling spreads through ${where}. The hold is restless.`,'warn');return}
     if(u<3&&Math.random()<.5){L.unrest=u+1;say(`${where[0].toUpperCase()+where.slice(1)} slides into ${UNREST[L.unrest].toLowerCase()}.`,'warn');return}
-    if(L.garrison){if(u<=1){say(`Raiders strike ${where}, and the garrison drives them off.`,'good');return}
+    if(holdGuarded(L)){if(u<=1){say(`Raiders strike ${where}, and the garrison drives them off.`,'good');return}
       H.ops.defense.push(genDefense(L,u-1));say(`A raid strikes ${where}. The garrison blunts it to ${DANGER[u-1].toLowerCase()} danger. Answer it this season.`,'warn');return}
     H.ops.defense.push(genDefense(L));say(`A ${DANGER[u].toLowerCase()}-danger raid strikes ${where}. Answer it this season.`,'warn');
   });
+  steadSync();
 }
 
 function rewardText(op){
@@ -2992,11 +3117,15 @@ function investRow(l,i){
 function holdingsPane(){
   const landLi=l=>`<li><b>${esc(l.tier)} of <input class="lname" data-lname="${lk(l)}" value="${esc(l.name)}" size="${Math.max(3,l.name.length)}" aria-label="Name of the ${esc(l.tier.toLowerCase())}" title="Rename this hold"></b> <span class="muted">· ${l.wild?'claimed from '+esc(l.from):l.inherited?'inherited from House '+esc(l.from):l.from==='the crown'?'granted by the crown':'taken from House '+esc(l.from)}${raidOn(l)?' · <span class="hot">under attack</span>':''}${l.aidBy&&alliedWith(l.aidBy)?' · half its income to House '+esc(l.aidBy):''}</span><br>+${landIncome(l)} gold each cycle${(l.unrest||0)?` <span class="muted">(${l.income} at peace)</span>`:''} · ${landPeas(l)} peasants${estateHeld(l)?` <span class="muted">(half of ${l.income} gold and ${l.peasants} peasants: held for you by House ${esc(estateHeld(l).name)})</span>`:l.tier==='Estate'?' <span class="muted">(held directly: no minor house seated)</span>':''} · <span class="${(l.unrest||0)?'hot':'okc'}">${UNREST[l.unrest||0]}</span>${routRow(l,H.lands.indexOf(l))}</li>`;
   /* Improvement: peaceful holds that can still be built up, plus any with works underway */
-  const impLi=l=>`<li><b>${esc(l.tier)} of ${esc(l.name)}</b> <span class="muted">· +${landIncome(l)} gold each cycle · ${landPeas(l)} peasants</span>${investRow(l,H.lands.indexOf(l))}</li>`;
-  const improvable=H.lands.filter(l=>l.build||(!(l.unrest||0)&&tierStep(l)<LADDER.length-1));
-  const quiet=H.lands.filter(l=>!(l.unrest||0)),troubled=H.lands.filter(l=>l.unrest||0);
-  const lgrp=(k,t,ls,hot,li=landLi)=>ls.length?`<details class="lgrp" data-fold="${k}" ${foldOpen(k)?'open':''}><summary><span class="${hot?'hot':'okc'}">${t}</span> <span class="gn">${ls.length} · +${ls.reduce((a,l)=>a+landIncome(l),0)} gold</span></summary><ul class="hl">${ls.map(l=>li(l)).join('')}</ul></details>`:'';
-  const lands=H.lands.length?routAllRow()+lgrp('lands-peace','Peaceful',quiet)+lgrp('lands-trouble','Restless, in unrest or revolt',troubled,true)+lgrp('lands-improve','Improvement',improvable,false,impLi):'<p class="muted">No lands beyond the seat yet. Conquest takes them.</p>';
+  const impLi=l=>`<li><b>${esc(l.tier)} of ${esc(l.name)}</b> <span class="muted">${steadOf(l)?`· in the steading of ${esc(steadOf(l).name)} `:''}· +${landIncome(l)} gold each cycle · ${landPeas(l)} peasants</span>${investRow(l,H.lands.indexOf(l))}</li>`;
+  const canImp=l=>l.build||(!(l.unrest||0)&&tierStep(l)<LADDER.length-1);
+  const improvable=units().filter(l=>{const s=steadOf(l);return s?steadParts(s).some(canImp):canImp(l)});
+  const impUnit=l=>{const s=steadOf(l);if(!s)return impLi(l);const ps=steadParts(s).filter(canImp),bld=ps.filter(x=>x.build).length;
+    return `<li class="stead"><details class="parts" data-fold="simp-${s.id}" ${H.ui&&H.ui.folds&&H.ui.folds['simp-'+s.id]?'open':''}><summary><b style="color:var(--ink)">Steading of ${esc(s.name)}</b> · ${ps.length} hold${ps.length>1?'s':''} to build up${bld?` · ${bld} building`:''}</summary><ul class="hl">${ps.map(impLi).join('')}</ul></details></li>`};
+  const U=units(),quiet=U.filter(l=>!(l.unrest||0)),troubled=U.filter(l=>l.unrest||0);
+  const unitLi=l=>{const s=steadOf(l);return s?steadLi(s):landLi(l).replace(/<\/li>$/,gatherBtn(l)+'</li>')};
+  const lgrp=(k,t,ls,hot,li=unitLi)=>ls.length?`<details class="lgrp" data-fold="${k}" ${foldOpen(k)?'open':''}><summary><span class="${hot?'hot':'okc'}">${t}</span> <span class="gn">${li===unitLi||li===impUnit?`${ls.length}${ls.length!==ls.reduce((a,l)=>a+(steadOf(l)?steadParts(steadOf(l)).length:1),0)?` (${ls.reduce((a,l)=>a+(steadOf(l)?steadParts(steadOf(l)).length:1),0)} holds)`:''} · +${ls.reduce((a,l)=>a+unitIncome(l),0)}`:`${ls.length} · +${ls.reduce((a,l)=>a+landIncome(l),0)}`} gold</span></summary><ul class="hl">${ls.map(l=>li(l)).join('')}</ul></details>`:'';
+  const lands=H.lands.length?routAllRow()+lgrp('lands-peace','Peaceful',quiet)+lgrp('lands-trouble','Restless, in unrest or revolt',troubled,true)+lgrp('lands-improve','Improvement',improvable,false,impUnit):'<p class="muted">No lands beyond the seat yet. Conquest takes them.</p>';
   const caps=H.captives.length?`<ul class="hl">${H.captives.map((c,i)=>`<li><b>${esc(c.name)}</b>, ${esc(c.rank)} <span class="muted">· House ${esc(c.house)}</span><br><button class="sm" data-ransom="${i}">Ransom for ${c.ransom} gold</button></li>`).join('')}</ul>`:'<p class="muted">None held. Battle takes prisoners.</p>';
   const ours=H.members.filter(m=>m.captive&&!m.dead);
   const held=ours.length?`<h3>Held by rivals</h3><ul class="hl">${ours.map(m=>`<li><b>${esc(fullName(m))}</b> <span class="muted">· held by House ${esc(m.captive.house)}</span><br><button class="sm" data-payransom="${m.id}" ${H.gold<m.captive.ransom?'disabled':''}>Pay ${m.captive.ransom} gold to free them</button></li>`).join('')}</ul>`:'';
@@ -3103,8 +3232,8 @@ function kingDies(say,how,quiet){
   Rz.king=null;syncRoyalLord(rr,say,quiet);
   const cl=[];
   if(Rz.heir)cl.push({key:'heir',person:{...Rz.heir},label:Rz.heir.member!=null?`${heirWord(Rz.heir)} ${Rz.heir.given} of House ${H.house.name}, child of the royal consort`:`${heirWord(Rz.heir)} ${Rz.heir.given}, heir of House ${Rz.royal.name}`,str:Rz.heir.age>=COME_OF_AGE?6:3});
-  shuffle(crownSeekers).slice(0,2).forEach(r=>cl.push({key:r.name,label:`Lord ${r.lord.given} of House ${r.name}`,str:r.power*2+(r.agenda==='crown'?1:0)}));
-  if(cl.length<2){const r=H.rivals.slice().sort((a,b)=>b.power-a.power).find(r=>!cl.some(c=>c.key===r.name));if(r)cl.push({key:r.name,label:`Lord ${r.lord.given} of House ${r.name}`,str:r.power*2})}
+  shuffle(crownSeekers).slice(0,2).forEach(r=>cl.push({key:r.name,label:`Lord ${r.lord.given} of House ${r.name}`,str:r.power*2+(r.agenda==='crown'?1:0)+Math.min(2,r.renown||0)}));
+  if(cl.length<2){const r=H.rivals.slice().sort((a,b)=>b.power-a.power).find(r=>!cl.some(c=>c.key===r.name));if(r)cl.push({key:r.name,label:`Lord ${r.lord.given} of House ${r.name}`,str:r.power*2+Math.min(2,r.renown||0)})}
   Rz.king=null;Rz.crisis={claimants:cl,backed:null,own:false};
   say(`The succession is contested. ${cl.map(c=>c.label).join(', ')} each claim the throne. It will be decided at the end of next season.`,'warn');
 }
@@ -4747,10 +4876,319 @@ function bloodView(){
   const due=wards.filter(m=>m.returnDue);
   const dueHtml=due.length?`<section class="pane crisis"><h2>A ward comes of age</h2><div class="hgrid">${due.map(m=>`<article class="hcard"><div class="hhead">${portrait(m,48)}<div style="min-width:0;flex:1"><h3>${esc(m.given)} of House ${esc(m.hostage)}</h3><p class="muted" style="margin:0;font-size:15px">Age ${m.age} · Might ${m.st.Might}, Ability ${m.st.Ability}, Grit ${m.st.Grit}, Insight ${m.st.Insight}</p></div></div>
       <ul class="offices">${Object.entries(RETURN_OPTS).map(([k,[l,ty,d]])=>`<li><span style="flex:1;min-width:0">${ty?`<span class="optype t-${ty}" style="font-size:11px">${ty}</span>`:''}<b>${l}</b><br><span class="muted" style="font-size:15px">${esc(d.split('{H}').join(m.hostage))}</span></span><button class="sm${k==='keep'?' danger':''}" data-return="${m.id}|${k}">${k==='keep'?'Keep':'Choose'}</button></li>`).join('')}</ul></article>`).join('')}</div></section>`:'';
-  return `${dueHtml}<div class="two">${succ}<section class="pane"><h2>Hostage wards</h2><p class="muted" style="font-size:15px;margin:0 0 10px">A ward taken from a rival lives as one of your house. While they live with you, their family will not strike at you. When they come of age you decide whether to send them home, and on what terms.</p>
+  return `${dueHtml}${yearsPane()}<div class="two">${succ}<section class="pane"><h2>Hostage wards</h2><p class="muted" style="font-size:15px;margin:0 0 10px">A ward taken from a rival lives as one of your house. While they live with you, their family will not strike at you. When they come of age you decide whether to send them home, and on what terms.</p>
       ${wards.length?`<ul class="offices">${wards.map(w=>`<li>${portrait(w,48)}<span style="flex:1;min-width:0"><button class="linkish" data-sel="${w.id}" data-go="house">${esc(w.given)}</button> <span class="muted">· ${w.age} · of House ${esc(w.hostage)}${w.returnDue?' · decision due':' · home at '+adultAge(w)}</span></span></li>`).join('')}</ul><h3>Claims</h3>`:''}${claims}${H.informants.length?`<h3>Spies placed</h3><ul class="offices">${H.informants.map(i=>`<li>${esc(i.name)} <span class="muted">· inside House ${esc(i.house)}</span></li>`).join('')}</ul>`:''}</section></div>
     <section class="pane"><h2>Marriage offers</h2><p class="muted" style="font-size:15px;margin:0 0 10px">Every match binds the houses: their hostility ends and they will not strike at you while it holds. Choose who weds whom. A plain suitor is free and comes with their dowry; finer suitors ask a dowry of you and bring more.</p><div class="hgrid">${offers}</div></section>
     ${claimsPane()}`;
+}
+
+/* ---------- the passing of years (time skip, phase 1): from Winter, let 5, 10 or 20 years pass. Income and levy upkeep are paid each season; each year the family ages, children are born, the old die and the succession runs. The realm only ages: rival lords, the monarch and the royal heir grow old and may die. ---------- */
+const SKIP_YEARS=[5,10,20];
+const SKIP_WORD={5:'Five',10:'Ten',20:'Twenty'};
+const NATURAL_DEATHS=['in their sleep','of a winter fever','of old age','after a long illness'];
+let skipConfirm=null,skipShow=null;
+/* what must be settled before the years can turn */
+function skipBlockers(){
+  const b=[],Rz=H.realm||{},d=H.dip||{};
+  if(H.fallen)return ['The house has fallen.'];
+  if(seasonOf(H.cycle)!=='Winter')b.push(`Years can only pass from Winter. It is ${seasonOf(H.cycle)} now.`);
+  if(H.ops.underway.length)b.push('An operation is underway. See it through on the Operations board.');
+  if((H.ops.defense||[]).some(isRaid))b.push('Your lands are under attack. Defend them on the Operations board.');
+  if((H.minors||[]).some(x=>x.rebel&&x.liege===YOU))b.push('A house sworn to you is in rebellion.');
+  if(Rz.crisis)b.push('The throne is contested. See The Realm.');
+  if((H.disputes||[]).length)b.push('A claim by blood is disputed. Press it below.');
+  if((d.calls||[]).length)b.push('An ally calls you to arms. Answer in The Realm.');
+  if((d.demands||[]).length)b.push('Terms for peace await your answer in The Realm.');
+  return b;
+}
+/* species age to its human equivalent (Kin ages as people do) */
+const humanAge=(a,sp)=>{const S=SPECIES[sp]||SPECIES.Kin;return a<S.adult?a*16/S.adult:16+(a-S.adult)*44/(S.old-S.adult)};
+/* a rival lord dies of old age: a claim by blood may come due, otherwise a new lord takes the seat */
+function rivalLordPasses(r,say){
+  const n=r.name,old=r.lord,wid=H.members.filter(m=>!m.dead&&m.wedTo&&m.wedTo.kind==='lord'&&m.wedTo.house===n);
+  widowConsorts(w=>w.kind==='lord'&&w.house===n);
+  const widSay=()=>wid.forEach(m=>say(`${m.given} of your house is widowed.`,'warn'));
+  const cl=claimOn(n);
+  if(cl&&!(H.disputes||[]).some(x=>x.house===n)){inheritDeath(r,old,cl,say);widSay();return}
+  const sx=Math.random()<.65?'m':'f';r.lord={given:nameFor(sx,r.sp),sex:sx,age:toSpAge(ri(15,40),r.sp)};
+  let t=`${lordWord(old)} ${old.given} of House ${n} dies ${pick(NATURAL_DEATHS)}, at ${old.age}. ${r.lord.given} now leads the house`;
+  if(Math.random()<.5&&r.hostility){r.hostility--;t+=' and sets aside an old grudge'}else{r.agenda=pick(Object.keys(AGENDAS));t+=`, and ${AGENDAS[r.agenda].toLowerCase()}`}
+  const lapsed=H.pacts.filter(p=>p.house===n&&!p.dowered);if(lapsed.length&&Math.random()<.4){H.pacts=H.pacts.filter(p=>!lapsed.includes(p));t+='. Your agreements with them died with the old lord'}
+  let lost=false;if(alliedWith(n)&&Math.random()<.3){H.dip.allies=H.dip.allies.filter(a=>a.house!==n);lost=true;t+='. The new lord does not hold to the old alliance with you'}
+  say(t+'.',lapsed.length||lost?'bad':'');widSay();
+}
+/* the realm ages a year: nothing else stirs while the years pass */
+function ageRealm(say){
+  const Rz=H.realm;if(!Rz)return;
+  disputeTurn(say);
+  if(Rz.crisis)resolveCrisis(say);
+  if(Rz.king&&!Rz.yours)Rz.king.age++;
+  if(Rz.heir&&Rz.heir.member==null)Rz.heir.age++;
+  H.rivals.forEach(r=>{if(r.lord)r.lord.age++});
+  /* the royal heir born to your consort, and a crown held by one of your house */
+  if(Rz.heir&&Rz.heir.member!=null){const c=mem(Rz.heir.member);if(!c||c.dead){say(`${Rz.heir.given}, heir to the throne, is gone. The succession is open again.`,'bad');Rz.heir=null}else Rz.heir.age=c.age}
+  if(Rz.yours&&Rz.king&&Rz.king.member!=null){const c=mem(Rz.king.member);if(!c||c.dead){const r0=ruler();if(r0){Rz.king={given:r0.given,sex:r0.sex,age:r0.age,health:3,member:r0.id};say(`The crown passes to ${r0.given} of House ${H.house.name}.`,'warn')}}else Rz.king.age=c.age}
+  /* the monarch: the same odds as a season of the realm, four times over */
+  if(Rz.king&&!Rz.yours&&!Rz.crisis){const k=Rz.king;let died=false;
+    for(let s=0;s<4&&!died;s++){const p=.015+Math.max(0,humanAge(k.age,k.sp)-55)*.006+(3-k.health)*.04;
+      if(Math.random()<p)died=true;else if(k.health>1&&Math.random()<.07){k.health--;say(`${crownWord(k)} ${k.given} has fallen ill.`,'warn')}}
+    if(died)kingDies((t,tone)=>say(t.replace(' It will be decided at the end of next season.',''),tone),pick(NATURAL_DEATHS));
+    if(Rz.crisis)resolveCrisis(say)}
+  /* rival lords grow old; the royal house's lord is the monarch, handled above */
+  H.rivals.slice().forEach(r=>{if(!r.lord||isRoyalRival(r.name)&&Rz.king)return;const S=SPECIES[r.sp]||SPECIES.Kin;
+    if(r.lord.age>=S.old&&Math.random()<(r.lord.age-S.old+2)*.015)rivalLordPasses(r,say)});
+}
+/* ---------- stances for the passing of years (time skip, phases 2 and 3) ---------- */
+/* each year the ruler (or regent) rolls a stat under d10; danger makes the roll harder and multiplies what is won or lost */
+const STANCES={
+  Prosper:{stat:'Insight',gain:'grow gold',risk:'risk influence',desc:'+6 gold on a success · −1 influence on a failure'},
+  Conquer:{stat:'Might',gain:'grow hamlets',risk:'risk war',desc:'+1 Hamlet from the wild on a success · a rival may declare war on a failure'},
+  Valor:{stat:'Grit',gain:'grow influence',risk:'risk gold',desc:'+1 influence on a success · −6 gold on a failure'},
+  Candor:{stat:'Ability',gain:'gain secrets',risk:'risk scandal',desc:'+1 secret on a rival on a success · a scandal on a failure'}
+};
+const STANCE_KEYS=['Prosper','Conquer','Valor','Candor'];
+const SKIP_DANGER=['Low','Medium','High'];   /* index 0..2: target −0/−1/−2, stakes ×1/×2/×3 */
+const AGENDA_STANCE={wealth:'Prosper',land:'Conquer',crown:'Valor',revenge:'Candor'};
+const RIVAL_ODDS=[.7,.55,.4];
+let skipStance=null,skipDanger=null;
+/* who rolls for the house: the regent while the ruler is a child */
+function stanceRoller(){
+  if(H.regency){const rg=mem(H.regency.regent);if(rg&&!rg.dead&&!rg.captive)return rg}
+  const r=H.members.find(m=>m.ruler&&!m.dead);return r||ruler();
+}
+function newHamlet(){
+  const L={name:pick(LAND_A)+pick(LAND_B),tier:'Hamlet',income:LADDER[1][1],peasants:LADDER[1][2]+ri(0,10),cycle:H.cycle,cleared:true};
+  H.lands.push(L);return L;
+}
+/* a scandal: one of influence, royal favor, a rival's tension or a held secret, whichever can still be lost */
+function stanceScandal(){
+  const P=[];if(H.influence>0)P.push('inf');if(H.realm&&!H.realm.yours&&H.realm.favor>0)P.push('fav');if(H.rivals.some(r=>r.hostility<5))P.push('tension');if(H.secrets.length)P.push('secret');
+  if(!P.length)return 'a scandal, but there is nothing left to lose';
+  const p=pick(P);
+  if(p==='inf'){H.influence--;return 'a scandal at court: −1 influence'}
+  if(p==='fav'){fav(-1);return 'a scandal reaches the crown: royal favor −1'}
+  if(p==='tension'){const r=pick(H.rivals.filter(x=>x.hostility<5));bump(r,1);return `House ${r.name} catches your agents prying: their tension with you rises`}
+  const s=H.secrets.splice(ri(0,H.secrets.length-1),1)[0];return `a secret you held on House ${s.house} comes out and is worthless now`;
+}
+/* your house's year under its stance */
+function yourStanceYear(cfg,say){
+  const S=STANCES[cfg.stance],m=stanceRoller();if(!m){say(`${cfg.stance}: no one is fit to lead the house this year.`,'warn');return}
+  const k=S.stat,base=m.st[k]+gearBonus(m,k),target=Math.max(1,base-cfg.danger),roll=1+Math.floor(Math.random()*10),ok=roll===1||(roll!==10&&roll<=target),x=cfg.danger+1;
+  const head=`${cfg.stance}: ${m.given} rolls ${roll} against ${k} ${target} — `;
+  if(ok){
+    if(cfg.stance==='Prosper'){H.gold+=6*x;say(head+`success. Trade flourishes: +${6*x} gold.`,'good')}
+    if(cfg.stance==='Valor'){H.influence+=x;say(head+`success. Deeds of honor are sung: +${x} influence.`,'good')}
+    if(cfg.stance==='Conquer'){const got=[];for(let i=0;i<x;i++){const L=newHamlet();cfg.newL.push(lk(L));got.push(L.name)}cfg.hamlets+=x;say(head+`success. Settlers clear the wild: new Hamlet${x>1?'s':''} of ${got.join(', ')}.`,'good')}
+    if(cfg.stance==='Candor'){const got=[];for(let i=0;i<x;i++){const r=pick(H.rivals);if(!r)break;const t=pick(SECRETS).split('{T}').join(r.name);H.secrets.push({house:r.name,text:t});got.push(t)}
+      say(head+`success. Secret${got.length>1?'s':''} learned: ${got.join('; ')}.`,'good')}
+  }else{
+    if(cfg.stance==='Prosper'){const l=Math.min(H.influence,x);H.influence-=l;say(head+`failure. Sharp dealing shames the house: −${l} influence.`,'bad')}
+    if(cfg.stance==='Valor'){const l=Math.min(H.gold,6*x);H.gold-=l;say(head+`failure. Grand gestures empty the coffers: −${l} gold.`,'bad')}
+    if(cfg.stance==='Conquer'){
+      if(cfg.wars>=x){say(head+`failure. Your neighbors grumble at your settlers, but no more will take up arms.`,'warn')}
+      else{const c=H.rivals.filter(r=>!atWar(r.name)&&!inTruce(r.name)).sort((a,b)=>b.hostility-a.hostility)[0];
+        if(c){cfg.wars++;const ln=[];aiDeclare(c,(t,tone)=>ln.push(t));say(head+`failure. House ${c.name} will not abide your settlers. ${ln.join(' ')}`,'bad')}
+        else say(head+`failure. Your settlers anger the realm, but every house is already at war with you or bound by truce.`,'warn')}}
+    if(cfg.stance==='Candor'){const ls=[];for(let i=0;i<x;i++)ls.push(stanceScandal());say(head+`failure: ${ls.join('; ')}.`,'bad')}
+  }
+}
+/* rivals choose by personality: agenda sets the stance, power sets the danger; kept hidden until the chronicle */
+function rivalStances(){const o={};H.rivals.forEach(r=>{o[r.name]={stance:AGENDA_STANCE[r.agenda]||'Prosper',danger:clamp(r.power,1,3)-1}});return o}
+function rivalStanceYear(r,c,say){
+  const x=c.danger+1,ok=Math.random()<RIVAL_ODDS[c.danger],n=r.name,tag=`House ${n} (${c.stance})`;
+  if(c.stance==='Prosper'){
+    if(ok){const p0=r.power;r.power=Math.min(3,r.power+x);if(r.power>p0)say(`${tag} grows rich: power ${p0} → ${r.power}.`,'');}
+    else if(r.lands>0){const l=Math.min(r.lands,x);r.lands-=l;say(`${tag} overreaches and loses ${l} land${l>1?'s':''}.`,'')}}
+  if(c.stance==='Conquer'){
+    if(ok){r.lands+=x;let t=`${tag} seizes ${x} new land${x>1?'s':''}`;
+      if(r.hostility>=3&&!atWar(n)&&!inTruce(n)&&!c.declared&&Math.random()<1/3){c.declared=true;const ln=[];aiDeclare(r,(s)=>ln.push(s));say(`${t}, then turns its eyes on you. ${ln.join(' ')}`,'bad');return}
+      say(t+'.','')}
+    else{const foes=H.rivals.filter(o=>o!==r&&!relation(o.name,n)&&!isRoyalRival(o.name));
+      if(foes.length){const f=pick(foes);setRel(n,f.name,'war');say(`${tag} provokes House ${f.name}: the two houses go to war.`,'');if(alliedWith(f.name))allyAttacked(r,f,say)}}}
+  if(c.stance==='Valor'){
+    if(ok){const t0=r.hostility;r.hostility=Math.max(0,r.hostility-x);r.renown=(r.renown||0)+x;say(`${tag} wins renown at court${t0>r.hostility?', and softens toward you':''}.`,t0>r.hostility?'good':'')}
+    else if(r.power>1){const p0=r.power;r.power=Math.max(1,r.power-x);say(`${tag} squanders its strength on vain deeds: power ${p0} → ${r.power}.`,'')}}
+  if(c.stance==='Candor'){
+    if(ok){const ls=[];for(let i=0;i<x;i++){
+        if(H.secrets.length&&Math.random()<.5){const s=H.secrets.splice(ri(0,H.secrets.length-1),1)[0];const sr=rival(s.house);if(sr&&sr!==r)bump(sr,1);ls.push(`leaks what you knew of House ${s.house}`)}
+        else if(H.influence>0){H.influence--;ls.push('spreads tales of your house: −1 influence')}}
+      if(ls.length)say(`${tag} digs into your affairs and ${ls.join(', and ')}.`,'bad')}
+    else{const t0=r.hostility;bump(r,x);say(`${tag} is caught prying into your house. ${r.hostility>t0?`Its tension with you rises to ${TENSION[r.hostility]||r.hostility}`:`The feud between you only deepens`}.`,'warn')}}
+}
+function stancePicker(){
+  const m0=stanceRoller(),tgt=k=>m0?Math.max(1,m0.st[k]+gearBonus(m0,k)-(skipDanger||0)):null;
+  const st=STANCE_KEYS.map(k=>{const S=STANCES[k];return `<button class="stbtn" data-skipst="${k}" aria-pressed="${skipStance===k}"><b>${k}</b><span>${S.gain}, ${S.risk}</span><small>${S.stat}${m0?` · ${tgt(S.stat)} or under on a d10`:''} · ${S.desc}</small></button>`}).join('');
+  const dg=SKIP_DANGER.map((d,i)=>`<button data-skipdg="${i}" aria-pressed="${skipDanger===i}">${d}<small> · ${i?'−'+i+' to the roll, ':'no penalty, '}×${i+1}</small></button>`).join('');
+  const m=stanceRoller();
+  return `<div class="stpick"><h3 style="margin:10px 0 6px">Danger</h3><div class="bar" style="margin:0">${dg}</div>
+    <h3 style="margin:12px 0 6px">Stance</h3><div class="stgrid">${st}</div>${stewardPicker()}
+    <p class="muted" style="font-size:14px;margin:6px 0 0">Each year ${m?esc(m.given)+(H.regency?' (regent)':''):'your ruler'} rolls a d10 against the stance’s stat, less the danger. A 1 always succeeds and a 10 always fails. The rival houses choose their own courses in secret.${skipStance==='Conquer'&&skipDanger!=null?` At most ${skipDanger+1} war${skipDanger?'s':''} can come of your settlers.`:''}</p></div>`;
+}
+/* ---------- the passing of years, phase 4: loans, levies, allies, minor houses and wars run on while the years pass ---------- */
+let skipSteward=null; /* 'generous' or 'stern', asked only when houses are sworn to you */
+const STEWARD={generous:{label:'Generous',desc:'Grants petitions and sits in judgment over feuds when the coffers allow, and treats with rebels for gold and influence. Short of influence, it buys it with gold (keeping a year’s levy upkeep). What cannot be paid waits.'},
+  stern:{label:'Stern',desc:'Refuses petitions, sides with the stronger house in a feud, and rides against rebels.'}};
+const needSteward=()=>(H.minors||[]).some(x=>x.liege===YOU);
+/* whatever these call H.log with goes into the chronicle instead */
+function logToSay(fn,say,tone,pre){const L0=H.log.length;fn();const t=H.log.slice(L0);H.log.length=L0;t.forEach(l=>say((pre||'')+l.text,tone||''))}
+/* when the steward is short of influence it buys what it needs at the moneylender's rate and seasonal cap, keeping a year's levy upkeep in gold */
+function skipBuyInf(need,otherGold,say){
+  if(H.influence>=need)return true;const short=need-H.influence;if(short>exLeft())return false;
+  const cost=short*exBuy();if(H.gold-otherGold-cost<4*upkeep())return false;
+  logToSay(()=>exchange('buy',short),say,'','Your steward: ');return H.influence>=need;
+}
+/* the steward answers what would have waited on you */
+function stewardTurn(pol,say){
+  if(!Array.isArray(H.minors))return;
+  const mine=H.minors.filter(x=>x.liege===YOU);
+  mine.filter(x=>x.petition&&!x.rebel).forEach(x=>{
+    if(pol==='stern'){logToSay(()=>answerPetition(x,'refuse'),say,'warn','Your steward: ');return}
+    const L=x.petition.kind==='grant'?freeEstates()[0]:null;
+    if(x.petition.kind==='justice')skipBuyInf(petCost(x,x.petition).inf,0,say);
+    if(canAnswer(x,x.petition,L))logToSay(()=>answerPetition(x,'grant',L&&L.lid),say,'good','Your steward: ');
+  });
+  (H.feuds||[]).slice().forEach(f=>{const A=minorById(f.a),B=minorById(f.b);if(!A||!B||(A.liege!==YOU&&B.liege!==YOU))return;
+    if(pol==='generous'){if(skipBuyInf(feudPrice(f,'arb'),0,say))logToSay(()=>feudAct('arb',f),say,'good','Your steward: ');return}
+    const w=A.power===B.power?pick([A,B]):A.power>B.power?A:B;logToSay(()=>feudAct('side',f,w.id),say,'warn','Your steward: ')});
+  mine.filter(x=>x.rebel).forEach(x=>{
+    if(pol==='generous'){const c=courtCost(x);if(H.gold>=c.gold&&skipBuyInf(c.inf,c.gold,say)&&H.gold>=c.gold)logToSay(()=>treatRebels(x),say,'good','Your steward: ');return}
+    const m=stanceRoller();if(!m)return;const t=Math.max(1,m.st.Might+gearBonus(m,'Might')-(x.power-1)),roll=1+Math.floor(Math.random()*10),ok=roll===1||(roll!==10&&roll<=t);
+    if(ok){const out=[];finishQuell(quellOp(x),'full',out);say(`${m.given} rides against the rebels of House ${x.name} (rolled ${roll} against ${t}). ${out.join('. ')}.`,'good')}
+    else say(`${m.given} rides against the rebels of House ${x.name}, but they hold (rolled ${roll} against ${t}).`,'warn');
+  });
+  H.ops.defense=(H.ops.defense||[]).filter(d=>!d.quell||H.minors.some(x=>x.id===d.estate&&x.rebel&&x.liege===YOU));
+}
+/* sieges laid in a skip are fought by the ruler: Might, less the besieger's strength above 1 */
+function skipSieges(say){
+  const sg=(H.ops.defense||[]).filter(d=>d.siege);if(!sg.length)return;
+  H.ops.defense=H.ops.defense.filter(d=>!d.siege);
+  sg.forEach(op=>{const L=H.lands.find(l=>lk(l)===op.landName),r=rival(op.target);if(!L)return;
+    const m=stanceRoller(),t=m?Math.max(1,m.st.Might+gearBonus(m,'Might')+(op.aid?aidBonus(op):0)-((r?r.power:1)-1)):0,roll=1+Math.floor(Math.random()*10),ok=m&&(roll===1||(roll!==10&&roll<=t));
+    warTally(op.target,ok?'full':'fail');
+    if(ok)say(`${L.name} holds against House ${op.target}${m?` (${m.given} rolled ${roll} against ${t})`:''}.`,'good');
+    else{H.lands.splice(H.lands.indexOf(L),1);refundBuild(L,say);if(r)r.lands++;say(`House ${op.target} storms the ${L.tier.toLowerCase()} of ${L.name} and takes it${m?` (rolled ${roll} against ${t})`:''}.`,'bad')}});
+  steadSync();
+}
+/* each year of war: bitter houses may declare, every war clashes once, then each may end */
+function skipWarYear(cfg,say){
+  ensureDip();const d=H.dip;
+  d.wars=d.wars.filter(w=>rival(w.house));d.allies=d.allies.filter(a=>rival(a.house));d.truces=d.truces.filter(t=>t.until>H.cycle);
+  H.rivals.forEach(r=>{if(atWar(r.name)||hasPeace(r.name)||r.hostility<4)return;
+    const p=.1*(r.hostility-3)+(r.agenda==='land'?.05:0);if(Math.random()<1-Math.pow(1-p,4))aiDeclare(r,say)});
+  d.wars.slice().forEach(w=>{if(w.since>H.cycle)w.since=H.cycle;clash(w,say)});
+  skipSieges(say);
+  d.wars.slice().forEach(w=>{const r=rival(w.house);if(!r)return;const lead=w.wins-w.losses,n=r.name;
+    if(lead>=3){const g=6+3*r.power+2*lead;H.gold+=g;let t=`House ${n} sues for peace and pays you ${g} gold`;
+      if(lead>=5&&r.lands>0){r.lands--;const L={name:pick(LAND_A)+pick(LAND_B),tier:'Village',income:LADDER[2][1],peasants:LADDER[2][2]+ri(0,10),from:n,cycle:H.cycle};H.lands.push(L);lk(L);t+=`, and yields the Village of ${L.name}`}
+      applyPeace(n);cfg.won++;say(t+`. A truce holds for a year.`,'good');return}
+    if(lead<=-3){const g=Math.min(H.gold,6+3*r.power-2*lead);H.gold-=g;let t=`Beaten, you sue House ${n} for peace and pay ${g} gold`;
+      if(lead<=-5&&H.lands.length){const L=bestLand();H.lands.splice(H.lands.indexOf(L),1);refundBuild(L,say);r.lands++;t+=`, and give up the ${L.tier.toLowerCase()} of ${L.name}`}
+      applyPeace(n);cfg.lost++;steadSync();say(t+`. A truce holds for a year.`,'bad');return}
+    if(Math.random()<.3){applyPeace(n);cfg.truces++;say(`Weary of a war that settles nothing, you and House ${n} sign a truce.`,'')}});
+}
+/* wars between the great houses grind on as in any season, once a year */
+function realmWarsYear(say){
+  const Rz=H.realm;if(!Rz)return;
+  Rz.wars.slice().forEach(w=>{const [a,b]=w.split('|').map(rival);if(!a||!b){Rz.wars=Rz.wars.filter(x=>x!==w);return}
+    const win=a.power+bannersAnswer(a.name).sum+Math.random()*3>=b.power+bannersAnswer(b.name).sum+Math.random()*3?a:b,lose=win===a?b:a;
+    const locked=H.dip.wars.some(x=>x.house===a.name&&x.allies.includes(b.name)||x.house===b.name&&x.allies.includes(a.name));
+    if(!locked&&Math.random()<.3){setRel(a.name,b.name,null);say(`Houses ${a.name} and ${b.name} make peace.`,'');return}
+    if(lose.lands>0){lose.lands--;win.lands++;say(`House ${win.name} takes land from House ${lose.name}.`,'')}else lose.power=Math.max(1,lose.power-1)});
+}
+/* allies ask favors: unanswered they cool, unless your house rides under Valor; neglected allies may plot */
+function allyDriftYear(cfg,say){
+  ensureAllyState();
+  allyHouses().forEach(r=>{if(Math.random()>=FAVOR_CHANCE)return;
+    if(cfg.stance==='Valor')say(`House ${r.name} asks a favor, and your house’s good name answers for you. They are content.`,'good');
+    else{const t0=r.hostility;bump(r,1);if(r.hostility>t0)say(`House ${r.name} asks a favor that no one answers. Tension rises to ${TENSION[r.hostility].toLowerCase()}.`,'warn')}});
+  plotTurn(say);
+}
+function stewardPicker(){
+  if(!needSteward())return '';
+  return `<h3 style="margin:12px 0 6px">Steward</h3><div class="stgrid">${Object.entries(STEWARD).map(([k,v])=>`<button class="stbtn" data-skipsw="${k}" aria-pressed="${skipSteward===k}"><b>${v.label}</b><small>${v.desc}</small></button>`).join('')}</div>`;
+}
+function passYears(n,stance,danger,steward){
+  if(!SKIP_YEARS.includes(n)||skipBlockers().length||!STANCES[stance]||![0,1,2].includes(danger))return;
+  if(needSteward()&&!STEWARD[steward])return;
+  ensureArmy();ensureDip();
+  const from=yearOf(H.cycle),pre=[],years=[],cfg={stance,danger,steward,wars:0,hamlets:0,newL:[],won:0,lost:0,truces:0},rs=rivalStances(),g0=H.gold,i0=H.influence,s0=H.secrets.length,l0=H.lands.length;
+  pre.push({t:`House ${H.house.name} sets its course: ${stance}, at ${SKIP_DANGER[danger]} danger.`,tone:''});
+  /* before the years turn: queued training is finished and the wounded mend */
+  let guard=0;
+  while(H.members.some(m=>!m.dead&&!m.captive&&m.train&&m.train.length)&&guard++<40){const L0=H.log.length;trainingTurn();H.log.slice(L0).forEach(l=>pre.push({t:l.text,tone:'good'}));H.log.length=L0}
+  const hurt=H.members.filter(m=>!m.dead&&m.wounds>0);hurt.forEach(m=>{m.wounds=0});
+  if(hurt.length)pre.push({t:`The wounded mend: ${hurt.map(m=>m.given).join(', ')}.`,tone:'good'});
+  let done=0;
+  for(let y=0;y<n&&!H.fallen;y++){
+    const lines=[],say=(t,tone)=>lines.push({t,tone:tone||''}),yr=yearOf(H.cycle);
+    let inc=0,paid=0;
+    for(let s=0;s<4;s++){
+      const i=cycleIncome();H.gold+=i;inc+=i;
+      const g0=H.gold;armyTurn((t,tone)=>{if(tone==='bad')say(t,tone)});paid+=g0-H.gold;
+      allyTurn(say);
+      if(needSteward()||(H.minors||[]).length){minorTurn((t,tone)=>/for its bannerman/.test(t)?0:say(t.replace(/ You could back the rebels with gold \(The Realm\)\./,'').replace(/ Answer (it )?in The Realm\.?/,'').replace(/ Quell them on the Operations board or treat with them in The Realm within \d+ seasons, or they break away[^.!]*\./,''),tone));if(steward)stewardTurn(steward,say)}
+      if(s<3)H.cycle++;
+    }
+    lines.unshift({t:`The holdings pay ${inc} gold${paid?`, and the levies cost ${paid}`:''}. The treasury holds ${H.gold}.`,tone:''});
+    /* the turn of the year, as at the end of every Fall */
+    const L0=H.log.length;
+    bloodlineTurn(say);
+    checkSuccession();
+    ageRealm(say);
+    checkSuccession();
+    if(!H.fallen)yourStanceYear(cfg,say);
+    H.rivals.slice().forEach(r=>{const c=rs[r.name];if(c)rivalStanceYear(r,c,say)});
+    skipWarYear(cfg,say);
+    realmWarsYear(say);
+    allyDriftYear(cfg,say);
+    checkSuccession();
+    H.log.slice(L0).filter(l=>!/^By right of blood through/.test(l.text)).forEach(l=>say(l.text,/fallen|is gone/.test(l.text)?'bad':'warn'));H.log.length=L0;
+    H.cycle++;done++;
+    years.push({year:yr,lines});
+  }
+  const to=yearOf(H.cycle);
+  H.news=[{t:`${done} years have passed for House ${H.house.name}, from year ${from} to year ${to}. The chronicle is kept in Bloodlines.`,tone:''}];
+  H.log.push({cycle:H.cycle,text:`${done} years pass, from year ${from} to year ${to}. Read them in Bloodlines, under Years passed.`});
+  if(H.log.length>80)H.log=H.log.slice(-80);
+  /* suitors on offer are of a new generation now */
+  (H.offers||[]).forEach(o=>{delete o.suitors});
+  H.ops.season=H.cycle;ensureMarket();H.ops.board=genBoard();planning=null;planTeam=[];leverage=null;
+  const courses=Object.entries(rs).filter(([k])=>rival(k)).map(([k,c])=>`House ${k}: ${c.stance}, ${SKIP_DANGER[c.danger]}`);
+  const sum=[`Gold ${g0} → ${H.gold}`,`influence ${i0} → ${H.influence}`,`secrets ${s0} → ${H.secrets.length}`,`holdings ${l0} → ${H.lands.length}`];
+  H.skips=(H.skips||[]).concat([{from,to,n:done,pre,years,stance,danger,courses,newL:cfg.newL,sum:sum.join(' · ')+(cfg.wars?` · ${cfg.wars} war${cfg.wars>1?'s':''} begun by your settlers`:'')+(cfg.won?` · ${cfg.won} war${cfg.won>1?'s':''} won`:'')+(cfg.lost?` · ${cfg.lost} lost`:'')+(cfg.truces?` · ${cfg.truces} truce${cfg.truces>1?'s':''}`:'')+(H.dip.wars.length?` · still at war with ${H.dip.wars.map(w=>w.house).join(', ')}`:'')}]).slice(-5);
+  H.skipPref={stance,danger,steward};
+  skipConfirm=null;skipShow=H.skips.length-1;
+  render();
+}
+function skipChronicle(s){
+  return `${s.stance?`<p class="skipsum"><b>${s.stance}, ${SKIP_DANGER[s.danger]} danger.</b> ${esc(s.sum||'')}</p>`:''}${s.courses&&s.courses.length?`<div class="yr"><span class="cy">The rival houses’ courses, revealed</span><ul class="news">${s.courses.map(c=>`<li>${esc(c)}</li>`).join('')}</ul></div>`:''}${s.pre.length?`<div class="yr"><span class="cy">Before the years turn</span><ul class="news">${s.pre.map(l=>`<li class="${l.tone}">${esc(l.t)}</li>`).join('')}</ul></div>`:''}
+    ${s.years.map(y=>`<div class="yr"><span class="cy">Year ${y.year}</span><ul class="news">${y.lines.map(l=>`<li class="${l.tone}">${esc(l.t)}</li>`).join('')}</ul></div>`).join('')}`;
+}
+const skipTitle=s=>`${SKIP_WORD[s.n]||s.n} years pass`;
+function yearsPane(){
+  const b=skipBlockers(),ok=!b.length;
+  const ready=skipStance&&skipDanger!=null&&(!needSteward()||!!skipSteward);
+  const confirm=skipConfirm?`<div class="confirm" style="display:block">${stancePicker()}<div class="bar" style="margin:12px 0 0"><span style="flex:1;min-width:12em">Let ${skipConfirm} years pass${ready?` under ${skipStance}, at ${SKIP_DANGER[skipDanger]} danger`:''}? Your house will age to year ${yearOf(H.cycle)+skipConfirm}. This cannot be undone.</span><button class="main" data-skipgo="${skipConfirm}" ${ready?'':'disabled'}>${ready?'Let them pass':needSteward()?'Choose danger, stance and steward':'Choose a danger and stance'}</button><button data-skipcancel="1">Not yet</button></div></div>`:'';
+  const past=(H.skips||[]).slice().reverse().map((s,ri)=>{const i=H.skips.length-1-ri;
+    return `<details class="skiprec" data-fold="skip-${s.from}"${H.ui&&H.ui.folds&&H.ui.folds['skip-'+s.from]?' open':''}><summary><b>${skipTitle(s)}</b> <span class="muted">· year ${s.from} to year ${s.to}</span></summary><div class="skipbody">${skipChronicle(s)}<p style="margin:8px 0 0"><button class="sm" data-skipshow="${i}">Open as a chronicle</button></p></div></details>`}).join('');
+  return `<section class="pane" id="years"><h2>The passing of years</h2>
+    <p class="muted" style="font-size:15px;margin:0 0 10px">Let the years pass to play the next generation. Each season your holdings pay and your levies are paid; each year the family ages, children are born, the old die and the succession runs. Choose a stance and a danger: each year your ruler rolls for what the house gains, or loses. The rival houses choose their own courses in secret, by their nature, and you learn them only in the chronicle. Rival lords, the monarch and the royal heir grow old and may die. Loans come due and lent levies come home on time. Your wars clash once a year and may end in truce, tribute or lost lands; allies ask favors, and only a house riding under Valor keeps them content unanswered. A steward answers your sworn houses.</p>
+    <div class="bar" style="margin:0">${SKIP_YEARS.map(n=>`<button ${ok?'':'disabled'} data-skip="${n}"${skipConfirm===n?' aria-pressed="true"':''}>${n} years</button>`).join('')}</div>
+    ${confirm}
+    ${ok?'':`<ul class="news" style="margin-top:8px">${b.map(x=>`<li class="warn">${esc(x)}</li>`).join('')}</ul>`}
+    ${past?`<h3 style="font-size:18px;margin:16px 0 8px">Years passed</h3>${past}`:''}
+  </section>`;
+}
+function renderSkipBox(){
+  let box=$('skipBox');if(!box){box=document.createElement('div');box.id='skipBox';document.body.appendChild(box)}
+  const s=skipShow!=null&&H&&H.skips?H.skips[skipShow]:null;
+  if(!s){skipShow=null;box.innerHTML='';return}
+  const had=box.innerHTML!=='';
+  box.innerHTML=`<div class="sgback" data-skipclose="1"><div class="sgpanel skippanel" role="dialog" aria-modal="true" aria-labelledby="skiptitle">
+    <span class="eyebrow">Chronicle of House ${esc(H.house.name)}</span><h2 id="skiptitle">${skipTitle(s)}</h2><p class="muted" style="margin:2px 0 10px">Year ${s.from} to year ${s.to}</p>
+    <div class="skipbody">${skipChronicle(s)}</div>${skipGatherOffer(s)}
+    <div class="sgfoot"><button class="main" id="skipdone" data-skipclose="1">Close</button></div></div></div>`;
+  if(!had){const d=$('skipdone');if(d)d.focus()}
 }
 
 /* ---------- market ---------- */
@@ -5056,10 +5494,26 @@ function doRoll(stat,skill){
   const m=mem(sel);const base=m.st[stat],bonus=(stat==='Might'?wVal(m.gear.weapon):0)+gearBonus(m,stat),target=base+bonus,roll=1+Math.floor(Math.random()*10);
   lastRoll={id:m.id,stat,skill,base,bonus,target,roll,ok:roll===1||(roll!==10&&roll<=target)};render();
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sigilEdit){sigilEdit=null;render()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sigilEdit){sigilEdit=null;render()}else if(e.key==='Escape'&&skipShow!=null){skipShow=null;render()}});
 document.addEventListener('click',e=>{
   const t=e.target.closest('button,[data-sel],[data-jump],.sgback');if(!t)return;
   if(t.dataset.sec){section=t.dataset.sec;render();return}
+  if(t.dataset.gather){const [k,id]=t.dataset.gather.split('|');const same=gatherUI&&(k==='core'?gatherUI.core===id:gatherUI.stead===id);gatherUI=same?null:k==='core'?{core:id,picks:[]}:{stead:id,picks:[]};render();return}
+  if(t.dataset.gpick&&gatherUI){const id=t.dataset.gpick;gatherUI.picks=gatherUI.picks.includes(id)?gatherUI.picks.filter(x=>x!==id):gatherUI.picks.concat(id);render();return}
+  if(t.dataset.gall&&gatherUI){gatherUI.picks=H.lands.filter(l=>canGather(l)&&lk(l)!==gatherUI.core).map(lk);render();return}
+  if(t.dataset.gform){formSteading();render();return}
+  if(t.dataset.gcancel){gatherUI=null;render();return}
+  if(t.dataset.splitstead){splitSteading(t.dataset.splitstead);render();return}
+  if(t.dataset.sgar){const [id,on]=t.dataset.sgar.split('|');stationStead(id,on==='1');render();return}
+  if(t.dataset.skipgather){skipGather(t.dataset.skipgather);render();return}
+  if(t.dataset.skipclose){if(t.classList.contains('sgback')&&e.target!==t)return;skipShow=null;render();return}
+  if(t.dataset.skip){skipConfirm=+t.dataset.skip;if(!skipStance&&H.skipPref){skipStance=H.skipPref.stance;skipDanger=H.skipPref.danger;skipSteward=H.skipPref.steward||null}render();return}
+  if(t.dataset.skipst){skipStance=t.dataset.skipst;render();return}
+  if(t.dataset.skipsw){skipSteward=t.dataset.skipsw;render();return}
+  if(t.dataset.skipdg!=null){skipDanger=+t.dataset.skipdg;render();return}
+  if(t.dataset.skipcancel){skipConfirm=null;render();return}
+  if(t.dataset.skipgo){passYears(+t.dataset.skipgo,skipStance,skipDanger,skipSteward);return}
+  if(t.dataset.skipshow!=null){skipShow=+t.dataset.skipshow;render();return}
   if(t.dataset.oath){const [k,id]=t.dataset.oath.split('|');oathAct(minorById(id),k==='yes');save();render();return}
   if(t.dataset.feud){const [k,i,a]=t.dataset.feud.split('|');feudAct(k,(H.feuds||[])[+i],a);save();render();return}
   if(t.dataset.xdiss){const [k,a]=t.dataset.xdiss.split('|');
@@ -5175,6 +5629,7 @@ document.addEventListener('change',e=>{
   if(t.dataset.gear&&m&&t.tagName==='SELECT'){equip(m,t.dataset.gear,t.value);render();return}
   if(t.dataset.rename){renameSlot(t.dataset.rename,t.value);return}
   if(t.dataset.lname){renameHold(t.dataset.lname,t.value);render();return}
+  if(t.dataset.sname){renameStead(t.dataset.sname,t.value);render();return}
   if(t.dataset.match){matchPick[t.dataset.match]=+t.value;render();return}
   if(t.dataset.wedwho){if(envoy)envoy.who=+t.value;render();return}
   if(t.dataset.edit){render();return}
