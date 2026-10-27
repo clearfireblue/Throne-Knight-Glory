@@ -2001,6 +2001,9 @@ function syncMinors(){
     if(x.liege&&x.liege!==YOU&&!rival(x.liege))x.liege=null; /* their liege is gone from the realm */
   });
   H.lands.forEach(l=>{if(l.minor&&(l.tier!=='Estate'||!minorById(l.minor)))delete l.minor});
+  H.lands.forEach(l=>{if(l.tier!=='Estate'||!l.lid)return;const cl=H.minors.filter(x=>x.estate&&x.estate.lid===l.lid);if(!cl.length)return;
+    const keep=cl.find(x=>x.id===l.minor)||cl[0];l.minor=keep.id;
+    cl.forEach(x=>{if(x===keep)return;x.estate=null;x.landless=true;H.log.push({cycle:H.cycle,text:`House ${x.name} had no rightful claim to ${l.name} Estate, which House ${keep.name} holds. They are landless.`})})});
   H.minors.forEach(x=>{if(x.rebel&&!x.liege)x.rebel=null;if(x.oath&&(!x.resentful||!x.liege||x.liege===YOU||x.rebel))x.oath=null});
   syncQuell();
 }
@@ -2028,7 +2031,10 @@ const BLOOD_BOONS=[ /* innate versions of the boon items, flavoured as gifts of 
   {boon:'herald',name:'Silver tongue',d:'Each season, the most hostile house’s hostility falls by 1'}];
 const minorHolder=x=>x&&x.estate&&x.estate.lid?H.lands.find(l=>l.lid===x.estate.lid):null;
 const estateLabel=x=>{const L=minorHolder(x);return L?L.name:x.estate&&x.estate.name};
-const freeEstates=()=>H.lands.filter(l=>l.tier==='Estate'&&!estateHeld(l));
+/* an Estate is spoken for if any minor house names it as its seat, even if the land's own marker was lost */
+const estateClaimed=l=>!!(l&&Array.isArray(H.minors)&&H.minors.some(x=>x.estate&&x.estate.lid&&x.estate.lid===l.lid));
+const freeEstates=()=>H.lands.filter(l=>l.tier==='Estate'&&!estateHeld(l)&&!estateClaimed(l));
+const grantable=(lid,x)=>{const L=lid?H.lands.find(l=>l.lid===lid):null;return L&&L.tier==='Estate'&&!estateHeld(L)&&!estateClaimed(L)&&!(x&&x.estate)?L:null};
 const courtCost=x=>({gold:10*x.power,inf:2*x.power});
 const canDeal=x=>x.liege===YOU||x.liege==null;
 function boonItemFor(x){ /* what they give your armory when one of yours weds into their house: a boon item, finer from stronger houses */
@@ -2067,11 +2073,11 @@ function newPetition(x){
   const p={kind:pick(kinds),since:H.cycle};if(p.kind==='justice'){p.what=pick(DISPUTES);x.unrest=Math.min(3,(x.unrest||0)+1)}return p;
 }
 function canAnswer(x,p,L){const c=petCost(x,p);if(c.gold&&H.gold<c.gold)return false;if(c.inf&&H.influence<c.inf)return false;
-  if(p.kind==='grant')return !x.estate&&!!(L||freeEstates()[0]);if(p.kind==='levy')return x.power<3;return true}
+  if(p.kind==='grant')return !x.estate&&!!(L?grantable(L.lid):freeEstates()[0]);if(p.kind==='levy')return x.power<3;return true}
 function answerPetition(x,how,lid){
   const p=x.petition;if(!p||x.liege!==YOU)return;let t;
   if(how==='refuse'){x.resentful=true;t=`You refuse House ${x.name}. They are resentful.`}
-  else{const L=p.kind==='grant'?H.lands.find(l=>l.lid===lid)||freeEstates()[0]:null;if(!canAnswer(x,p,L))return;const c=petCost(x,p);
+  else{const L=p.kind==='grant'?(lid?grantable(lid,x):freeEstates()[0]):null;if(p.kind==='grant'&&!L)return;if(!canAnswer(x,p,L))return;const c=petCost(x,p);
     if(c.gold)H.gold-=c.gold;if(c.inf)H.influence-=c.inf;
     if(p.kind==='levy')x.power++;
     if(p.kind==='grant'){L.minor=x.id;x.estate={name:L.name,lid:L.lid};x.landless=false}
@@ -2350,7 +2356,7 @@ function minorAct(kind,id,arg){
   if(kind==='treat'){treatRebels(x);return}
   if(kind==='dissolve'){startMinorDiss(x);return}
   if(!canDeal(x))return;
-  if(kind==='grant'){const L=H.lands.find(l=>l.lid===arg);if(!L||L.tier!=='Estate'||estateHeld(L)||x.estate||x.liege!==YOU)return;
+  if(kind==='grant'){const L=grantable(arg,x);if(!L||x.liege!==YOU)return;
     L.minor=x.id;x.estate={name:L.name,lid:L.lid};x.landless=false;const was=x.resentful;x.resentful=false;
     H.log.push({cycle:H.cycle,text:`You grant ${L.name} Estate to House ${x.name}.${was?' Their resentment is forgotten.':''}`})}
   if(kind==='revoke'){const L=minorHolder(x);if(!L||x.liege!==YOU||x.rebel)return;delete L.minor;x.estate=null;x.landless=true;x.resentful=true;
@@ -2407,7 +2413,7 @@ function minorActs(x){
     b.push(`<button data-minor="release|${x.id}" title="Let them go now, with their Estate">Release from oath</button>`,dissBtn(x),rr);
     return `<span class="macts">${b.join('')}</span>`}
   if(x.liege===YOU){
-    if(!x.estate)freeEstates().forEach(L=>b.push(`<button data-minor="grant|${x.id}|${L.lid}">Grant ${esc(L.name)} Estate</button>`));
+    if(!x.estate)freeEstates().forEach(L=>b.push(`<button data-minor="grant|${x.id}|${lk(L)}">Grant ${esc(L.name)} Estate</button>`));
     if(!x.estate&&!freeEstates().length)b.push(`<button disabled title="Raise a castle to an Estate in your holdings first">Grant an Estate</button>`);
     if(minorHolder(x))b.push(`<button data-minor="revoke|${x.id}">Revoke Estate</button>`);
     b.push(`<button data-minor="release|${x.id}">Release from oath</button>`);
@@ -2423,7 +2429,7 @@ function rebelHtml(x){
 }
 function petitionHtml(x){
   const p=x.petition;if(!p||x.liege!==YOU)return '';const c=petCost(x,p);
-  const yes=p.kind==='grant'?(freeEstates().length?freeEstates().map(L=>`<button data-minor="petyes|${x.id}|${L.lid}">Grant ${esc(L.name)} Estate</button>`).join(''):'<button disabled title="Raise a castle to an Estate first">Grant an Estate</button>')
+  const yes=p.kind==='grant'?(freeEstates().length?freeEstates().map(L=>`<button data-minor="petyes|${x.id}|${lk(L)}">Grant ${esc(L.name)} Estate</button>`).join(''):'<button disabled title="Raise a castle to an Estate first">Grant an Estate</button>')
     :`<button data-minor="petyes|${x.id}" ${canAnswer(x,p)?'':'disabled'}>Grant${c.gold?` · ${c.gold} gold`:c.inf?` · ${c.inf} influence`:''}</button>`;
   return `<span class="petition"><b>Petition:</b> ${esc(petText(x,p))}<span class="muted" style="display:block;font-size:13px">Grant it: resentment ends and unrest eases. Refuse: they resent you. Leave it waiting: if they press it again, unrest grows.</span><span class="macts">${yes}<button data-minor="petno|${x.id}">Refuse</button></span></span>`;
 }
@@ -4339,7 +4345,7 @@ const GRANT_OUT={label:'Grant land to a house',d:'Give one of your holds to a ho
 function canAct(k){const Rz=H.realm,A=ROYAL_ACTS[k];if(throneGrant(k)&&!H.lands.length)return false;if(freeDecree())return true;return !!Rz.king&&Rz.favor>=A.cost}
 function royalAct(k,n,lid){
   const Rz=H.realm,A=ROYAL_ACTS[k];if(!A||!canAct(k))return;const r=n&&rival(n);if((A.pick||throneGrant(k))&&!r)return;
-  const GL=throneGrant(k)?H.lands.find(l=>lk(l)===lid):null;if(throneGrant(k)&&!GL)return;
+  const GL=throneGrant(k)?H.lands.find(l=>lk(l)===lid&&!estateHeld(l)&&!estateClaimed(l)):null;if(throneGrant(k)&&!GL)return;
   if(k==='traitor'&&isRoyalRival(n))return;
   if(freeDecree())Rz.freeYear=yearOf(H.cycle);else Rz.favor-=A.cost;const by=Rz.yours?'By your own decree':`At your urging, ${crownWord(Rz.king)} ${Rz.king.given}`;let t;
   if(k==='traitor'){const was=r.power;r.power=Math.max(1,r.power-1);bump(r,2);griev(n,'They were named traitors at your urging');t=`${by} names House ${n} traitors${was>r.power?'; their power falls':''}. They know who to blame.`}
@@ -4376,7 +4382,7 @@ function courtSpendHtml(){
   const bribeHtml=Rz.yours?'':`<div class="acts" style="margin-bottom:10px"><button data-bribe="1" ${canBribe()?'':'disabled'}>Bribe a royal steward · ${bribeCost()} gold for +1 favor</button><span class="muted" style="font-size:14px;align-self:center">A 1 in 4 chance of scandal: favor −1 and influence −1. The price rises with your favor.</span></div>`;
   const opts=(k)=>live.filter(r=>k!=='traitor'||!isRoyalRival(r.name)).map(r=>`<option value="${esc(r.name)}">House ${esc(r.name)} · ${TENSION[r.hostility]} · power ${r.power}</option>`).join('');
   const SEL='background:var(--panel);border:1px solid var(--line);border-radius:3px;min-height:36px;padding:2px 8px;max-width:16em';
-  const acts=Object.entries(ROYAL_ACTS).map(([k,A0])=>{const tg=throneGrant(k),A=tg?Object.assign({},A0,GRANT_OUT):A0;return `<li style="flex-wrap:wrap"><span style="flex:1;min-width:12em"><b>${A.label}</b><br><span class="muted" style="font-size:15px">${A.d}${tg&&!H.lands.length?' You have no holds beyond your seat to give.':''}</span></span>${tg&&H.lands.length?`<select id="ra-grant" aria-label="Grant to which house" style="${SEL}">${opts(k)}</select><select id="ra-grantland" aria-label="Which hold to grant" style="${SEL}">${H.lands.map(l=>`<option value="${lk(l)}">${esc(l.tier)} of ${esc(l.name)} · +${landIncome(l)} gold</option>`).join('')}</select>`:''}${A.pick?`<select id="ra-${k}" aria-label="${A.label}: which house" style="background:var(--panel);border:1px solid var(--line);border-radius:3px;min-height:36px;padding:2px 8px;max-width:16em">${opts(k)}</select>`:''}<button class="sm" style="margin:0" data-royal="${k}" ${canAct(k)?'':'disabled'}>${freeDecree()?'Decree it · free':A.cost+' favor'}</button></li>`}).join('');
+  const acts=Object.entries(ROYAL_ACTS).map(([k,A0])=>{const tg=throneGrant(k),A=tg?Object.assign({},A0,GRANT_OUT):A0;return `<li style="flex-wrap:wrap"><span style="flex:1;min-width:12em"><b>${A.label}</b><br><span class="muted" style="font-size:15px">${A.d}${tg&&!H.lands.length?' You have no holds beyond your seat to give.':''}</span></span>${tg&&H.lands.length?`<select id="ra-grant" aria-label="Grant to which house" style="${SEL}">${opts(k)}</select><select id="ra-grantland" aria-label="Which hold to grant" style="${SEL}">${H.lands.filter(l=>!estateHeld(l)&&!estateClaimed(l)).map(l=>`<option value="${lk(l)}">${esc(l.tier)} of ${esc(l.name)} · +${landIncome(l)} gold</option>`).join('')}</select>`:''}${A.pick?`<select id="ra-${k}" aria-label="${A.label}: which house" style="background:var(--panel);border:1px solid var(--line);border-radius:3px;min-height:36px;padding:2px 8px;max-width:16em">${opts(k)}</select>`:''}<button class="sm" style="margin:0" data-royal="${k}" ${canAct(k)?'':'disabled'}>${freeDecree()?'Decree it · free':A.cost+' favor'}</button></li>`}).join('');
   const hosts=H.members.filter(m=>available(m)&&!m.merc).sort((a,b)=>b.st.Insight-a.st.Insight);
   const feast=C.feast?'<p class="muted" style="margin:0">You have feasted the realm this season.</p>':hosts.length?`<div style="display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-end"><label class="fld" style="flex:1;min-width:12em"><span>Host</span><select id="feasthost">${hosts.map(m=>`<option value="${m.id}">${esc(m.given)} · Insight ${m.st.Insight+gearBonus(m,'Insight')}</option>`).join('')}</select></label>
       ${Object.entries(FEASTS).map(([k,F])=>`<button class="sm" style="margin:0" data-feast="${k}" ${H.gold>=F.cost?'':'disabled'}>${F.label} · ${F.cost} gold</button>`).join('')}</div>
