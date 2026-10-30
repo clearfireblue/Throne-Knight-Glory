@@ -1802,7 +1802,13 @@ function dossier(m){
   else if(m.wounds>0)pills.push(`<span class="status bad">Wounded · ${left} left</span>`);
   else pills.push('<span class="status ok">Hale</span>');
   pills.push(`<span class="status kin">${spOf(m).name}</span>`);
-  if(!m.dead&&heirOf()===m)pills.push('<span class="status young">Heir apparent</span>');
+  if(!m.dead&&heirOf()===m)pills.push(`<span class="status young">Heir apparent${namedHeir()===m?' · named by you':''}</span>`);
+  if(!H.fallen&&!m.dead&&!m.merc){
+    if(canBeLord(m))pills.push(`<button class="sm" data-lord="${m.id}" title="The current Lord steps down and stays in the house">Make ${m.sex==='m'?'Lord':'Lady'} of ${esc(H.house.seat)}</button>`);
+    if(namedHeir()===m)pills.push(`<button class="sm" data-heir="clear" title="The line of succession follows its usual order">Unname as heir</button>`);
+    else if(canBeHeir(m)&&heirOf()!==m)pills.push(`<button class="sm" data-heir="${m.id}" title="They inherit next, ahead of the usual order">Name as heir</button>`);
+    else if(canBeHeir(m)&&heirOf()===m&&!namedHeir())pills.push(`<button class="sm" data-heir="${m.id}" title="Keep them as heir even if the usual order would change">Fix as heir</button>`);
+  }
   if(!m.dead&&H.regency&&H.regency.regent===m.id)pills.push('<span class="status young">Regent</span>');
   if(m.hostage&&!m.dead)pills.push(`<span class="status kin">Hostage of House ${esc(m.hostage)}</span>`,`<button class="sm" data-adopt="${m.id}">Adopt into House ${esc(H.house.name)} · House ${esc(m.hostage)} will be outraged</button>`);
   if(!m.dead&&m.onOp===H.cycle)pills.push('<span class="status young">On an operation this cycle</span>');
@@ -4508,7 +4514,29 @@ function lineOfSuccession(){
   const r=H.members.find(m=>m.ruler&&!m.dead);
   const pool=living().filter(m=>m.origin==='born'&&!m.bastard&&m!==r);
   const rank=m=>r&&descends(m,r.id)?0:1;
-  return pool.sort((a,b)=>rank(a)-rank(b)||b.age-a.age);
+  const line=pool.sort((a,b)=>rank(a)-rank(b)||b.age-a.age);
+  const n=namedHeir();if(n&&n!==r)return [n].concat(line.filter(m=>m!==n));
+  return line;
+}
+/* the heir you name yourself: any living member; if they die or leave the house, the usual order resumes */
+function namedHeir(){if(H.heirPick==null)return null;const m=mem(H.heirPick);if(!m||m.dead||m.merc||m.hostage||m.wedTo||m.ruler){return null}return m}
+const canBeLord=m=>!!m&&!m.dead&&!m.merc&&!m.ruler&&isAdult(m)&&!m.captive&&!m.hostage&&!m.wedTo;
+const canBeHeir=m=>!!m&&!m.dead&&!m.merc&&!m.ruler&&!m.hostage&&!m.wedTo;
+/* you set a new Lord: the old one steps down and stays in the house */
+function makeLord(id){
+  const m=mem(id);if(H.fallen||!canBeLord(m))return;const old=H.members.find(x=>x.ruler&&!x.dead),seat=H.house.seat;
+  if(old){old.ruler=false;old.title=(old.sex==='m'?'Former Lord of ':'Former Lady of ')+seat}
+  m.ruler=true;m.title=(m.sex==='m'?'Lord of ':'Lady of ')+seat;
+  const hadReg=!!H.regency;H.regency=null;if(H.heirPick===m.id)H.heirPick=null;
+  let t=`${old?old.given+' steps down, and ':''}${m.given} takes up the rule of House ${H.house.name}.`;
+  if(hadReg)t+=' The regency ends.';
+  if(H.realm&&H.realm.yours&&H.realm.king&&old&&H.realm.king.member===old.id){H.realm.king={given:m.given,sex:m.sex,age:m.age,health:3,member:m.id};t+=` ${m.sex==='m'?'He':'She'} takes the throne as well.`}
+  H.log.push({cycle:H.cycle,text:t});render();
+}
+function nameHeir(id){
+  if(id==null){const n=namedHeir();H.heirPick=null;H.log.push({cycle:H.cycle,text:`${n?n.given+' is no longer your named heir. ':''}The line of succession follows its usual order.`});render();return}
+  const m=mem(id);if(!canBeHeir(m))return;H.heirPick=m.id;
+  H.log.push({cycle:H.cycle,text:`${m.given} is named heir to House ${H.house.name}.`});render();
 }
 const heirOf=()=>lineOfSuccession()[0]||null;
 /* ---------- training: pay 2x the stat per +1; one +1 lands per member each season, in purchase order ---------- */
@@ -4599,7 +4627,7 @@ function checkSuccession(){
   if(r)r.ruler=false;
   if(!heir){H.fallen=true;H.log.push({cycle:H.cycle,text:`The last of House ${H.house.name} is gone. The house has fallen.`});return}
   const old=r?r.given:'the old ruler';
-  heir.ruler=true;heir.title=(heir.sex==='m'?'Lord of ':'Lady of ')+H.house.seat;
+  heir.ruler=true;heir.title=(heir.sex==='m'?'Lord of ':'Lady of ')+H.house.seat;if(H.heirPick===heir.id)H.heirPick=null;
   let t=`With ${old} dead, ${heir.given} inherits the rule of House ${H.house.name}.`;
   if(!isAdult(heir)){
     const widow=r&&spouseOf(r),reg=widow&&!widow.dead&&isAdult(widow)?widow:living().filter(m=>m!==heir&&isAdult(m)&&!m.captive).sort((a,b)=>b.age-a.age)[0];
@@ -5596,6 +5624,8 @@ document.addEventListener('click',e=>{
   if(t.dataset.ward){demandWard(+t.dataset.ward);return}
   if(t.dataset.jump){const el=document.getElementById(t.dataset.jump);const d=document.querySelector('details[data-fold="houses"]');if(d&&!d.open)d.open=true;if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return}
   if(t.dataset.adopt){adoptWard(+t.dataset.adopt);return}
+  if(t.dataset.lord){makeLord(+t.dataset.lord);return}
+  if(t.dataset.heir){nameHeir(t.dataset.heir==='clear'?null:+t.dataset.heir);return}
   if(t.dataset.relook){const m=mem(+t.dataset.relook);if(m){m.pic=choosePic(m,picOf(m).n);m.look=(Math.floor(Math.random()*4294967295)>>>0)||1}render();return}
   if(t.dataset.hire!=null){hireSword(+t.dataset.hire);render();return}
   if(t.dataset.levy){if(t.dataset.levy==='1')raiseLevy();else disbandLevy();render();return}
