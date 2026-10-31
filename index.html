@@ -1705,6 +1705,20 @@ function groupOf(m){
   if(ruler&&m.parents.includes(ruler.id))return 'Children';
   return 'Kin';
 }
+/* generations, counted from the founders: Generation I has no parents in the house; each child is one past its parents;
+   a spouse who married in sits with the member they married; a ward follows its guardians, like a child */
+const ROMAN=n=>{const t=[[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];let r='';t.forEach(([v,c])=>{while(n>=v){r+=c;n-=v}});return r};
+function genMap(){
+  const M=new Map(H.members.map(m=>[m.id,m])),g={};
+  const of=(m,seen)=>{if(g[m.id])return g[m.id];if(seen.has(m.id))return 1;seen.add(m.id);
+    const ps=(m.parents||[]).map(id=>M.get(id)).filter(Boolean);
+    let v;if(ps.length)v=1+Math.max(...ps.map(p=>of(p,seen)));
+    else if(m.origin==='married'&&m.spouse!=null&&M.get(m.spouse))v=of(M.get(m.spouse),seen);
+    else if(m.origin==='married'){const sp=H.members.find(x=>x.spouse===m.id&&x.origin!=='married');v=sp?of(sp,seen):1}
+    else v=1;
+    return g[m.id]=v};
+  H.members.forEach(m=>of(m,new Set()));return g;
+}
 const GROUPS=['The ruling pair','Children','Kin','Wards','Sellswords','Returned home','Married away','Given in treaties','The fallen'];
 
 /* ---------- render ---------- */
@@ -1754,7 +1768,16 @@ function fitArea(el,min){
   el.style.height=el.scrollHeight+'px';
 }
 function fitNames(){fitArea($('hname'),22);document.querySelectorAll('input.hedit.nm').forEach(el=>fitInput(el,12))}
+/* a house sworn to you holds its seat as it holds its lands: a granted Estate leaves your holdings and is theirs */
+function detachSeats(){
+  if(!H||!Array.isArray(H.lands)||!Array.isArray(H.minors))return;let moved=false;
+  H.lands.slice().forEach(L=>{if(!L.minor)return;const x=minorById(L.minor);if(!x||x.liege!==YOU)return;
+    if(L.build&&typeof refundBuild==='function')refundBuild(L,()=>{});H.lands.splice(H.lands.indexOf(L),1);
+    x.estate={name:L.name};x.landless=false;moved=true});
+  if(moved&&typeof steadSync==='function')steadSync();
+}
 function render(){
+  try{detachSeats()}catch(e){}
   settleTraining();
   if(H&&H.lands)syncMinors();
   if(H&&H.members)checkSuccession();
@@ -1776,11 +1799,16 @@ function render(){
 }
 function houseView(){
   if(!mem(sel)||mem(sel).returned){const ru=H.members.find(m=>m.ruler&&!m.dead)||H.members.find(m=>!m.returned);if(ru)sel=ru.id}
-  const byGroup={};H.members.filter(m=>!m.returned).forEach(m=>{(byGroup[groupOf(m)]=byGroup[groupOf(m)]||[]).push(m)});
-  const list=GROUPS.filter(g=>byGroup[g]).map(g=>{const fk='g-'+g.toLowerCase().replace(/\W+/g,'-');return `<li class="grp"><details data-fold="${fk}" ${foldOpen(fk)?'open':''}><summary class="ghead">${g} <span class="gn">${byGroup[g].length}</span></summary><ul class="roster">`+byGroup[g].sort((a,b)=>b.age-a.age).map(m=>{
+  const byGen=H.ui&&H.ui.groupBy==='gen',gm=byGen?genMap():null;
+  const byGroup={},order=[];
+  if(byGen){H.members.filter(m=>!m.returned&&!m.merc).forEach(m=>{const k='Generation '+ROMAN(gm[m.id]);(byGroup[k]=byGroup[k]||[]).push(m)});
+    Object.keys(byGroup).sort((a,b)=>Math.max(...byGroup[a].map(m=>gm[m.id]))-Math.max(...byGroup[b].map(m=>gm[m.id]))).forEach(k=>order.push(k))}
+  else{H.members.filter(m=>!m.returned).forEach(m=>{(byGroup[groupOf(m)]=byGroup[groupOf(m)]||[]).push(m)});GROUPS.filter(g=>byGroup[g]).forEach(g=>order.push(g))}
+  const list=order.map(g=>{const fk='g-'+g.toLowerCase().replace(/\W+/g,'-');return `<li class="grp"><details data-fold="${fk}" ${foldOpen(fk)?'open':''}><summary class="ghead">${g} <span class="gn">${byGroup[g].length}</span></summary><ul class="roster">`+byGroup[g].sort((a,b)=>b.age-a.age).map(m=>{
     const hp0=heirOf();const hurt=(hp0&&hp0.id===m.id&&!m.dead?' · heir':'')+(m.givenTo?` · with House ${esc(m.givenTo)}`:m.returned?` · returned home`:m.dead?` · <span class="hot">fallen</span>`:m.captive?` · <span class="hot">captive</span>`:m.onOp===H.cycle?` · away`:m.wounds>0?` · <span class="hot">${m.wounds} wound${m.wounds>1?'s':''}</span>`:'');
     return `<li><button data-sel="${m.id}" ${m.id===sel?'aria-current="true"':''}>${portrait(m,48)}<span style="min-width:0"><span class="rn">${esc(m.given)}</span><span class="rj">${spOf(m).name} · ${esc(m.title||'—')} · ${m.age}${hurt}</span></span></button></li>`}).join('')+'</ul></details></li>'}).join('');
-  return `<div class="grid"><section class="pane"><h2>Members</h2><ul class="roster">${list}</ul></section><section class="pane d">${dossier(mem(sel))}</section></div>`;
+  const tog=`<div class="acts" role="group" aria-label="Group members" style="margin:6px 0 8px;display:flex;gap:6px"><button class="sm" data-groupby="role" ${byGen?'':'aria-pressed="true" style="border-color:var(--accent);font-weight:600"'}>By role</button><button class="sm" data-groupby="gen" ${byGen?'aria-pressed="true" style="border-color:var(--accent);font-weight:600"':''}>By generation</button></div>`;
+  return `<div class="grid"><section class="pane"><h2>Members</h2>${tog}<ul class="roster">${list}</ul></section><section class="pane d">${dossier(mem(sel))}</section></div>`;
 }
 function origLine(m){
   if(m.origin==='married')return `Wed into House ${esc(H.house.name)} from House ${esc(m.from)} — a political match.`;
@@ -1965,7 +1993,7 @@ const DIFF_NAME=['','Low','Middling','High'];
 function genRivals(){
   const want=[...new Set(H.members.filter(m=>m.origin!=='born'&&m.from).map(m=>m.from))];
   shuffle(HOUSES.filter(n=>n!==H.house.name&&!want.includes(n))).forEach(n=>{if(want.length<5)want.push(n)});
-  return want.slice(0,5).map(n=>{const sp=((H.members.find(m=>m.origin!=='born'&&m.from===n)||{}).sp)||houseSp(n)||pick(SPECIES_KEYS);return {name:n,seat:pick(SEATS_BY[sp]),sigil:newSigil(),power:ri(1,3),hostility:0,lands:ri(4,7),sp}});
+  return want.slice(0,5).map(n=>{const sp=((H.members.find(m=>m.origin!=='born'&&m.from===n)||{}).sp)||houseSp(n)||pick(SPECIES_KEYS);return {name:n,seat:pick(SEATS_BY[sp]),sigil:newSigil(),power:ri(1,3),hostility:0,lands:ri(7,10),sp}});
 }
 const rival=n=>H.rivals.find(r=>r.name===n);
 /* ---------- minor houses: lesser houses seated on Estates. Most are sworn to a great house (or to you); a few stand independent. ---------- */
@@ -1996,7 +2024,7 @@ function ensureMinors(){
   for(let i=0;i<3;i++)H.minors.push(newMinor(null,pick(SPECIES_KEYS),true,taken));
 }
 /* you seat a minor house on an Estate by setting land.minor = its id and minor.estate = {lid}. Lose that land and the house is turned out of its seat: landless and resentful */
-function syncMinors(){
+function syncMinors(){detachSeats();
   if(!Array.isArray(H.minors))return;
   const lids=new Set(H.lands.map(l=>l.lid));
   H.minors.forEach(x=>{
@@ -2066,29 +2094,31 @@ function bannersAnswer(liege){const came=swornTo(liege).filter(x=>Math.random()<
 const bannerMax=liege=>swornTo(liege).reduce((a,x)=>a+x.power,0);
 /* ---------- Phase 4a: petitions from your bannermen, levies for great houses' bannermen, rerolls ---------- */
 const PETITION_CHANCE=.1,RIVAL_LEVY_CHANCE=.05;
-const petCost=(x,p)=>p.kind==='gold'?{gold:5*x.power}:p.kind==='justice'?{inf:2}:p.kind==='levy'?{gold:10*(x.power+1)}:{};
+const petCost=(x,p)=>p.kind==='upgrade'?{gold:upgradeCost(x.holds[p.i]||{t:0})}:p.kind==='gold'?{gold:5*x.power}:p.kind==='justice'?{inf:2}:p.kind==='levy'?{gold:10*(x.power+1)}:{};
 const DISPUTES=['a boundary stone moved in the night','a mill-right claimed by two families','a poached stag and a hanged poacher','a broken betrothal','a debt the steward swears was paid','a bridge toll no one agreed to'];
 function petText(x,p){
   if(p.kind==='gold')return `House ${x.name} asks for ${5*x.power} gold to mend its walls and pay its men.`;
   if(p.kind==='justice')return `House ${x.name} asks you to sit in judgment over ${p.what}. The dispute has them restless.`;
   if(p.kind==='levy')return `House ${x.name} asks you to pay for more levies: ${10*(x.power+1)} gold raises their strength to ${x.power+1}.`;
+  if(p.kind==='upgrade'){const h=x.holds[p.i];return h?`House ${x.name} asks your help to raise one of its lands, a ${LADDER[h.t][0].toLowerCase()}, into a ${LADDER[h.t+1][0].toLowerCase()}: ${upgradeCost(h)} gold, half the cost. It takes ${LADDER[h.t+1][3]} season${LADDER[h.t+1][3]>1?'s':''}, and you have half its income.`:`House ${x.name} asks your help to raise one of its lands.`}
   return `House ${x.name}, landless, asks for an Estate of its own.`;
 }
 function newPetition(x){
-  const kinds=['gold','justice'];if(x.power<3)kinds.push('levy');if(!x.estate)kinds.push('grant','grant');
-  const p={kind:pick(kinds),since:H.cycle};if(p.kind==='justice'){p.what=pick(DISPUTES);x.unrest=Math.min(3,(x.unrest||0)+1)}return p;
+  const kinds=['gold','justice'];if(x.power<3)kinds.push('levy');if(!x.estate)kinds.push('grant','grant');const up=upgradable(x);if(up.length)kinds.push('upgrade','upgrade');
+  const p={kind:pick(kinds),since:H.cycle};if(p.kind==='upgrade')p.i=pick(up)[1];if(p.kind==='justice'){p.what=pick(DISPUTES);x.unrest=Math.min(3,(x.unrest||0)+1)}return p;
 }
 function canAnswer(x,p,L){const c=petCost(x,p);if(c.gold&&H.gold<c.gold)return false;if(c.inf&&H.influence<c.inf)return false;
-  if(p.kind==='grant')return !x.estate&&!!(L?grantable(L.lid):freeEstates()[0]);if(p.kind==='levy')return x.power<3;return true}
+  if(p.kind==='grant')return !x.estate&&!!(L?grantable(L.lid):freeEstates()[0]);if(p.kind==='upgrade'){const h=(x.holds||[])[p.i];return !!h&&h.t<MT_TOP&&!h.b}if(p.kind==='levy')return x.power<3;return true}
 function answerPetition(x,how,lid){
   const p=x.petition;if(!p||x.liege!==YOU)return;let t;
   if(how==='refuse'){x.resentful=true;t=`You refuse House ${x.name}. They are resentful.`}
   else{const L=p.kind==='grant'?(lid?grantable(lid,x):freeEstates()[0]):null;if(p.kind==='grant'&&!L)return;if(!canAnswer(x,p,L))return;const c=petCost(x,p);
     if(c.gold)H.gold-=c.gold;if(c.inf)H.influence-=c.inf;
     if(p.kind==='levy')x.power++;
+    if(p.kind==='upgrade'){const h=x.holds[p.i];h.b={left:LADDER[h.t+1][3]}}
     if(p.kind==='grant'){L.minor=x.id;x.estate={name:L.name,lid:L.lid};x.landless=false}
     const was=x.resentful;x.resentful=false;x.unrest=Math.max(0,(x.unrest||0)-1);
-    t={gold:`You send House ${x.name} ${c.gold} gold.`,justice:`You sit in judgment over ${p.what} for House ${x.name} (2 influence).`,levy:`You pay ${c.gold} gold for the levies of House ${x.name}. Their strength rises to ${x.power}.`,grant:`You grant ${L&&L.name} Estate to House ${x.name}.`}[p.kind]
+    t={gold:`You send House ${x.name} ${c.gold} gold.`,justice:`You sit in judgment over ${p.what} for House ${x.name} (2 influence).`,levy:`You pay ${c.gold} gold for the levies of House ${x.name}. Their strength rises to ${x.power}.`,upgrade:`You pay ${c.gold} gold to help House ${x.name} raise one of its lands.`,grant:`You grant ${L&&L.name} Estate to House ${x.name}.`}[p.kind]
       +(was?' Their resentment is forgotten.':'')+` They are ${UNREST[x.unrest].toLowerCase()}.`}
   x.petition=null;H.log.push({cycle:H.cycle,text:t});
 }
@@ -2099,7 +2129,7 @@ function minorTurn(say){
   H.minors.filter(x=>x.rebel&&x.rebel.since<H.cycle).forEach(x=>{
     if(x.rebel.backed&&x.liege&&x.liege!==YOU){rebelsToYou(x,say);moved.add(x.id);return}
     x.rebel.left--;
-    if(x.rebel.left<=0)breakAway(x,say);
+    if(x.rebel.left<=0){if(x.liege&&x.liege!==YOU&&rival(x.liege)&&Math.random()<.5)crushRebel(x,say);else breakAway(x,say)}
     else if(x.liege===YOU)say(`House ${x.name} still holds out in rebellion. ${x.rebel.left} season${x.rebel.left>1?'s':''} before they break away${x.estate?` with ${estateLabel(x)} Estate`:''}.`,'bad');
   });
   if(seasonOf(H.cycle+1)==='Winter')feudTurn(say,moved);
@@ -2118,7 +2148,7 @@ function minorTurn(say){
       if(x.resentful&&!x.oath&&Math.random()<OATH_CHANCE){x.oath={since:H.cycle};say(`House ${x.name}, resentful of House ${x.liege}, sends word: they would swear to you, for ${courtCost(x).gold} gold and ${courtCost(x).inf} influence. Answer in The Realm.`,'warn')}
       if(x.power<3&&Math.random()<RIVAL_LEVY_CHANCE){x.power++;say(`House ${x.liege} pays for new levies for its bannerman House ${x.name} (strength ${x.power}).`,'')}
     }
-    if(x.liege&&(x.unrest||0)>=3&&!x.loyal)startRebel(x,say);
+    if(x.liege&&(x.unrest||0)>=3&&!x.loyal&&!(x.loyalUntil>H.cycle))startRebel(x,say);
   });
   syncQuell();
 }
@@ -2141,14 +2171,16 @@ function burnFeud(f,say){
   const A=minorById(f.a),B=minorById(f.b);endFeud(f);if(!A||!B)return;
   const [w,l]=A.power>B.power?[A,B]:B.power>A.power?[B,A]:Math.random()<.5?[A,B]:[B,A];
   let t=`The feud between House ${A.name} and House ${B.name} is settled in blood: House ${w.name} wins.`;
-  if(l.power>1){l.power--;t+=` House ${l.name} is broken down to strength ${l.power}.`}
+  const coinLand=mN(l)>0&&(l.power<=1||Math.random()<.5);
+  if(coinLand){const tt=mLose(l);if(mAdd(w,tt))t+=` House ${w.name} takes their ${LADDER[tt][0].toLowerCase()}.`;else{t+=` Their ${LADDER[tt][0].toLowerCase()} is looted.`;if(w.liege===YOU){const g=Math.floor(lootGold(tt)/2);H.gold+=g;t+=` Your half: +${g} gold.`}}}
+  else if(l.power>1){l.power--;t+=` House ${l.name} is broken down to strength ${l.power}.`}
   else if(l.estate){const L=minorHolder(l),nm=l.estate.name;
     if(!w.estate){ /* the landless victor takes the seat */
       if(w.liege===YOU){if(L){L.minor=w.id;w.estate={name:L.name,lid:L.lid}}else{const N={name:nm,tier:'Estate',income:10,peasants:500,from:l.liege||'the feud',cycle:H.cycle,minor:w.id};H.lands.push(N);lk(N);w.estate={name:nm,lid:N.lid}}}
       else{if(L){refundBuild(L,say);H.lands.splice(H.lands.indexOf(L),1)}w.estate={name:nm}}
       w.landless=false;t+=` House ${l.name} is driven from ${nm} Estate, and House ${w.name} takes it.`}
-    else{if(L)delete L.minor;t+=L?` House ${l.name} is driven from ${nm} Estate, which passes to you, held directly.`:` House ${l.name} is driven from ${nm} Estate, which is laid waste.`}
-    l.estate=null;l.landless=true;l.resentful=true}
+    else{if(L)delete L.minor;if(!L&&mAdd(w,LADDER.length-1))t+=` House ${l.name} is driven from ${nm} Estate, and House ${w.name} takes it as one of its lands.`;else t+=L?` House ${l.name} is driven from ${nm} Estate, which passes to you, held directly.`:` House ${l.name} is driven from ${nm} Estate, which is laid waste.`}
+    l.estate=null;l.landless=true;l.resentful=true;if(Math.random()<.5){say(t,A.liege===YOU&&w!==A||B.liege===YOU&&w!==B?'bad':'warn');endMinor(l,say,'its last land is lost');return}}
   else t+=` House ${l.name} has nothing left to lose but its pride.`;
   say(t,A.liege===YOU&&w!==A||B.liege===YOU&&w!==B?'bad':'warn');
 }
@@ -2209,6 +2241,11 @@ function startRebel(x,say){
   else say(`House ${x.name} rises in rebellion against House ${x.liege}. You could back the rebels with gold (The Realm).`,'warn');
 }
 function endRebel(x){x.rebel=null;x.unrest=0;H.ops.defense=(H.ops.defense||[]).filter(d=>!(d.quell&&d.estate===x.id))}
+/* a rival liege puts down a rebelling bannerman half the time: it stays sworn, loses a pip (a land, if it has but one), and its unrest resets */
+function crushRebel(x,say){
+  let lost='';if((x.power||1)>1){x.power--;lost=` and falls to strength ${x.power}`}else if(mN(x)){const t=mLose(x);lost=`, giving up a ${LADDER[t][0].toLowerCase()}`}
+  endRebel(x);say(`House ${x.liege} crushes the rebellion of House ${x.name}, who bend the knee again${lost}.`,'');
+}
 function breakAway(x,say){
   const was=x.liege;
   if(was===YOU){const L=minorHolder(x);
@@ -2252,6 +2289,8 @@ function finishQuell(op,grade,out){
   const L=minorHolder(x);endRebel(x);x.resentful=true;
   if(L){delete L.minor;if(grade==='partial')L.unrest=Math.max(L.unrest||0,1);x.estate=null;x.landless=true;
     out.push(`The revolt of House ${x.name} is crushed. ${L.name} Estate is yours to hold directly${grade==='partial'?', though restless':''}; House ${x.name} is landless, and resentful.`)}
+  else if(x.estate){const nm=x.estate.name,N={name:nm,tier:'Estate',income:10,peasants:500,from:x.name,cycle:H.cycle,unrest:grade==='partial'?1:0};H.lands.push(N);lk(N);x.estate=null;x.landless=!mN(x);
+    out.push(`The revolt of House ${x.name} is crushed. ${nm} Estate is yours to hold directly${grade==='partial'?', though restless':''}; House ${x.name} is ${x.landless?'landless, and ':''}resentful.`)}
   else out.push(`The revolt of House ${x.name} is crushed. They bend the knee again, resentful.`);
 }
 /* reroll a minor house's identity: name, sigil, words and species; liege, Estate and strength stay */
@@ -2362,11 +2401,15 @@ function minorAct(kind,id,arg){
   if(kind==='treat'){treatRebels(x);return}
   if(kind==='dissolve'){startMinorDiss(x);return}
   if(!canDeal(x))return;
+  if(kind==='lands'){landUI=landUI===x.id?null:x.id;return}
+  if(kind==='giveland'){giveLand(x,arg);return}
+  if(kind==='takeland'){takeLand(x,+arg);return}
   if(kind==='grant'){const L=grantable(arg,x);if(!L||x.liege!==YOU)return;
     L.minor=x.id;x.estate={name:L.name,lid:L.lid};x.landless=false;const was=x.resentful;x.resentful=false;
     H.log.push({cycle:H.cycle,text:`You grant ${L.name} Estate to House ${x.name}.${was?' Their resentment is forgotten.':''}`})}
-  if(kind==='revoke'){const L=minorHolder(x);if(!L||x.liege!==YOU||x.rebel)return;delete L.minor;x.estate=null;x.landless=true;x.resentful=true;
-    H.log.push({cycle:H.cycle,text:`You take ${L.name} Estate back from House ${x.name}. They are landless now, and resentful.`})}
+  if(kind==='revoke'){if(!x.estate||x.liege!==YOU||x.rebel||myDirect()>=HOLD_CAP)return;const nm=x.estate.name,N={name:nm,tier:'Estate',income:10,peasants:500,from:x.name,cycle:H.cycle};H.lands.push(N);lk(N);
+    x.estate=null;x.landless=!mN(x);x.unrest=Math.min(3,(x.unrest||0)+1);x.loyalUntil=0;
+    H.log.push({cycle:H.cycle,text:`You take ${nm} Estate back from House ${x.name}: it is your hold again. They ${['','grow restless','fall into unrest','are in revolt'][x.unrest]}${x.landless?', and are landless now':''}.`})}
   if(kind==='release'){if(x.liege!==YOU)return;const L=minorHolder(x);if(x.rebel)endRebel(x);
     if(L){refundBuild(L,t=>H.log.push({cycle:H.cycle,text:t}));H.lands.splice(H.lands.indexOf(L),1);x.estate={name:L.name}}
     x.liege=null;x.loyal=false;x.courted=false;x.resentful=false;x.petition=null;
@@ -2410,6 +2453,30 @@ function matchPanel(x){
   return `<div class="mpanel"><div><h4>Bring one of theirs in</h4>${inH}</div><div><h4>Send one of yours out</h4>${outH}</div>
     <p class="muted" style="grid-column:1/-1;margin:0;font-size:14px">A marriage binds House ${esc(x.name)} to you for good${x.liege==null?' and wins its oath':''}${x.resentful?', and ends its resentment':''}.</p></div>`;
 }
+/* ---------- your bannermen's lands: grant one of your holds (it keeps its tier, pays you half, counts toward their 12),
+   which eases their unrest a step, ends any resentment and keeps them from rebelling for a year; or take one back, which raises their unrest a step ---------- */
+let landUI=null; /* id of the sworn house whose land panel is open */
+/* a house with a seat may also be granted Estates as lands */
+const grantableHolds=x=>H.lands.filter(l=>!l.minor&&!steadOf(l)&&!raidOn(l)&&!l.build&&(tierStep(l)<=MT_TOP||(x&&x.estate&&tierStep(l)===LADDER.length-1)));
+function giveLand(x,lid){
+  const L=H.lands.find(l=>lk(l)===lid);if(!x||x.liege!==YOU||!L||!grantableHolds(x).includes(L)||mN(x)>=HOLD_CAP)return;
+  H.lands.splice(H.lands.indexOf(L),1);if(L.garrison&&H.army)L.garrison=false;mAdd(x,clamp(tierStep(L),0,LADDER.length-1));
+  x.unrest=Math.max(0,(x.unrest||0)-1);x.resentful=false;x.loyalUntil=H.cycle+4;steadSync();
+  H.log.push({cycle:H.cycle,text:`You grant the ${L.tier.toLowerCase()} of ${L.name} to House ${x.name}. They will not rise against you for a year.`});
+}
+function takeLand(x,i){
+  if(!x||x.liege!==YOU||!x.holds||!x.holds[i]||myDirect()>=HOLD_CAP)return;
+  const h=x.holds.splice(i,1)[0],T=LADDER[h.t],L={name:pick(LAND_A)+pick(LAND_B),tier:T[0],income:T[1],peasants:T[2]+ri(0,10),from:x.name,cycle:H.cycle};
+  H.lands.push(L);lk(L);x.unrest=Math.min(3,(x.unrest||0)+1);x.loyalUntil=0;
+  H.log.push({cycle:H.cycle,text:`You take back a ${T[0].toLowerCase()} from House ${x.name}: the ${T[0].toLowerCase()} of ${L.name} is yours. They ${['','grow restless','fall into unrest','are in revolt'][x.unrest]}.`});
+}
+function landPanel(x){
+  const gs=grantableHolds(x),full=mN(x)>=HOLD_CAP,mine=myDirect()>=HOLD_CAP;
+  const give=gs.length?gs.map(L=>`<button class="sm" data-minor="giveland|${x.id}|${lk(L)}" ${full?'disabled title="They hold all they can (12)"':''}>${esc(L.tier)} of ${esc(L.name)} · +${L.income}g</button>`).join(''):`<span class="muted" style="font-size:14px">No hold to spare (not your seat, ${x.estate?'':'Estates (grant one as their seat first), '}steadings, holds under attack or being raised).</span>`;
+  const take=(x.holds||[]).map((h,i)=>`<button class="sm" data-minor="takeland|${x.id}|${i}" ${mine?'disabled title="You hold all you can yourself (12)"':''}>${esc(LADDER[h.t][0])}${h.b?' (being raised)':''}</button>`).join('')||'<span class="muted" style="font-size:14px">They hold no lands beside their Estate.</span>';
+  return `<span class="rebel feud" style="display:block"><b>Grant a land.</b> It keeps its tier and pays you half its income; their unrest eases, resentment ends, and they will not rise against you for a year.<span class="macts">${give}</span>
+    <b>Take a land back.</b> It becomes your hold again; their unrest rises a step.<span class="macts">${take}</span></span>`;
+}
 function minorActs(x){
   const why=minorRerollBlock(x),rr=`<button data-minor="reroll|${x.id}" ${why?`disabled title="${esc(why)}"`:'title="New name, sigil, words and species"'}>Reroll</button>`;
   if(!canDeal(x)){const bk=x.rebel&&x.liege?(x.rebel.backed?'<button disabled>Backed: they break away to you at season’s end</button>':`<button data-minor="back|${x.id}" ${H.gold>=backCost(x)?'':'disabled'} title="They break from House ${esc(x.liege)} at season’s end and swear to you. House ${esc(x.liege)} grows more hostile.">Back the rebels · ${backCost(x)}g</button>`):'';return `<span class="macts">${bk}${dissBtn(x)}${rr}</span>`}
@@ -2421,7 +2488,8 @@ function minorActs(x){
   if(x.liege===YOU){
     if(!x.estate)freeEstates().forEach(L=>b.push(`<button data-minor="grant|${x.id}|${lk(L)}">Grant ${esc(L.name)} Estate</button>`));
     if(!x.estate&&!freeEstates().length)b.push(`<button disabled title="Raise a castle to an Estate in your holdings first">Grant an Estate</button>`);
-    if(minorHolder(x))b.push(`<button data-minor="revoke|${x.id}">Revoke Estate</button>`);
+    if(x.estate&&!x.rebel)b.push(`<button data-minor="revoke|${x.id}" ${myDirect()>=HOLD_CAP?'disabled title="You hold all you can yourself (12)"':'title="It becomes your hold again; their unrest rises a step"'}>Take back ${esc(x.estate.name)} Estate</button>`);
+    b.push(`<button data-minor="lands|${x.id}" aria-expanded="${landUI===x.id}">${landUI===x.id?'Close lands':'Grant or take a land'}</button>`);
     b.push(`<button data-minor="release|${x.id}">Release from oath</button>`);
   }else{const c=courtCost(x);b.push(`<button data-minor="court|${x.id}" ${H.gold>=c.gold&&H.influence>=c.inf?'':'disabled'}>Court · ${c.gold}g ${c.inf} inf</button>`)}
   if(!x.loyal)b.push(`<button data-minor="match|${x.id}" aria-expanded="${minorUI&&minorUI.id===x.id}">${minorUI&&minorUI.id===x.id?'Close match':'Seek a match'}</button>`);
@@ -2439,13 +2507,510 @@ function petitionHtml(x){
     :`<button data-minor="petyes|${x.id}" ${canAnswer(x,p)?'':'disabled'}>Grant${c.gold?` · ${c.gold} gold`:c.inf?` · ${c.inf} influence`:''}</button>`;
   return `<span class="petition"><b>Petition:</b> ${esc(petText(x,p))}<span class="muted" style="display:block;font-size:13px">Grant it: resentment ends and unrest eases. Refuse: they resent you. Leave it waiting: if they press it again, unrest grows.</span><span class="macts">${yes}<button data-minor="petno|${x.id}">Refuse</button></span></span>`;
 }
+/* ---------- Outlaw companies, phase 1: they exist. Each company has a mark, strength 1–3 (pips, like a minor house), one named stronghold
+   in a great house's lands, and a count of that house's lands it has raided away. Stronghold and raided lands are carved out of the
+   house's land count, so the realm's sums stay whole. Later phases make them act. ---------- */
+const BANDIT_NAMES=['the Red Hands','the Mire Rats','the Hollow Men','the Gallows Crew','the Black Hounds','the Lantern Thieves','the Broken Spurs','the Ditch Kings','the Grey Hoods','the Weald Wolves'];
+const cap1=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
+const BANDIT_HOLD=['','Camp','Holdfast','Fort'];
+const BANDIT_START=3;
+const banditById=id=>(H.bandits||[]).find(b=>b.id===id);
+const banditLands=b=>Object.values(b.lands||{}).reduce((a,n)=>a+n,0);
+const outlawLandsOf=n=>(H.bandits||[]).reduce((a,b)=>a+(b.hold&&b.hold.house===n?1:0)+((b.lands||{})['h:'+n]||0),0);
+function newBandit(r){
+  const free=BANDIT_NAMES.filter(x=>!(H.bandits||[]).some(b=>b.name===x));if(!free.length||!r||totalLands(r)<3)return null;
+  H.banditSeq=(H.banditSeq||0)+1;
+  const b={id:'B'+H.banditSeq,name:pick(free),mark:newSigil(),power:1,hold:{name:pick(LAND_A)+pick(LAND_B),house:r.name},lands:{},since:H.cycle};
+  houseLoseLand(r);const raid=Math.min(ri(0,2),totalLands(r)-2);
+  for(let i=0;i<raid;i++){const o=houseLoseLand(r);if(o)b.lands[o]=(b.lands[o]||0)+1}
+  return b;
+}
+function ensureBandits(){
+  if(!Array.isArray(H.owars))H.owars=[];
+  (H.minors||[]).forEach(x=>{if(!Array.isArray(x.holds)){x.holds=[];for(let i=0;i<Math.min(HOLD_CAP,x.lands||0);i++)x.holds.push({t:MT_HAMLET})}delete x.lands});
+  H.rivals.forEach(r=>{if(r.lands>HOLD_CAP)r.lands=HOLD_CAP});
+  if(Array.isArray(H.bandits)){H.bandits.forEach(b=>{const L={};Object.entries(b.lands||{}).forEach(([k,n])=>{L[/^([hmo]:|y$)/.test(k)?k:'h:'+k]=n});b.lands=L;b.power=clamp(b.power||1,1,3)});return}
+  H.bandits=[];
+  for(let i=0;i<BANDIT_START;i++){const pool=H.rivals.filter(r=>totalLands(r)>=3&&!H.bandits.some(b=>b.hold.house===r.name));const b=newBandit(pool.length?pick(pool):null);if(b)H.bandits.push(b)}
+}
+/* when a great house is replaced, the outlaws in its country stay put: their holds now lie in the new house's lands */
+function renameBanditHouse(oldN,newN){const o='h:'+oldN,n='h:'+newN;(H.bandits||[]).forEach(b=>{if(b.hold&&b.hold.house===oldN)b.hold.house=newN;if(b.lands&&b.lands[o]!=null){b.lands[n]=(b.lands[n]||0)+b.lands[o];delete b.lands[o]}});H.owars=(H.owars||[]).map(w=>w.split('|').map(k=>k===o?n:k).sort().join('|'))}
+/* ---------- Outlaw companies, phase 2: they act. One outlaw move or clash a season, 2–4 companies at a time.
+   Strength follows the lands a company has raided away (stronghold aside): 1 at 0–3, 2 at 4–6, 3 at 7+.
+   Raided lands are kept by whom they were taken from: 'h:House' (a great house's own lands) or 'm:id' (a minor house's).
+   Companies war on great houses, minor houses and each other; storming the stronghold of a company with no lands left breaks it,
+   and every land it held goes back. Minor houses sworn to you are left alone for now (your dealings come in phase 3).
+   Minor houses hold lands of their own beside their Estate; a sworn house's lands count toward its liege. ---------- */
+const BANDIT_MIN=4,BANDIT_MAX=5;
+const bandPow=n=>n>=7?3:n>=4?2:1;
+const bannerLands=n=>(H.minors||[]).filter(x=>x.liege===n).reduce((a,x)=>a+mN(x),0);
+const totalLands=r=>r?(r.lands||0)+bannerLands(r.name):0;
+const owKey=(a,b)=>[a,b].sort().join('|');
+const atWarO=(a,b)=>(H.owars||[]).includes(owKey(a,b));
+const owarsOf=k=>(H.owars||[]).filter(w=>w.split('|').includes(k)).map(w=>w.split('|').find(x=>x!==k));
+function entOf(k){const id=k.slice(2);return k[0]==='h'?rival(id):k[0]==='m'?minorById(id):banditById(id)}
+function entLabel(k){if(k==='y')return 'your house';const e=entOf(k);if(!e)return 'a house now gone';return k[0]==='o'?e.name:'House '+e.name}
+const EL=k=>cap1(entLabel(k));
+function entLands(k){const e=entOf(k);if(!e)return 0;return k[0]==='h'?totalLands(e):k[0]==='m'?mN(e):banditLands(e)}
+function entPower(k){const e=entOf(k);if(!e)return 0;return k[0]==='h'?e.power+1+Math.min(1.5,.5*(H.minors||[]).filter(x=>x.liege===e.name&&!x.rebel).length):k[0]==='m'?(e.power||1)+.5:e.power}
+/* a great house loses one land: from its own, or from a bannerman's, in proportion. Returns the key of whoever lost it, or null */
+function houseLoseLand(r){
+  if(!r)return null;const tot=totalLands(r);if(tot<=0)return null;
+  const bs=(H.minors||[]).filter(x=>x.liege===r.name&&mN(x)>0);
+  if(bs.length&&Math.random()*tot>=r.lands){const x=pick(bs);mLose(x);return 'm:'+x.id}
+  if(r.lands>0){r.lands--;return 'h:'+r.name}
+  const x=pick(bs);mLose(x);return 'm:'+x.id;
+}
+/* any power loses a land; returns the key it was held under (for a company, whose it was), or null */
+function entLoseLand(k,prefer){
+  const e=entOf(k);if(!e)return null;
+  if(k[0]==='h')return houseLoseLand(e);
+  if(k[0]==='m'){if(!mN(e))return null;mLose(e);return k}
+  const ks=Object.keys(e.lands||{}).filter(x=>e.lands[x]>0);if(!ks.length)return null;
+  const from=prefer&&e.lands[prefer]>0?prefer:pick(ks);e.lands[from]--;if(!e.lands[from])delete e.lands[from];return from;
+}
+/* a land comes back to (or is won by) a house or company */
+function entGainLand(k,origin){
+  const e=entOf(k);if(!e)return false;
+  if(k[0]==='o'){if(banditLands(e)>=HOLD_CAP)return false;const o=origin||k;e.lands=e.lands||{};e.lands[o]=(e.lands[o]||0)+1;return true}
+  if(k[0]==='h'){if(origin&&origin[0]==='m'){const x=minorById(origin.slice(2));if(x&&x.liege===e.name&&mAdd(x,MT_HAMLET))return true}return gainForHouse(e.name,MT_HAMLET)!=='looted'}
+  return mAdd(e,MT_HAMLET);
+}
+/* a land held under a key goes home: to that house, or, if it is gone, to the great house whose country the stronghold lies in */
+function landHome(key,b){
+  if(key==='y'){landHomeYou();return}
+  const e=entOf(key);if(e&&key[0]==='m'&&mAdd(e,MT_HAMLET))return;if(e&&key[0]==='m'&&e.liege&&rival(e.liege)){gainForHouse(e.liege,MT_HAMLET);return}
+  if(e&&key[0]==='h'){gainForHouse(e.name,MT_HAMLET);return}
+  const r=b&&rival(b.hold.house);if(r)gainForHouse(r.name,MT_HAMLET);
+}
+/* strength no longer follows land; a company wins recruits by its victories (25% for each win or seizure) */
+function syncBanditPower(b,say){}
+function winRecruit(k,say){if(!k||k[0]!=='o')return;const b=entOf(k);if(!b||b.power>=3||Math.random()>=.25)return;b.power++;say(`Word of their victory draws new blades to ${b.name}: strength ${b.power}.`,'warn')}
+function breakBandit(b,say,how){
+  Object.entries(b.lands||{}).forEach(([k,n])=>{for(let i=0;i<n;i++)landHome(k,b)});
+  const r=rival(b.hold.house);if(r)gainForHouse(r.name,MT_HAMLET);
+  H.owars=(H.owars||[]).filter(w=>!w.split('|').includes('o:'+b.id));
+  H.bandits=H.bandits.filter(x=>x!==b);
+  say(`${cap1(b.name)} are broken${how?' '+how:''}. ${b.hold.name} and every land they held go back to their lords.`,'good');
+}
+function spawnBandit(say){
+  const pool=H.rivals.filter(r=>totalLands(r)>=3);if(!pool.length)return;
+  const b=newBandit(pick(pool));if(!b)return;H.bandits.push(b);
+  say(`A new outlaw company, ${b.name}, makes the ${BANDIT_HOLD[b.power].toLowerCase()} of ${b.hold.name} its stronghold in House ${b.hold.house}’s lands.`,'warn');
+}
+/* who a company may fall on: the great house whose country it holds, that house's bannermen, independents, and other companies. Never minor houses sworn to you (yet) */
+function banditTargets(b){
+  const k='o:'+b.id,t=[];
+  const r=rival(b.hold.house);if(r&&totalLands(r)>2)t.push('h:'+r.name);
+  (H.minors||[]).filter(x=>!x.rebel&&mN(x)>0&&(x.liege===b.hold.house||!x.liege||(x.liege===YOU&&!leavesYou(b)))).forEach(x=>t.push('m:'+x.id));
+  return t.filter(x=>x!==k);
+}
+/* one clash in a war; the winner takes a land, a close fight lays one waste */
+/* the loser of a battle gives up a land or a pip, never both; a coin decides which, and if it lacks one it gives the other.
+   With neither left, its seat is at risk: a company's stronghold is stormed and it is broken; a minor house is driven from its Estate.
+   (A great house's seat waits for the falls of phase 4.) Returns {land:originKey} | {pip:true} | {seat:true} | null */
+function payLoss(k){
+  const e=entOf(k);if(!e)return null;
+  const canLand=entLands(k)>0,canPip=(e.power||1)>1;
+  if(canLand&&(!canPip||Math.random()<.5)){const o=entLoseLand(k);if(o)return {land:o}}
+  if(canPip){e.power--;return {pip:true}}
+  if(k[0]==='m'&&e.estate){const L=minorHolder(e),nm=e.estate.name;if(L)delete L.minor;e.estate=null;e.landless=true;e.resentful=true;if(Math.random()<.5){endMinor(e,null);return {seat:true,name:nm,ended:true}}return {seat:true,name:nm}}
+  return null;
+}
+function owarClash(w,say){
+  const [A,B]=w.split('|');const sa=entPower(A)+Math.random()*3,sb=entPower(B)+Math.random()*3;
+  const win=sa>=sb?A:B,lose=win===A?B:A,close=Math.abs(sa-sb)<.6;
+  if(close){const vic=Math.random()<.5?A:B,o=entLoseLand(vic);
+    if(o){say(`${EL(A)} and ${entLabel(B)} fight to a bloody draw, and a land of ${entLabel(vic)} is laid waste.`,'');if(vic[0]==='o')syncBanditPower(entOf(vic),say)}
+    else say(`${EL(A)} and ${entLabel(B)} fight to a bloody draw.`,'');return}
+  const L=entOf(lose),res=payLoss(lose),lw=win[0]==='o'?'':'s';
+  if(!res){if(lose[0]==='o'){breakBandit(L,say,`by ${entLabel(win)}, who storm ${L.hold.name}`);winRecruit(win,say)}
+    else say(`${EL(win)} drive${lw} back ${entLabel(lose)}, who have nothing left to lose but their seat.`,'');return}
+  if(res.pip){say(`${EL(win)} break${lw} the levies of ${entLabel(lose)}: strength ${L.power}.`,win[0]==='o'?'warn':'');winRecruit(win,say);return}
+  if(res.seat){entGainLand(win);say(res.ended?`${EL(win)} take${lw} ${res.name} Estate, the last land of House ${L.name}. House ${L.name} is no more: its name passes out of the realm.`:`${EL(win)} drive${lw} House ${L.name} from ${res.name} Estate. They are landless, and resentful.`,'warn');winRecruit(win,say);return}
+  const o=res.land;
+  if(win[0]==='o'){entGainLand(win,o);say(`${EL(win)} seize a land from ${entLabel(lose)}.`,'warn');winRecruit(win,say);return}
+  if(lose[0]==='o'&&(o===win||(o[0]==='m'&&win[0]==='h'&&(minorById(o.slice(2))||{}).liege===win.slice(2))))landHome(o,L);else entGainLand(win);
+  say(lose[0]==='o'?`${EL(win)} wins back a land from ${L.name}.`:`${EL(win)} takes a land from ${entLabel(lose)}.`,lose[0]==='o'?'good':'');
+}
+function outlawTurn(say){
+  if(!Array.isArray(H.bandits))return;if(!Array.isArray(H.owars))H.owars=[];
+  H.owars=H.owars.filter(w=>w.split('|').every(entOf));
+  if(H.bandits.length<BANDIT_MIN&&Math.random()<.3||H.bandits.length>=BANDIT_MIN&&H.bandits.length<BANDIT_MAX&&Math.random()<.1)spawnBandit(say);
+  /* landless minor houses strike outlaws in their liege's country (anywhere, if independent) to win land */
+  (H.minors||[]).forEach(x=>{if(x.estate||x.rebel||x.liege===YOU||Math.random()>=.1)return;const k='m:'+x.id;if(owarsOf(k).length)return;
+    const bs=H.bandits.filter(b=>(!x.liege||b.hold.house===x.liege)&&!atWarO(k,'o:'+b.id));if(!bs.length)return;const b=pick(bs);
+    H.owars.push(owKey(k,'o:'+b.id));say(`House ${x.name}, landless, takes up arms against ${b.name} to win land of its own.`,'')});
+  /* some wars end */
+  H.owars.slice().forEach(w=>{if(Math.random()<.15){H.owars=H.owars.filter(x=>x!==w);const [A,B]=w.split('|');say(`${EL(A)} and ${entLabel(B)} let the fighting lapse, for now.`,'')}});
+  if(!H.bandits.length||Math.random()>=.85)return;
+  const r=Math.random();
+  if(H.owars.length&&r<.5){owarClash(pick(H.owars),say);return}
+  if(r<.7){ /* a move: a company seizes a land without a war */
+    const b=pick(H.bandits),t=banditTargets(b).filter(x=>!atWarO(x,'o:'+b.id));if(!t.length||Math.random()>=[1,.55,.3][b.power-1])return;
+    if(banditLands(b)>=HOLD_CAP)return;const T=pick(t),o=entLoseLand(T);if(!o)return;entGainLand('o:'+b.id,o);
+    say(`${cap1(b.name)} seize a land from ${entLabel(o)}.`,'warn');winRecruit('o:'+b.id,say);return}
+  /* a declaration: the wronged strike back, or a strong company looks for more */
+  const wronged=[];H.bandits.forEach(b=>Object.keys(b.lands||{}).forEach(k=>{if(entOf(k)&&!atWarO(k,'o:'+b.id)&&owarsOf('o:'+b.id).length<2&&k!=='y')wronged.push([k,b])}));
+  H.bandits.forEach(b=>{const r0=rival(b.hold.house);if(r0&&!atWarO('h:'+r0.name,'o:'+b.id)&&owarsOf('o:'+b.id).length<2)wronged.push(['h:'+r0.name,b])});
+  if(wronged.length&&Math.random()<.85){const [k,b]=pick(wronged);H.owars.push(owKey(k,'o:'+b.id));say(`${EL(k)} ${k[0]==='h'?'marches':'takes up arms'} against ${b.name}.`,'warn');return}
+  const strong=H.bandits.filter(b=>b.power>=2&&owarsOf('o:'+b.id).length<2);if(!strong.length)return;
+  const b=pick(strong),opts=banditTargets(b).concat(H.bandits.filter(x=>x!==b).map(x=>'o:'+x.id)).filter(x=>!atWarO(x,'o:'+b.id));if(!opts.length)return;
+  const T=pick(opts);H.owars.push(owKey(T,'o:'+b.id));say(`${cap1(b.name)} make war on ${entLabel(T)}.`,'warn');
+}
+/* minor houses win land of their own: settling the wilds, and their liege's grants in Winter */
+function minorLandTurn(say){
+  (H.minors||[]).forEach(x=>{
+    if(x.rebel||!x.estate)return;
+    if(mN(x)<HOLD_CAP&&Math.random()<.03&&mAdd(x,MT_WILD))
+      say(`House ${x.name}${x.liege===YOU?', sworn to you,':''} settles a wild clearing (${mN(x)} land${mN(x)>1?'s':''}).`,x.liege===YOU?'good':'');
+  });
+  if(seasonOf(H.cycle+1)==='Winter')H.rivals.forEach(r=>{
+    /* a landless bannerman petitions its liege, who grants a village if it can spare one */
+    (H.minors||[]).filter(x=>x.liege===r.name&&!x.estate&&!x.rebel&&!mN(x)).forEach(x=>{if(r.lands>LAND_WANT&&Math.random()<.25){r.lands--;mAdd(x,MT_VILLAGE);say(`House ${r.name} grants its landless bannerman House ${x.name} a village.`,'')}});
+    return;
+    const bs=(H.minors||[]).filter(x=>x.liege===r.name&&!x.resentful&&!x.rebel&&x.estate&&mN(x)<HOLD_CAP);if(!bs.length)return;
+    const x=pick(bs);r.lands--;mAdd(x,MT_VILLAGE);say(`House ${r.name} grants a village to its bannerman House ${x.name}.`,'')});
+}
+/* ---------- Phase 2b: holdings cap and tiered minor lands.
+   Every faction holds at most 12 holdings beyond its seat: a great house's own lands, each minor house's lands beside its Estate,
+   each company's lands beside its stronghold, and the holds you hold directly (each hold counts, steadings too).
+   A great house at 12 passes a new holding to a bannerman with room; with no room, the land is looted for a year of its income
+   (gold only you can bank). A minor house's lands are tiered on your ladder, Wild clearing to Castle: settled wilds come as a
+   Wild clearing, a liege's grant as a Village, land won in war or from outlaws as a Hamlet; feud spoils keep their tier.
+   Bannermen pay their liege half their lands' income. Your bannermen petition you to raise a land (half what raising your own costs),
+   and every minor house's lands rise a tier on their own now and then. ---------- */
+const HOLD_CAP=12,MT_WILD=0,MT_HAMLET=1,MT_VILLAGE=2,MT_TOP=4;
+const mN=x=>(x&&x.holds||[]).length;
+const mInc=x=>(x.holds||[]).reduce((a,h)=>a+LADDER[h.t][1],0);
+function mAdd(x,t){if(!x)return false;x.holds=x.holds||[];if(x.holds.length>=HOLD_CAP)return false;x.holds.push({t:clamp(t,0,LADDER.length-1)});return true}
+function mLose(x){if(!mN(x))return null;const i=Math.floor(Math.random()*x.holds.length);return x.holds.splice(i,1)[0].t}
+const myDirect=()=>H.lands.filter(l=>!l.minor).length;
+const lootGold=t=>4*LADDER[clamp(t,0,LADDER.length-1)][1];
+/* a great house (or you) gains a holding of tier t: kept, passed to a bannerman with room, or looted. Returns 'kept'|'banner'|'looted' */
+function gainForHouse(name,t,say){
+  t=t==null?MT_HAMLET:t;
+  if(name===YOU||name===H.house.name){
+    const bs=swornTo(YOU).filter(x=>!x.rebel&&mN(x)<HOLD_CAP);
+    if(bs.length){const x=pick(bs);mAdd(x,t);if(say)say(`Your house holds all it can. The new ${LADDER[t][0].toLowerCase()} goes to your bannerman House ${x.name}.`,'');return 'banner'}
+    const g=lootGold(t);H.gold+=g;if(say)say(`Your house and your bannermen hold all they can. The ${LADDER[t][0].toLowerCase()} is looted instead: +${g} gold.`,'good');return 'looted'}
+  const r=rival(name);if(!r)return null;
+  if(r.lands<HOLD_CAP){r.lands++;return 'kept'}
+  const bs=(H.minors||[]).filter(x=>x.liege===r.name&&!x.rebel&&mN(x)<HOLD_CAP);
+  if(bs.length){mAdd(pick(bs),t);return 'banner'}
+  return 'looted';
+}
+/* your directly held holds above 12 go, newest first, to a bannerman with room or are looted */
+function capMine(say){
+  let guard=20;while(myDirect()>HOLD_CAP&&guard--){
+    const L=H.lands.slice().reverse().find(l=>!l.minor&&!isPart(l)&&!raidOn(l)&&!steadOf(l));if(!L)break;
+    H.lands.splice(H.lands.indexOf(L),1);if(typeof refundBuild==='function'&&L.build)refundBuild(L,()=>{});
+    const t=clamp(tierStep(L),0,MT_TOP),bs=swornTo(YOU).filter(x=>!x.rebel&&mN(x)<HOLD_CAP);
+    if(bs.length){const x=pick(bs);mAdd(x,t);say(`You can hold no more than ${HOLD_CAP} holds yourself. The ${L.tier.toLowerCase()} of ${L.name} passes to your bannerman House ${x.name}.`,'')}
+    else{const g=4*landIncome(L);H.gold+=g;say(`You can hold no more than ${HOLD_CAP} holds yourself, and your bannermen are full. The ${L.tier.toLowerCase()} of ${L.name} is looted: +${g} gold.`,'good')}
+  }
+}
+/* rivals and companies over the cap, from paths that add land directly */
+function capSweep(say){
+  H.rivals.forEach(r=>{while(r.lands>HOLD_CAP){r.lands--;gainForHouse(r.name,MT_HAMLET)}});
+  (H.bandits||[]).forEach(b=>{let over=banditLands(b)-HOLD_CAP;while(over-->0)entLoseLand('o:'+b.id)});
+  if(say)capMine(say);
+}
+/* half of a bannerman's income goes to its liege; yours is paid in gold */
+const bannerShare=()=>Math.floor(swornTo(YOU).filter(x=>!x.rebel).reduce((a,x)=>a+mInc(x)+(x.estate?LADDER[LADDER.length-1][1]:0),0)/2);
+/* minor lands grow: building a raise you paid for, and a tier on their own now and then */
+/* land feeds strength: each season every great house, minor house and company below 3 may recruit a pip.
+   Great houses and companies: 2% + 1% per land. Minor houses: 2% + 0.4% per gold their lands (not the Estate) bring in. */
+/* great houses want at least 7 lands of their own. Below that, each season: 50% to revoke one land from a bannerman
+   (the richest, its best land; the bannerman's unrest grows a step), more likely to march on outlaws holding its lands,
+   and hungrier for war with its neighbors. */
+const LAND_WANT=7;
+function landHungerTurn(say){
+  H.rivals.forEach(r=>{
+    if(r.lands>=LAND_WANT)return;
+    if(Math.random()<.5){const bs=(H.minors||[]).filter(x=>x.liege===r.name&&!x.rebel&&mN(x)>0).sort((a,b)=>mInc(b)-mInc(a));
+      if(bs.length){const x=bs[0];let bi=0;x.holds.forEach((h,i)=>{if(h.t>x.holds[bi].t)bi=i});const h=x.holds.splice(bi,1)[0];r.lands++;
+        x.unrest=Math.min(3,(x.unrest||0)+1);
+        say(`House ${r.name} takes back a ${LADDER[h.t][0].toLowerCase()} from its bannerman House ${x.name}, who ${['','grow restless','fall into unrest','rise in revolt'][x.unrest]}.`,'')}}
+    if(Array.isArray(H.bandits)&&Math.random()<.25){const k='h:'+r.name,b=pick(H.bandits.filter(b=>((b.lands||{})[k]||b.hold.house===r.name)&&!atWarO(k,'o:'+b.id))||[]);
+      if(b){H.owars.push(owKey(k,'o:'+b.id));say(`House ${r.name}, hungry for its lost lands, marches against ${b.name}.`,'warn')}}
+    if(r.power>=2&&Math.random()<.08&&!H.rivals.some(o=>o!==r&&relation(r.name,o.name)==='war')){const fs=H.rivals.filter(o=>o!==r&&o.power<=r.power&&relation(r.name,o.name)!=='ally'&&relation(r.name,o.name)!=='war'&&totalLands(o)>1).sort((a,b)=>totalLands(b)-totalLands(a));
+      if(fs.length){const o=fs[0];setRel(r.name,o.name,'war');H.realm.warFrom[pairKey(r.name,o.name)]=r.name;say(`House ${r.name}, hungry for land, marches on House ${o.name}.`,'warn');allyAttacked(r,o,say)}}
+  });
+}
+function recruitTurn(say){
+  H.rivals.forEach(r=>{if(r.power<3&&Math.random()<.02+.01*r.lands){r.power++;say(`House ${r.name} musters new levies: strength ${r.power}.`,'')}});
+  (H.minors||[]).forEach(x=>{if(x.rebel||(x.power||1)>=3)return;const inc=mInc(x);
+    if(Math.random()<.02+.004*inc){x.power=(x.power||1)+1;if(x.liege===YOU)say(`House ${x.name}, sworn to you, raises new levies from its lands: strength ${x.power}.`,'good')}});
+  (H.bandits||[]).forEach(b=>{if(b.power<3&&Math.random()<.02+.01*banditLands(b)){b.power++;say(`Outlaws flock to ${b.name}: strength ${b.power}.`,'warn')}});
+}
+function minorGrowTurn(say){
+  (H.minors||[]).forEach(x=>(x.holds||[]).forEach(h=>{
+    if(h.b){if(--h.b.left<=0){h.t=Math.min(MT_TOP,h.t+1);h.b=null;if(x.liege===YOU)say(`House ${x.name} finishes raising a ${LADDER[h.t][0].toLowerCase()}.`,'good')}return}
+    if(h.t<MT_TOP&&Math.random()<.012){h.t++;if(x.liege===YOU)say(`A land of House ${x.name} grows into a ${LADDER[h.t][0].toLowerCase()}.`,'good')}
+  }));
+}
+const upgradable=x=>(x.holds||[]).map((h,i)=>[h,i]).filter(([h])=>h.t<MT_TOP&&!h.b);
+const upgradeCost=h=>Math.ceil(5*LADDER[h.t][1]/2);
+function mHoldsText(x){
+  const hs=x.holds||[];if(!hs.length)return '';
+  const by={};hs.forEach(h=>{by[h.t]=(by[h.t]||0)+1});
+  return Object.keys(by).sort((a,b)=>b-a).map(t=>`${by[t]>1?by[t]+' ':''}${LADDER[t][0]}${by[t]>1?(LADDER[t][0].endsWith('s')?'':'s'):''}`).join(', ').replace(/Wild clearings/,'Wild clearings')+(hs.some(h=>h.b)?` (raising ${hs.filter(h=>h.b).length})`:'');
+}
+/* ---------- Outlaw companies, phase 3: your dealings with them.
+   Raids on your holds come from a named company (one at war with you, else the strongest not paid off); a hold lost to revolt
+   in that raid becomes a land the company holds. Companies may war on you: each season a company at war with you sends a raid
+   (a siege, at strength 3) to your defense board. They now seize your bannermen's lands too.
+   Strike a company on the Summer (Battle) and Fall (Conquest) boards: a win makes it give up a land or a pip (dice); a land goes home
+   to whoever it was taken from (you included), for influence and that house's goodwill; with neither left, you storm its stronghold
+   and break it. A company you strike is at war with you.
+   Pay a company off: 5 gold × strength, and it leaves you and your bannermen alone for 4 seasons.
+   Hire one as sellswords: 8 gold × strength for 4 seasons. At war, its strength joins your war clashes; at peace, once a season it
+   brings one restless hold (yours or a bannerman's) back to peace. A hired company does not raid you.
+   Set one on a rival with a Winter Intrigue card: 6 gold × strength on success, and it makes war on them; caught, tension +1. ---------- */
+const PAYOFF_PER=5,HIRE_PER=8,SETON_PER=6,DEAL_TERM=4;
+const coWarYou=b=>!!b&&(H.coWars||[]).includes(b.id);
+const paidOff=b=>!!b&&(H.paidOff||{})[b.id]>H.cycle;
+const hiredCo=()=>{const h=H.hiredCo;if(!h||h.until<=H.cycle)return null;return banditById(h.id)};
+const leavesYou=b=>paidOff(b)||hiredCo()===b;
+function ensureDeals(){if(!Array.isArray(H.coWars))H.coWars=[];if(!H.paidOff||typeof H.paidOff!=='object')H.paidOff={};
+  H.coWars=H.coWars.filter(id=>banditById(id));if(H.hiredCo&&(!banditById(H.hiredCo.id)||H.hiredCo.until<=H.cycle))H.hiredCo=null}
+function coWarOn(b,say,why){if(!b||coWarYou(b))return;H.coWars.push(b.id);if(H.paidOff)delete H.paidOff[b.id];if(say)say(`${cap1(b.name)} ${why||'make war on your house'}. Expect their raids each season.`,'bad')}
+function raiderFor(){const at=(H.bandits||[]).filter(b=>coWarYou(b)&&!leavesYou(b));if(at.length)return pick(at);
+  const free=(H.bandits||[]).filter(b=>!leavesYou(b)).sort((a,b)=>b.power-a.power);return free[0]||null}
+/* a land a company held of yours comes home as a hamlet */
+function landHomeYou(){const L={name:pick(LAND_A)+pick(LAND_B),tier:'Hamlet',income:LADDER[1][1],peasants:LADDER[1][2]+ri(0,10),from:'outlaws',cycle:H.cycle,wild:true};H.lands.push(L);lk(L);return L}
+const hiredPower=()=>{const b=hiredCo();return b&&H.dip&&H.dip.wars.length?b.power:0};
+/* each season: your wars with companies send raids; hired companies settle unrest; old deals lapse */
+function coDealsTurn(say){
+  ensureDeals();
+  Object.keys(H.paidOff).forEach(id=>{if(H.paidOff[id]<=H.cycle+1){const b=banditById(id);delete H.paidOff[id];if(b)say(`The peace you bought from ${b.name} runs out.`,'warn')}});
+  if(H.hiredCo&&H.hiredCo.until<=H.cycle+1){const b=banditById(H.hiredCo.id);H.hiredCo=null;if(b)say(`${cap1(b.name)} take their last pay and leave your service.`,'')}
+  /* strong companies may turn on you */
+  (H.bandits||[]).forEach(b=>{if(b.power>=2&&!coWarYou(b)&&!leavesYou(b)&&H.lands.length&&Math.random()<.04)coWarOn(b,say)});
+  /* war with you: a raid a season; some wars lapse */
+  (H.bandits||[]).filter(b=>coWarYou(b)).forEach(b=>{
+    if(Math.random()<.12){H.coWars=H.coWars.filter(x=>x!==b.id);say(`${cap1(b.name)} lose interest in your lands, for now.`,'');return}
+    const free=H.lands.filter(l=>!raidOn(l)&&!isPart(l)&&!l.minor);if(!free.length)return;
+    const L=pick(free),op=genDefense(L,b.power);op.co=b.id;op.title=`${b.power>=3?'Siege':DANGER[b.power]+'-danger raid'} by ${b.name} on ${holdLabel(L)}`;if(b.power>=3)op.coSiege=true;
+    H.ops.defense.push(op);say(`${cap1(b.name)} ${b.power>=3?'besiege':'raid'} ${holdLabel(L)}. Answer it this season${b.power>=3?' or lose the hold':''}.`,'bad')});
+  /* hired sellswords at peace settle one restless hold */
+  const h=hiredCo();if(h&&!(H.dip&&H.dip.wars.length)){
+    const mine=H.lands.filter(l=>(l.unrest||0)>0&&!raidOn(l)&&!isPart(l)).sort((a,b)=>(b.unrest||0)-(a.unrest||0))[0];
+    const bx=swornTo(YOU).filter(x=>!x.rebel&&(x.unrest||0)>0).sort((a,b)=>b.unrest-a.unrest)[0];
+    if(mine&&(!bx||(mine.unrest||0)>=bx.unrest)){mine.unrest=0;steadSync();say(`${cap1(h.name)}, in your pay, hang the troublemakers of ${holdLabel(mine)}. It is at peace.`,'good')}
+    else if(bx){bx.unrest=0;say(`${cap1(h.name)}, in your pay, put down the troubles of House ${bx.name}. They are at peace.`,'good')}}
+}
+function payOff(id){ensureDeals();const b=banditById(id);if(!b||paidOff(b))return;const c=PAYOFF_PER*b.power;if(H.gold<c)return;H.gold-=c;H.paidOff[b.id]=H.cycle+DEAL_TERM;
+  const was=coWarYou(b);H.coWars=H.coWars.filter(x=>x!==b.id);H.ops.defense=(H.ops.defense||[]).filter(o=>o.co!==b.id);
+  H.log.push({cycle:H.cycle,text:`Paid ${c} gold to ${b.name}: they leave your lands and your bannermen alone until ${seasonOf(H.cycle+DEAL_TERM)}, year ${yearOf(H.cycle+DEAL_TERM)}.${was?' Their war on you ends.':''}`})}
+function hireCo(id){ensureDeals();const b=banditById(id);if(!b||hiredCo()||coWarYou(b))return;const c=HIRE_PER*b.power;if(H.gold<c)return;H.gold-=c;H.hiredCo={id:b.id,until:H.cycle+DEAL_TERM};
+  H.log.push({cycle:H.cycle,text:`Hired ${b.name} as sellswords for ${c} gold, until ${seasonOf(H.cycle+DEAL_TERM)}, year ${yearOf(H.cycle+DEAL_TERM)}.`})}
+function coActs(b){
+  if(coWarYou(b)&&!paidOff(b))return `<span class="macts"><button class="sm" data-co="payoff|${b.id}" ${H.gold>=PAYOFF_PER*b.power?'':'disabled'}>Buy peace · ${PAYOFF_PER*b.power} gold</button></span>`;
+  const h=hiredCo()===b;
+  return `<span class="macts">${paidOff(b)||h?'':`<button class="sm" data-co="payoff|${b.id}" ${H.gold>=PAYOFF_PER*b.power?'':'disabled'} title="They leave you and your bannermen alone for a year">Pay off · ${PAYOFF_PER*b.power} gold</button>`}${h||hiredCo()?'':`<button class="sm" data-co="hire|${b.id}" ${H.gold>=HIRE_PER*b.power?'':'disabled'} title="A year in your pay: they fight your wars, or settle unrest at peace">Hire · ${HIRE_PER*b.power} gold</button>`}</span>`;
+}
+function coStatus(b){const t=[];
+  if(coWarYou(b))t.push('<span class="status bad" style="font-size:10px;padding:1px 6px">At war with you</span>');
+  if(hiredCo()===b)t.push(`<span class="status ok" style="font-size:10px;padding:1px 6px">In your pay to ${esc(seasonOf(H.hiredCo.until))}, yr ${yearOf(H.hiredCo.until)}</span>`);
+  else if(paidOff(b))t.push(`<span class="status young" style="font-size:10px;padding:1px 6px">Paid off to ${esc(seasonOf(H.paidOff[b.id]))}, yr ${yearOf(H.paidOff[b.id])}</span>`);
+  return t.join(' ')}
+/* ---------- the strike card: Summer and Fall boards ---------- */
+const STRIKE_STAGES=['Find their camp','Cut their supply','Rout the outlaws','Storm the walls'];
+function genStrikeOp(type,b){
+  const diff=clamp(b.power,1,3);
+  return {id:H.ops.nextOp++,type,kind:'strike',co:b.id,diff,target:null,peaceful:true,place:b.hold.name,
+    title:`Strike ${b.name}${banditLands(b)?'':` at ${b.hold.name}`}`,stages:STRIKE_STAGES.slice(0,diff+1).map(s=>({name:s,stat:'Might'})),gold:2*diff};
+}
+function strikeFor(type){const bs=(H.bandits||[]).filter(b=>hiredCo()!==b);if(!bs.length)return null;
+  const war=bs.filter(coWarYou);return genStrikeOp(type,war.length?pick(war):pick(bs))}
+function finishStrike(op,grade,out){
+  const b=banditById(op.co);if(!b){out.push('The company is already gone.');return}
+  const k='o:'+b.id,was=paidOff(b)||coWarYou(b);
+  if(!coWarYou(b)){ensureDeals();if(H.paidOff)delete H.paidOff[b.id];H.coWars.push(b.id);out.push(`${cap1(b.name)} are at war with you now`)}
+  if(grade==='fail'){out.push(`${cap1(b.name)} slip away. Nothing gained.`);return}
+  const res=payLoss(k);
+  if(!res){const msgs=[];breakBandit(b,t=>msgs.push(t),`by your hand: you storm ${b.hold.name}`);out.push(...msgs);H.influence+=2;out.push('+2 influence');return}
+  if(res.pip)out.push(`You break their levies: ${b.name} fall to strength ${b.power}`);
+  else{const o=res.land;
+    if(o==='y'){const L=landHomeYou();out.push(`You win back a land: the hamlet of ${L.name} is yours again`)}
+    else{landHome(o,b);const e=entOf(o);H.influence+=1;
+      const hn=o[0]==='h'?o.slice(2):e&&e.liege&&e.liege!==YOU?e.liege:null,r=hn&&rival(hn);if(r&&r.hostility>0)r.hostility--;
+      out.push(`You win back a land and return it to ${entLabel(o)}: +1 influence${r?`, and House ${r.name}’s goodwill (tension ${TENSION[r.hostility].toLowerCase()})`:''}`)}}
+  if(grade==='full'){H.gold+=op.gold;out.push(`+${op.gold} gold in plunder`)}
+}
+/* ---------- the Winter card: set a company on a rival ---------- */
+const SETON_STAGES=['Find their captain','Win the captain’s ear','Name the prize','Keep your name out of it'];
+function withSetOn(ops){if(!(H.bandits||[]).length||Math.random()>=.4)return ops;const so=genSetOnOp();if(!so)return ops;const j=ops.map((o,i)=>i).filter(i=>!ops[i].ally&&ops[i].kind!=='route');if(j.length)ops[j[j.length-1]]=so;return ops}
+function genSetOnOp(){
+  const bs=(H.bandits||[]).filter(b=>!coWarYou(b)),rs=H.rivals.filter(r=>!alliedWith(r.name));if(!bs.length||!rs.length)return null;
+  const b=pick(bs),r=pick(rs.filter(r=>!atWarO('h:'+r.name,'o:'+b.id)).length?rs.filter(r=>!atWarO('h:'+r.name,'o:'+b.id)):rs),diff=clamp(b.power,1,3);
+  return {id:H.ops.nextOp++,type:'Intrigue',kind:'seton',co:b.id,mark:r.name,diff,target:null,peaceful:true,place:b.hold.name,
+    title:`Set ${b.name} on House ${r.name}`,stages:SETON_STAGES.slice(0,diff+1).map(s=>({name:s,stat:'Insight'})),cost:SETON_PER*b.power};
+}
+function finishSetOn(op,grade,out){
+  const b=banditById(op.co),r=rival(op.mark);if(!b||!r){out.push('The chance is gone.');return}
+  if(grade==='fail'){bump(r,1);out.push(`Word gets out. House ${r.name} learns you tried to set ${b.name} on them: tension rises to ${TENSION[r.hostility].toLowerCase()}`);return}
+  const c=Math.min(H.gold,op.cost);H.gold-=c;if(!atWarO('h:'+r.name,'o:'+b.id))H.owars.push(owKey('h:'+r.name,'o:'+b.id));
+  out.push(`You pay ${b.name} ${c} gold, and they make war on House ${r.name}`);
+  if(grade==='partial'){bump(r,1);out.push(`But your hand in it is suspected: House ${r.name}’s tension rises to ${TENSION[r.hostility].toLowerCase()}`)}
+}
+/* ---------- Phase 4: the ladder.
+   An outlaw company that reaches strength 3 and holds 3 lands goes legit: it becomes an independent minor house of strength 1;
+   its stronghold becomes its Estate and its lands become hamlets of its own.
+   Great houses have heirs: when a lord dies the heir succeeds, and 85% of the time a new heir is named. Heirs can die too. A house with no heir names one 30% of Winters.
+   A great house falls when you dissolve it, when it has no land left (its own or its bannermen's), or when its lord dies with no heir.
+   Its bannermen contest the seat until the end of next season; you may back one for 3 influence. The winner becomes the great house;
+   the others swear to it. With no bannermen, a new house rises as before; with one, it takes the seat at once. The royal house never falls this way. ---------- */
+const LEGIT_STR=3,LEGIT_LANDS=3,HEIR_KEEP=.85,BACK_INF=3;
+const COMPANY_HOUSE={'the Red Hands':'Redhand','the Mire Rats':'Mirerat','the Hollow Men':'Hollowman','the Gallows Crew':'Gallows','the Black Hounds':'Blackhound','the Lantern Thieves':'Lanternthief','the Broken Spurs':'Brokenspur','the Ditch Kings':'Ditchking','the Grey Hoods':'Greyhood','the Weald Wolves':'Wealdwolf'};
+function newHeir(r){const sx=Math.random()<.6?'m':'f';return {given:nameFor(sx,r.sp),sex:sx,age:toSpAge(ri(8,30),r.sp)}}
+function ensureHeirs(){(H.rivals||[]).forEach(r=>{if(r.heir===undefined)r.heir=newHeir(r)});if(!Array.isArray(H.contests))H.contests=[]}
+/* the next lord: the heir if there is one (and a new heir 85% of the time), else a stranger (only the royal house reaches this) */
+function takeHeir(r){const h=r.heir;r.heir=Math.random()<HEIR_KEEP?newHeir(r):null;if(h)return {given:h.given,sex:h.sex,age:h.age};
+  const sx=Math.random()<.65?'m':'f';return {given:nameFor(sx,r.sp),sex:sx,age:toSpAge(ri(15,40),r.sp)}}
+const heirless=r=>r&&!r.heir&&!isRoyalRival(r.name)&&!contestFor(r.name);
+function heirTurn(say){if(seasonOf(H.cycle+1)!=='Winter')return;
+  H.rivals.forEach(r=>{if(!r.heir){if(!isRoyalRival(r.name)&&Math.random()<.3){r.heir=newHeir(r);say(`House ${r.name} names an heir at last: ${r.heir.given}.`,'')}return}r.heir.age++;const old=humanAge(r.heir.age,r.sp)>60;
+    if(Math.random()<(old?.08:.02)){const h=r.heir;r.heir=Math.random()<HEIR_KEEP?newHeir(r):null;
+      say(`${h.given}, heir of House ${r.name}, has died.${r.heir?` ${r.heir.given} is named heir in their place.`:' House '+r.name+' has no heir left.'}`,r.heir?'':'warn')}});
+}
+/* ---------- going legit ---------- */
+function companyHouseName(b){if(COMPANY_HOUSE[b.name])return COMPANY_HOUSE[b.name];const w=b.name.replace(/^the /i,'').split(/\s+/);const L=w.length-1;w[L]=w[L].replace(/ves$/,'f').replace(/ies$/,'y').replace(/([^s])s$/,'$1');const j=w.join('').toLowerCase();return j.charAt(0).toUpperCase()+j.slice(1)}
+function goLegit(b,say){
+  const taken=new Set([H.house.name].concat(H.rivals.map(r=>r.name)).concat((H.minors||[]).map(x=>x.name)).map(n=>n.toLowerCase()));
+  let name=companyHouseName(b);if(taken.has(name.toLowerCase()))name=minorName(pick(SPECIES_KEYS),taken);
+  const sp=pick(SPECIES_KEYS),x=newMinor(null,sp,true,taken);
+  Object.assign(x,{name,sigil:b.mark,power:1,estate:{name:b.hold.name},landless:false,resentful:false,fromOutlaws:b.hold.house,holds:[]});
+  const n=Math.min(HOLD_CAP,banditLands(b));for(let i=0;i<n;i++)x.holds.push({t:MT_HAMLET});
+  H.minors.push(x);
+  H.owars=(H.owars||[]).filter(w=>!w.split('|').includes('o:'+b.id));H.coWars=(H.coWars||[]).filter(id=>id!==b.id);if(H.paidOff)delete H.paidOff[b.id];if(H.hiredCo&&H.hiredCo.id===b.id)H.hiredCo=null;
+  H.bandits=H.bandits.filter(z=>z!==b);
+  say(`${cap1(b.name)} are outlaws no longer. Their captain takes ${b.hold.name} as an Estate and raises the banner of House ${name}, a minor house standing alone with ${n} land${n===1?'':'s'}.`,'warn');
+}
+function legitTurn(say){(H.bandits||[]).slice().forEach(b=>{if(b.power>=LEGIT_STR&&banditLands(b)>=LEGIT_LANDS)goLegit(b,say)})}
+/* ---------- falls and contested seats ---------- */
+const contestFor=n=>(H.contests||[]).find(c=>c.house===n);
+function fallHouse(r,why,say){
+  if(!r||isRoyalRival(r.name)||contestFor(r.name))return;
+  const n=r.name,out=[];cutHouseTies(n,out);out.forEach(t=>say(t,''));
+  const cl=swornTo(n).filter(x=>!x.rebel);
+  say(`House ${n} falls: ${why}.`,'warn');
+  if(!cl.length){const seat=r.seat;replaceHouse(r);say(`No bannerman is left to claim ${seat}. A new power rises in the realm: House ${r.name} of ${r.seat}.`,'warn');return}
+  if(cl.length===1){promoteMinor(r,cl[0],say);return}
+  H.contests.push({house:n,seat:r.seat,claimants:cl.map(x=>x.id),backed:null,decide:H.cycle+1,why});
+  say(`Its bannermen, ${cl.map(x=>'House '+x.name).join(', ')}, contest the seat. It will be decided at the end of next season. You may back a claimant in The Realm.`,'warn');
+}
+const claimStr=(c,x)=>(x.power||1)*2+(c.backed===x.id?3:0);
+function backClaimant(n,id){const c=contestFor(n);if(!c||c.backed||H.influence<BACK_INF||!c.claimants.includes(id))return;H.influence-=BACK_INF;c.backed=id;const x=minorById(id);H.log.push({cycle:H.cycle,text:`You back House ${x?x.name:'?'}'s claim to the seat of House ${n} (${BACK_INF} influence).`})}
+function contestTurn(say){
+  (H.contests||[]).slice().forEach(c=>{
+    if(c.decide>H.cycle)return;H.contests=H.contests.filter(z=>z!==c);
+    const r=rival(c.house),xs=c.claimants.map(minorById).filter(x=>x&&!x.rebel&&x.liege===c.house);
+    if(!r)return;
+    if(!xs.length){replaceHouse(r);say(`The contest for the seat of House ${c.house} ends with no claimant standing. A new power rises: House ${r.name} of ${r.seat}.`,'warn');return}
+    const tot=xs.reduce((a,x)=>a+claimStr(c,x),0);let v=Math.random()*tot,win=xs[0];for(const x of xs){v-=claimStr(c,x);if(v<=0){win=x;break}}
+    const backedWon=c.backed===win.id,backedLost=c.backed&&!backedWon;
+    promoteMinor(r,win,say);
+    if(backedWon){r.hostility=0;fav(1);say(`House ${win.name} remembers who stood by it. It starts cordial toward you, and the court takes note (+1 royal favor).`,'good')}
+    else if(backedLost){r.hostility=clamp((r.hostility||0)+1,0,5);say(`House ${win.name} knows you backed another claimant. Tension rises to ${TENSION[r.hostility].toLowerCase()}.`,'bad')}
+  });
+}
+/* a minor house becomes the great house in place of a fallen one: the fallen house's remaining lands and bannermen pass to it */
+function promoteMinor(r,x,say){
+  const oldN=r.name,keep=r.lands;widowConsorts(w=>w.kind==='lord'&&w.house===oldN);
+  H.realm.alliances=H.realm.alliances.filter(k=>!k.split('|').includes(oldN));H.realm.wars=H.realm.wars.filter(k=>!k.split('|').includes(oldN));
+  const sx=Math.random()<.65?'m':'f';
+  Object.assign(r,{name:x.name,sp:x.sp,seat:x.estate?x.estate.name:pick(SEATS_BY[x.sp]||SEATS_BY.Kin),sigil:x.sigil,power:x.power||1,hostility:0,
+    lands:Math.min(HOLD_CAP,keep+mN(x)),agenda:pick(Object.keys(AGENDAS)),lord:{given:nameFor(sx,x.sp),sex:sx,age:toSpAge(ri(25,55),x.sp)}});
+  r.heir=newHeir(r);
+  const est=x.estate&&x.estate.lid?H.lands.find(l=>l.lid===x.estate.lid):null;if(est)delete est.minor;
+  H.minors=H.minors.filter(z=>z!==x);
+  (H.minors||[]).forEach(z=>{if(z.liege===oldN)z.liege=x.name});
+  H.owars=(H.owars||[]).map(w=>w.split('|').map(k=>k==='m:'+x.id?'h:'+x.name:k).sort().join('|'));
+  renameBanditHouse(oldN,x.name);(H.bandits||[]).forEach(b=>{if(b.lands&&b.lands['m:'+x.id]){b.lands['h:'+x.name]=(b.lands['h:'+x.name]||0)+b.lands['m:'+x.id];delete b.lands['m:'+x.id]}});
+  say(`House ${x.name} takes the seat of House ${oldN} and rises to stand among the great houses of the realm, at ${r.seat}.${swornTo(x.name).length?` ${swornTo(x.name).map(z=>'House '+z.name).join(', ')} swear${swornTo(x.name).length===1?'s':''} to it.`:''}`,'warn');
+}
+function fallTurn(say){
+  ensureHeirs();
+  H.rivals.slice().forEach(r=>{if(totalLands(r)<=0&&!isRoyalRival(r.name)&&!contestFor(r.name))fallHouse(r,'it has no land left',say)});
+}
+function contestPanel(){
+  const C=(H.contests||[]);if(!C.length)return '';
+  return C.map(c=>{const xs=c.claimants.map(minorById).filter(Boolean),tot=xs.reduce((a,x)=>a+claimStr(c,x),0)||1;
+    return `<section class="pane crisis"><h2>The seat of House ${esc(c.house)} is contested</h2><p class="muted" style="font-size:15px;margin:4px 0 10px">House ${esc(c.house)} has fallen: ${esc(c.why)}. Its bannermen fight for ${esc(c.seat)}; the strongest has the best chance. Decided at the end of ${seasonOf(c.decide)}, year ${yearOf(c.decide)}. Back one for ${BACK_INF} influence: if they win, they start cordial toward you; if another wins, they hold it against you.</p>
+      <ul class="claim">${xs.map(x=>`<li><span style="flex:1;min-width:0"><b>House ${esc(x.name)}</b>${c.backed===x.id?' <span class="status ok">You back them</span>':''}<br><span class="muted" style="font-size:15px">Strength ${'◆'.repeat(x.power||1)}${'◇'.repeat(3-(x.power||1))} · ${mN(x)} land${mN(x)===1?'':'s'} · ${Math.round(100*claimStr(c,x)/tot)}% chance</span></span>${c.backed?'':`<button class="sm" data-seatclaim="${esc(c.house)}|${x.id}" ${H.influence>=BACK_INF?'':'disabled'}>Back · ${BACK_INF} inf</button>`}</li>`).join('')}</ul></section>`}).join('');
+}
+/* ---------- great houses look after their bannermen, and court independents ----------
+   Each season a great house with more than 7 lands of its own grants one to its poorest bannerman below 7,
+   so long as it keeps at least as many lands as its richest bannerman.
+   A great house with 7+ lands whose bannermen all hold 7+ courts an independent house, 10% a season; it always joins. */
+function liegeCareTurn(say){
+  H.rivals.forEach(r=>{
+    if(contestFor(r.name))return;
+    const bs=(H.minors||[]).filter(x=>x.liege===r.name&&!x.rebel);
+    const poor=bs.filter(x=>mN(x)<LAND_WANT).sort((a,b)=>mN(a)-mN(b));
+    const richest=Math.max(0,...bs.map(mN));
+    if(poor.length&&r.lands>LAND_WANT&&r.lands-1>=richest){const x=poor[0];r.lands--;mAdd(x,MT_VILLAGE);say(`House ${r.name} grants a village to its bannerman House ${x.name}.`,'')}
+    if(r.lands>=LAND_WANT&&!poor.length&&Math.random()<.1){
+      const ind=(H.minors||[]).filter(x=>!x.liege&&!x.rebel&&!x.oath);if(!ind.length)return;const x=pick(ind);
+      x.liege=r.name;x.resentful=false;x.courted=false;x.unrest=0;
+      H.owars=(H.owars||[]).filter(w=>!(w.split('|').includes('m:'+x.id)&&w.split('|').includes('h:'+r.name)));
+      say(`House ${x.name}, standing alone, is courted by House ${r.name} and swears to it.`,'')}
+  });
+}
+/* ---------- phase 5: a house that loses its last land in battle may be ended outright ---------- */
+function endMinor(x,say,why){
+  H.owars=(H.owars||[]).filter(w=>!w.split('|').includes('m:'+x.id));
+  (H.contests||[]).forEach(c=>{c.claimants=c.claimants.filter(id=>id!==x.id)});
+  const L=minorHolder(x);if(L)delete L.minor;
+  dissolveMinor(x);if(say)say(`House ${x.name} is no more${why?': '+why:''}. Its name passes out of the realm.`,'warn');
+}
+/* ---------- phase 5: the time skip. Each season of each skipped year, the realm's outlaws, minor houses, heirs and falls run as in play.
+   Contested seats are decided without you. Companies at war with you strike once a year: your host and garrisons against their strength;
+   win, and they lose a land or a pip; lose, and a hold slides into unrest, or (already in unrest) falls to them. ---------- */
+const SKIP_KEEP=/outlaws no longer|falls:|takes the seat|new power rises|are broken|is no more|new outlaw company|make war on your house|swears to it|courted|crushes the rebellion|breaks away|contest the seat|names an heir|has no heir|in your pay|peace you bought|leave your service|lose interest/;
+function skipRealmSeason(say){
+  const keep=(t,tone)=>{if(SKIP_KEEP.test(t))say(t.replace(/ Answer it this season[^.]*\./,'').replace(/ Expect their raids each season\./,'').replace(/ You may back a claimant in The Realm\./,''),tone)};
+  outlawTurn(keep);
+  /* deals expire; company wars on you are fought once a year below, not as raid cards */
+  ensureDeals();const d0=H.ops.defense.length;coDealsTurn(keep);H.ops.defense=H.ops.defense.slice(0,d0);
+  minorLandTurn(keep);minorGrowTurn(keep);recruitTurn(keep);landHungerTurn(keep);liegeCareTurn(keep);legitTurn(keep);heirTurn(keep);contestTurn(keep);fallTurn(keep);capSweep(keep);
+}
+function skipCoWarsYear(say){
+  (H.bandits||[]).filter(b=>coWarYou(b)).forEach(b=>{
+    const mine=1+armyPower()+hiredPower()+Math.random()*3,theirs=b.power+Math.random()*3;
+    if(mine>=theirs){const res=payLoss('o:'+b.id);
+      if(!res){const m=[];breakBandit(b,t=>m.push(t),'by your host');m.forEach(t=>say(t,'good'));return}
+      if(res.land){if(res.land==='y'){const L=landHomeYou();say(`Your host beats back ${b.name} and wins back the hamlet of ${L.name}.`,'good')}else{landHome(res.land,b);say(`Your host beats back ${b.name} and returns a land to ${entLabel(res.land)}.`,'good')}}
+      else say(`Your host beats back ${b.name}: strength ${b.power}.`,'good');return}
+    const hs=H.lands.filter(l=>!l.minor&&!isPart(l));if(!hs.length)return;const L=pick(hs);
+    if((L.unrest||0)>=2){if(steadOf(L))steadRevolt(L,say,b.id);else loseHold(L,say,b.id)}
+    else{L.unrest=(L.unrest||0)+1;steadSync();say(`${cap1(b.name)} raid ${holdLabel(L)}. It falls into ${UNREST[L.unrest].toLowerCase()}.`,'bad')}
+  });
+}
+function banditLi(b){
+  const raided=Object.entries(b.lands||{}).filter(([,n])=>n>0).map(([k,n])=>`${n} land${n>1?'s':''} of ${esc(entLabel(k))}`).join(', ');
+  const wars=owarsOf('o:'+b.id).map(k=>esc(entLabel(k)));
+  return `<li><svg viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(b.mark,'bd'+b.id)}</svg><span style="min-width:0;flex:1"><b>${esc(cap1(b.name))}</b> <span class="status bad" style="font-size:10px;padding:1px 6px">Outlaws</span> ${coStatus(b)}
+    <span class="m">${esc(BANDIT_HOLD[b.power])} of ${esc(b.hold.name)}, in House ${esc(b.hold.house)}’s lands · strength ${'◆'.repeat(b.power)}${'◇'.repeat(3-b.power)}</span>
+    <span class="m">${raided?'Holds '+raided:'Holds no land beyond their '+esc(BANDIT_HOLD[b.power].toLowerCase())}</span>${wars.length?`<span class="m"><b class="hot">At war</b> with ${wars.join(' and ')}</span>`:''}${coActs(b)}</span></li>`;
+}
+function banditsPanel(){
+  const B=H.bandits||[];
+  const tot=B.reduce((a,b)=>a+1+banditLands(b),0);
+  return `<section class="pane fold minors"><details data-fold="outlaws" ${foldOpen('outlaws')?'open':''}><summary><h2>Outlaw companies</h2><span class="muted">${B.length} compan${B.length===1?'y':'ies'} · ${tot} land${tot===1?'':'s'} held</span></summary><div class="foldbody">
+    <p class="muted" style="font-size:15px;margin:0 0 10px">Bands of outlaws who answer to no lord. Each holds one stronghold in a great house’s lands and seizes more from that house (while it has 3 or more), its bannermen and independent houses; the stronger a company grows, the less often it strikes without a war; every land they hold is one a house has lost. Their strength is their blades: it grows as outlaws flock to them (more often the more land they hold, and after each victory). They war on great houses, minor houses and each other, and the houses they rob strike back. Whoever loses a battle gives up a land or a pip of strength, never both. A company with neither left to give has its stronghold stormed and is broken; every land it held goes back. Your dealings: pay a company off (5 gold a point of strength) to leave you and your bannermen alone for a year; hire one (8 gold a point) for a year to fight your wars, or at peace to settle a restless hold each season; strike one on the Summer and Fall boards; set one on a rival from the Winter board.</p>
+    ${B.length?`<ul>${B.map(banditLi).join('')}</ul>`:'<p class="muted" style="margin:0;font-size:15px">No outlaw company troubles the realm.</p>'}</div></details></section>`;
+}
 function minorLi(x){
   const est=estateLabel(x);
-  const where=x.estate?`${esc(est)} Estate`:`<span class="${x.resentful?'hot':''}">Landless${x.liege===YOU&&!x.resentful&&!x.rebel?', a retainer at your seat':''}</span>`;
+  const where=x.estate?`${esc(est)} Estate`:mN(x)?'No seat':`<span class="${x.resentful?'hot':''}">Landless${x.liege===YOU&&!x.resentful&&!x.rebel?', a retainer at your seat':''}</span>`;
   const bond=x.liege===YOU?(x.loyal?' <span class="status ok" style="font-size:10px;padding:1px 6px">Bound by marriage</span>':x.courted?' <span class="status young" style="font-size:10px;padding:1px 6px">Courted</span>':''):'';
   const open=minorUI&&minorUI.id===x.id;
-  return `<li class="${open?'open':''}"><svg viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(x.sigil,'mn'+x.id)}</svg><span style="min-width:0;flex:1"><b>House ${esc(x.name)}</b>${bond}${x.resentful?' <span class="status bad" style="font-size:10px;padding:1px 6px">Resentful</span>':''}${x.rebel?' <span class="status bad mrst">Rebel</span>':x.unrest?` <span class="status ${x.unrest>=2?'bad':'young'} mrst">${UNREST[x.unrest]}</span>`:''}
-    <span class="w">“${esc(x.words)}”</span><span class="m">${esc(x.sp)} · ${where} · strength ${'◆'.repeat(x.power)}${'◇'.repeat(3-x.power)}</span>${(x.ties||[]).map(t=>`<span class="mtie">${esc(t)}</span>`).join('')}${rebelHtml(x)}${dissOn(x)?'<span class="rebel feud"><b>Plot underway.</b> A scheme to dissolve this house is under way on the Operations board.</span>':''}${oathHtml(x)}${feudHtml(x)}${petitionHtml(x)}${minorActs(x)}${open?matchPanel(x):''}</span></li>`;
+  return `<li class="${open||landUI===x.id?'open':''}"><svg viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(x.sigil,'mn'+x.id)}</svg><span style="min-width:0;flex:1"><b>House ${esc(x.name)}</b>${bond}${x.resentful?' <span class="status bad" style="font-size:10px;padding:1px 6px">Resentful</span>':''}${x.loyalUntil>H.cycle&&x.liege===YOU?' <span class="status ok" style="font-size:10px;padding:1px 6px">Grateful</span>':''}${x.rebel?' <span class="status bad mrst">Rebel</span>':x.unrest?` <span class="status ${x.unrest>=2?'bad':'young'} mrst">${UNREST[x.unrest]}</span>`:''}
+    <span class="w">“${esc(x.words)}”</span><span class="m">${esc(x.sp)} · ${where}${mN(x)?` · lands: ${esc(mHoldsText(x))}`:''}${x.fromOutlaws?' · once outlaws':''} · strength ${'◆'.repeat(x.power)}${'◇'.repeat(3-x.power)}</span>${(x.ties||[]).map(t=>`<span class="mtie">${esc(t)}</span>`).join('')}${rebelHtml(x)}${dissOn(x)?'<span class="rebel feud"><b>Plot underway.</b> A scheme to dissolve this house is under way on the Operations board.</span>':''}${oathHtml(x)}${feudHtml(x)}${petitionHtml(x)}${minorActs(x)}${landUI===x.id&&x.liege===YOU?landPanel(x):''}${open?matchPanel(x):''}</span></li>`;
 }
 function minorsPanel(){
   const M=H.minors||[];
@@ -2454,7 +3019,7 @@ function minorsPanel(){
     +H.rivals.map(r=>grp(`Sworn to House ${esc(r.name)}`,r.sigil,'mnr'+r.name,swornTo(r.name))).join('')
     +grp('Independent',null,'',M.filter(x=>!x.liege),'No house stands alone.');
   return `<section class="pane fold minors"><details data-fold="minors" ${foldOpen('minors')?'open':''}><summary><h2>Minor houses</h2><span class="muted">${M.length} houses · ${M.filter(x=>x.estate).length} estates${M.some(x=>x.petition&&x.liege===YOU)?` · <span class="hot">${M.filter(x=>x.petition&&x.liege===YOU).length} petition${M.filter(x=>x.petition&&x.liege===YOU).length>1?'s':''} waiting</span>`:''}${M.some(x=>x.rebel&&x.liege===YOU)?` · <span class="hot">${M.filter(x=>x.rebel&&x.liege===YOU).length} in rebellion</span>`:''}${(H.feuds||[]).length?` · <span class="hot">${H.feuds.length} feud${H.feuds.length>1?'s':''}</span>`:''}${M.some(x=>x.oath)?` · <span class="okc">${M.filter(x=>x.oath).length} oath${M.filter(x=>x.oath).length>1?'s':''} offered</span>`:''}</span></summary><div class="foldbody">
-    <p class="muted" style="font-size:15px;margin:0 0 10px">Lesser houses seated on Estates, the greatest tier of holding. An Estate held by a sworn house pays its liege half its gold and peasants. Raise a castle to an Estate in your holdings, then grant it to a house sworn to you. Court an independent house with gold and influence, or bind a house to you for good by marriage: wed one of yours out and they send a boon for your armory; bring one of theirs in and they carry a boon of their own blood. A house turned out of its Estate is landless, and resentful. An independent house’s Estate can be stormed on the Fall Conquest board, with no war needed. A landless house, of any allegiance, can be dissolved with an Intrigue plot, once a season.</p>${body}</div></details></section>`;
+    <p class="muted" style="font-size:15px;margin:0 0 10px">Lesser houses seated on Estates, the greatest tier of holding. Beside its Estate, a house may hold up to 12 lands of its own, from wild clearings to castles; they grow over time, and a house sworn to you may ask your help to raise one. A sworn house’s lands count toward its liege, and pay its liege half their income. An Estate held by a sworn house pays its liege half its gold and peasants. Raise a castle to an Estate in your holdings, then grant it to a house sworn to you. Court an independent house with gold and influence, or bind a house to you for good by marriage: wed one of yours out and they send a boon for your armory; bring one of theirs in and they carry a boon of their own blood. A house turned out of its Estate is landless, and resentful. An independent house’s Estate can be stormed on the Fall Conquest board, with no war needed. A landless house, of any allegiance, can be dissolved with an Intrigue plot, once a season.</p>${body}</div></details></section>`;
 }
 /* ---------- sigil picker: edits apply instantly; the rule of tincture is enforced against the field ---------- */
 let sigilEdit=null; /* {kind:'mine'|'rival'|'royal', name} */
@@ -2556,10 +3121,12 @@ function genBoard(){const t=SEASON_OP[seasonOf(H.cycle)];
       /* an independent house's Estate takes the place of one ordinary operation */
       const ih=indieHolders(),slots=ops.map((o,j)=>j).filter(j=>!ops[j].war&&!ops[j].estate);
       if(ih.length&&slots.length)ops[pick(slots)]=indieEstateOp(pick(ih));
-      ops.sort((a,b)=>a.diff-b.diff)}return aidBoard(ops)}
+      ops.sort((a,b)=>a.diff-b.diff)}
+    {const st=strikeFor(t);if(st&&((H.bandits||[]).some(coWarYou)||Math.random()<.5)){const j=ops.map((o,i)=>i).filter(i=>!ops[i].war&&!ops[i].estate&&!ops[i].indie);if(j.length)ops[j[j.length-1]]=st}}
+    return aidBoard(ops)}
   if(t==='Intrigue'){/* a trade route is always on the Winter board, beside two other court plots */
     const all=OPS.Intrigue.objs,tr=all.find(o=>o[1]==='route'),rest=shuffle(all.filter(o=>o!==tr)).slice(0,2);
-    return mixAllyOps((H.rivals.some(r=>canTradeWith(r.name))?[tr]:[]).concat(rest).concat(H.rivals.some(r=>canTradeWith(r.name))?[]:[shuffle(all.filter(o=>o!==tr&&!rest.includes(o)))[0]]).map(o=>genOp(t,o)))}
+    return withSetOn(mixAllyOps((H.rivals.some(r=>canTradeWith(r.name))?[tr]:[]).concat(rest).concat(H.rivals.some(r=>canTradeWith(r.name))?[]:[shuffle(all.filter(o=>o!==tr&&!rest.includes(o)))[0]]).map(o=>genOp(t,o))))}
   const objs=shuffle(OPS[t].objs).slice(0,3);if(t==='Conquest')objs.sort((a,b)=>a[1]-b[1]);return objs.map(o=>genOp(t,o))}
 function ensureState(){
   if(H.influence==null)H.influence=0;
@@ -2575,7 +3142,7 @@ function ensureState(){
   ensureBlood();
   migrateItems();
   ensureMarket();ensureArmy();migrateLandIds();
-  ensureMinors();syncMinors();
+  ensureMinors();syncMinors();ensureBandits();ensureDeals();ensureHeirs();
 }
 /* items renamed or moved between the heirloom and specialty slots */
 function migrateItems(){
@@ -2777,9 +3344,9 @@ function renameStead(id,raw){const s=steadById(id);if(!s)return;const nw=String(
   (H.ops.defense||[]).concat(H.ops.underway.map(x=>x.op)).forEach(op=>{if(op&&op.landName===s.core){if(op.place===old)op.place=nw;op.title=op.title.split(old).join(nw)}});
   H.log.push({cycle:H.cycle,text:`The steading of ${old} is now called ${nw}.`})}
 /* a steading in revolt: one hold breaks away, the rest fall back to unrest */
-function steadRevolt(L,say){
+function steadRevolt(L,say,coId){
   const s=steadOf(L),p=steadParts(s),others=p.filter(l=>lk(l)!==s.core),gone=pick(others.length?others:p);
-  say(`The steading of ${s.name} rises in revolt.`,'bad');loseHold(gone,say);
+  say(`The steading of ${s.name} rises in revolt.`,'bad');loseHold(gone,say,coId);
   const c=steadCore(s)||H.lands.find(l=>l.stead===s.id);if(c)c.unrest=2;steadSync();
   if(steadById(s.id))say(`The rest of the steading of ${s.name} is held, but stays in unrest.`,'warn');
   else{const left=H.lands.find(l=>lk(l)===lk(c));if(left){left.unrest=2;say(`Only ${left.name} is left of the steading, and it stays in unrest.`,'warn')}}
@@ -2835,20 +3402,23 @@ function planRout(L){
     title:`Rout the bandits from ${holdLabel(L)}`,stages:ROUT_STAGES.slice(0,lvl+1).map(s=>({name:s,stat:'Might'})),gold:0});
 }
 function callOffRout(L){H.ops.defense=H.ops.defense.filter(d=>!(d.rout&&d.landName===lk(L)))}
-function loseHold(L,say){
+function loseHold(L,say,coId){
   const i=H.lands.indexOf(L);if(i<0)return;H.lands.splice(i,1);refundBuild(L,say);
+  const rb=coId&&banditById(coId);if(rb){if(banditLands(rb)<HOLD_CAP){rb.lands['y']=(rb.lands['y']||0)+1;say(`The ${L.tier.toLowerCase()} of ${L.name} rises in revolt, and ${rb.name} take it.`,'bad')}else say(`The ${L.tier.toLowerCase()} of ${L.name} rises in revolt; ${rb.name} loot it and leave it burning.`,'bad');return}
   const r=!L.wild&&rival(L.from);
   if(r){r.lands++;say(`The ${L.tier.toLowerCase()} of ${L.name} rises in revolt and goes back to House ${r.name}.`,'bad')}
   else if(L.from==='the crown')say(`The ${L.tier.toLowerCase()} of ${L.name} rises in revolt. The crown takes it back.`,'bad');
   else say(`The ${L.tier.toLowerCase()} of ${L.name} rises in revolt and the outlaws take it.`,'bad');
 }
 /* a raid that is failed or left unanswered: worse unrest, or the hold is lost if it was already in revolt */
-function raidLost(L,say){
-  if((L.unrest||0)>=3){if(steadOf(L))steadRevolt(L,say);else loseHold(L,say)}
+function raidLost(L,say,coId){
+  if((L.unrest||0)>=3){if(steadOf(L))steadRevolt(L,say,coId);else loseHold(L,say,coId)}
   else{L.unrest=(L.unrest||0)+1;steadSync();say(`The raiders hold sway in ${holdLabel(L)}. It falls into ${UNREST[L.unrest].toLowerCase()}.`,'bad')}
 }
 function peaceRewardText(op){
   if(op.kind==='quell')return `The revolt ends. Win, and they lose their Estate to you and are left landless and resentful (a partial win leaves the Estate restless). Fail, and you may try again next season`;
+  if(op.kind==='strike'){const b=banditById(op.co);return b?`Win: they give up a land (back to whoever they took it from, for influence and goodwill) or a pip of strength; with neither left, you storm ${b.hold.name} and break them. Complete success adds ${op.gold} gold in plunder. Win or lose, they are at war with you`:'The company is gone'}
+  if(op.kind==='seton'){const b=banditById(op.co);return b?`Pay ${b.name} ${op.cost} gold and they make war on House ${op.mark}. A partial success is suspected (tension +1); fail and you are caught (tension +1), but pay nothing`:'The company is gone'}
   if(op.kind==='rout')return `The hold returns to peace. Fail, and nothing changes; you may try again next season`;
   if(op.kind==='defend')return op.siege?`Keep ${op.place}, and on a complete success take one of their knights captive. Fail, and House ${op.target} takes the land`:`Break the raid and take ${op.gold} gold in loot; the hold ${op.unrest>=3?'calms to restless':'is at peace'}. Fail, and ${op.unrest>=3?'the hold is lost':'it falls deeper into unrest'}`;
   if(op.type==='Battle')return [op.gold+' gold purse',op.favor?'royal favor':'',op.inf?'+1 influence':''].filter(Boolean).join(', ')+`. Complete success also wins ${op.prize.name}`;
@@ -2857,6 +3427,8 @@ function peaceRewardText(op){
 function finishPeace(ms,grade,out){
   const op=ms.op;
   if(op.kind==='quell'){finishQuell(op,grade,out);return}
+  if(op.kind==='strike'){finishStrike(op,grade,out);return}
+  if(op.kind==='seton'){finishSetOn(op,grade,out);return}
   if(op.kind==='rout'){const L=H.lands.find(l=>lk(l)===op.landName);
     if(grade==='fail'||!L){out.push(`The bandits slip away from ${op.place}. Nothing changes.`);return}
     L.unrest=0;steadSync();out.push(`The bandits are routed. ${holdLabel(L)[0].toUpperCase()+holdLabel(L).slice(1)} is at peace.`);return}
@@ -2868,7 +3440,7 @@ function finishPeace(ms,grade,out){
       else{out.push(`${op.place} holds against House ${op.target}.`);if(grade==='full'){const cap={name:nameFor(pick(['m','f']),(rival(op.target)||{}).sp)+' '+op.target,rank:pick(CAPTIVE_RANKS),house:op.target,ransom:4+3*op.diff+ri(0,3)};H.captives.push(cap);out.push(`Captured ${cap.name}, ${cap.rank}`)}}
       return;}
     const L=i>=0?H.lands[i]:null,said=t=>out.push(t);
-    if(grade==='fail'){if(L)raidLost(L,said)}
+    if(grade==='fail'){if(L){if(op.coSiege){if(steadOf(L))steadRevolt(L,said,op.co);else loseHold(L,said,op.co)}else raidLost(L,said,op.co)}}
     else{const g=grade==='full'?op.gold:Math.ceil(op.gold/2);H.gold+=g;if(L){L.unrest=(op.unrest||L.unrest)>=3?1:0;steadSync()}out.push(`The raid on ${op.place} is broken. +${g} gold in loot. The hold is now ${UNREST[L?L.unrest:0].toLowerCase()}.`)}
     return;
   }
@@ -2893,7 +3465,8 @@ function banditTurn(say){
   const old=H.ops.defense.filter(op=>op.created!==H.cycle&&!op.quell);
   old.forEach(op=>{const L=H.lands.find(l=>lk(l)===op.landName);if(!L)return;
     if(op.siege){warTally(op.target,'fail');H.lands.splice(H.lands.indexOf(L),1);refundBuild(L,say);const r=rival(op.target);if(r)r.lands++;say(`No one rode out, and House ${op.target} seizes your ${L.tier.toLowerCase()} of ${L.name}.`,'bad')}
-    else{say(`No one rode out against the raid on ${L.name}.`,'bad');raidLost(L,say)}});
+    else if(op.coSiege){say(`No one rode out against the siege of ${L.name}.`,'bad');if(steadOf(L))steadRevolt(L,say,op.co);else loseHold(L,say,op.co)}
+    else{say(`No one rode out against the raid on ${L.name}.`,'bad');raidLost(L,say,op.co)}});
   H.ops.defense=(H.ops.defense||[]).filter(op=>op.created===H.cycle||op.quell);
   buildTurn(say);
   steadSync();
@@ -2903,8 +3476,8 @@ function banditTurn(say){
     if(u===0){L.unrest=1;say(`Grumbling spreads through ${where}. The hold is restless.`,'warn');return}
     if(u<3&&Math.random()<.5){L.unrest=u+1;say(`${where[0].toUpperCase()+where.slice(1)} slides into ${UNREST[L.unrest].toLowerCase()}.`,'warn');return}
     if(holdGuarded(L)){if(u<=1){say(`Raiders strike ${where}, and the garrison drives them off.`,'good');return}
-      H.ops.defense.push(genDefense(L,u-1));say(`A raid strikes ${where}. The garrison blunts it to ${DANGER[u-1].toLowerCase()} danger. Answer it this season.`,'warn');return}
-    H.ops.defense.push(genDefense(L));say(`A ${DANGER[u].toLowerCase()}-danger raid strikes ${where}. Answer it this season.`,'warn');
+      {const op=genDefense(L,u-1),rb=raiderFor();if(rb){op.co=rb.id;op.title=`${DANGER[op.diff]}-danger raid by ${rb.name} on ${holdLabel(L)}`}H.ops.defense.push(op)}say(`A raid strikes ${where}. The garrison blunts it to ${DANGER[u-1].toLowerCase()} danger. Answer it this season.`,'warn');return}
+    {const op=genDefense(L),rb=raiderFor();if(rb){op.co=rb.id;op.title=`${DANGER[op.diff]}-danger raid by ${rb.name} on ${holdLabel(L)}`}H.ops.defense.push(op);say(`A ${DANGER[u].toLowerCase()}-danger raid${rb?' by '+rb.name:''} strikes ${where}. Answer it this season.`,'warn')}
   });
   steadSync();
 }
@@ -2919,7 +3492,7 @@ function rewardText(op){
     case 'Conquest':return `${holdingName(op.land)}: ${op.land.income} gold each cycle, ${op.land.peasants} peasants`;
   }
 }
-const cycleIncome=()=>H.lands.reduce((a,l)=>a+landIncome(l),0)+H.pacts.filter(p=>p.income).reduce((a,p)=>a+p.income,0)+tradeIncome()+tollIncome()+(H.realm&&H.realm.office==='treasurer'?3:0)+(H.realm&&H.realm.yours?8:0);
+const cycleIncome=()=>H.lands.reduce((a,l)=>a+landIncome(l),0)+(typeof bannerShare==='function'?bannerShare():0)+H.pacts.filter(p=>p.income).reduce((a,p)=>a+p.income,0)+tradeIncome()+tollIncome()+(H.realm&&H.realm.office==='treasurer'?3:0)+(H.realm&&H.realm.yours?8:0);
 const canServe=m=>!m.dead&&!m.captive&&isAdult(m)&&m.wounds<maxWounds(m);
 const available=m=>canServe(m)&&m.onOp!==H.cycle;
 const activeTeam=ms=>ms.team.map(mem).filter(m=>m&&canServe(m));
@@ -3157,7 +3730,7 @@ function holdingsPane(){
 }
 function rivalsPane(){
   return `<section class="pane"><h2>Rival houses</h2><ul class="rivals">${H.rivals.map(r=>`<li><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'rv'+r.name)}</svg>
-    <span style="min-width:0;flex:1"><b>House ${esc(r.name)}</b><br><span class="muted">${esc(r.seat)} · ${r.lands} land${r.lands===1?'':'s'} · ${stanceOf(r)} · ${TENSION[r.hostility]}${guards(r.name).length?' · held in check':''}</span></span>
+    <span style="min-width:0;flex:1"><b>House ${esc(r.name)}</b><br><span class="muted">${esc(r.seat)} · ${totalLands(r)} land${totalLands(r)===1?'':'s'}${bannerLands(r.name)?` (${bannerLands(r.name)} with bannermen)`:''}${outlawLandsOf(r.name)?` (${outlawLandsOf(r.name)} lost to outlaws)`:''} · ${stanceOf(r)} · ${TENSION[r.hostility]}${guards(r.name).length?' · held in check':''}</span></span>
     <span class="host" aria-label="Hostility ${r.hostility} of 5" title="Hostility">${Array.from({length:5},(_,i)=>`<i class="${i<r.hostility?'on':''}"></i>`).join('')}</span></li>`).join('')}</ul>
     <p class="muted" style="font-size:14px;margin:10px 0 0">Hostility rises when you attack a house or are caught working against it. The Realm (Phase 3) will make them act on it.</p></section>`;
 }
@@ -3190,7 +3763,7 @@ function endCycle(){
   const inc=cycleIncome();H.gold+=inc;trainingTurn();
   H.members.forEach(m=>{if(!m.dead&&m.wounds>0)m.wounds-=Math.min(m.wounds,hasBoon(m,'surgeon')?2:1)});
   H.log.push({cycle:H.cycle,text:`${seasonOf(H.cycle)} ends. Your holdings pay ${inc} gold. The wounded mend.`});
-  H.news=realmTurn();banditTurn((t,tone)=>H.news.push({t,tone}));boonTurn((t,tone)=>H.news.push({t,tone}));minorTurn((t,tone)=>H.news.push({t,tone}));armyTurn((t,tone)=>H.news.push({t,tone}));allyTurn((t,tone)=>H.news.push({t,tone}));plotTurn((t,tone)=>H.news.push({t,tone}));mercsLeave(null,(t,tone)=>H.news.push({t,tone}));if(seasonOf(H.cycle+1)==='Spring')informantTurn((t,tone)=>H.news.push({t,tone}));if(seasonOf(H.cycle+1)==='Winter')bloodlineTurn((t,tone)=>H.news.push({t,tone}));settleTraining();H.news.forEach(n=>H.log.push({cycle:H.cycle,text:n.t,realm:1}));if(H.log.length>80)H.log=H.log.slice(-80);
+  H.news=realmTurn();banditTurn((t,tone)=>H.news.push({t,tone}));boonTurn((t,tone)=>H.news.push({t,tone}));minorTurn((t,tone)=>H.news.push({t,tone}));outlawTurn((t,tone)=>H.news.push({t,tone}));coDealsTurn((t,tone)=>H.news.push({t,tone}));minorLandTurn((t,tone)=>H.news.push({t,tone}));minorGrowTurn((t,tone)=>H.news.push({t,tone}));recruitTurn((t,tone)=>H.news.push({t,tone}));landHungerTurn((t,tone)=>H.news.push({t,tone}));liegeCareTurn((t,tone)=>H.news.push({t,tone}));legitTurn((t,tone)=>H.news.push({t,tone}));heirTurn((t,tone)=>H.news.push({t,tone}));contestTurn((t,tone)=>H.news.push({t,tone}));fallTurn((t,tone)=>H.news.push({t,tone}));capSweep((t,tone)=>H.news.push({t,tone}));armyTurn((t,tone)=>H.news.push({t,tone}));allyTurn((t,tone)=>H.news.push({t,tone}));plotTurn((t,tone)=>H.news.push({t,tone}));mercsLeave(null,(t,tone)=>H.news.push({t,tone}));if(seasonOf(H.cycle+1)==='Spring')informantTurn((t,tone)=>H.news.push({t,tone}));if(seasonOf(H.cycle+1)==='Winter')bloodlineTurn((t,tone)=>H.news.push({t,tone}));settleTraining();H.news.forEach(n=>H.log.push({cycle:H.cycle,text:n.t,realm:1}));if(H.log.length>80)H.log=H.log.slice(-80);
   H.cycle++;H.ops.season=H.cycle;ensureMarket();H.ops.board=genBoard();planning=null;planTeam=[];leverage=null;render();
 }
 
@@ -3259,6 +3832,7 @@ function syncRoyalLord(rr,say,quiet){if(!rr)return;const Rz=H.realm;
   if(!quiet)say(`${rr.lord.given} now leads House ${rr.name}.`,'')}
 function newHeirR(){const sex=Math.random()<.6?'m':'f';return {given:nameFor(sex,pick(SPECIES_KEYS)),sex,age:0}}
 function resolveCrisis(say){
+  {const C0=H.realm.crisis;C0.claimants=C0.claimants.filter(c=>c.key==='you'||c.key==='heir'||rival(c.key));if(!C0.claimants.length){const r=pick(H.rivals.filter(x=>!contestFor(x.name)))||H.rivals[0];C0.claimants=[{key:r.name,label:'House '+r.name,str:1}]}}
   const Rz=H.realm,C=Rz.crisis,tot=C.claimants.reduce((a,c)=>a+c.str,0);let x=Math.random()*tot,win=C.claimants[0];
   for(const c of C.claimants){x-=c.str;if(x<=0){win=c;break}}
   const prevOffice=Rz.office;Rz.office=null;
@@ -3295,7 +3869,8 @@ const EVENTS=[
     const widSay=()=>wid.forEach(m=>say(`${m.given} of your house is widowed.`,'warn'));
     if(isRoyalRival(r.name)&&Rz.king&&!Rz.crisis){widSay();kingDies(say,pick(DEATHS));return}
     const cl=claimOn(r.name);if(cl&&!isRoyalRival(r.name)&&!(H.disputes||[]).some(d=>d.house===r.name)){inheritDeath(r,old,cl,say);widSay();return}
-    r.lord={given:nameFor(sx,r.sp),sex:sx,age:toSpAge(ri(15,40),r.sp)};
+    if(heirless(r)){widSay();fallHouse(r,`${old.sex==='f'?'Lady':'Lord'} ${old.given} died with no heir`,say);return}
+    r.lord=takeHeir(r);
     let t=`${old.sex==='f'?'Lady':'Lord'} ${old.given} of House ${r.name} has died ${pick(DEATHS)}. ${r.lord.given} now leads the house`;
     if(Math.random()<.5&&r.hostility){r.hostility--;t+=' and sets aside an old grudge'}else{r.agenda=pick(Object.keys(AGENDAS));t+=`, and ${AGENDAS[r.agenda].toLowerCase()}`}
     const lapsed=H.pacts.filter(p=>p.house===r.name&&!p.dowered);if(lapsed.length&&Math.random()<.4){H.pacts=H.pacts.filter(p=>!lapsed.includes(p));t+='. Your agreements with them died with the old lord'}
@@ -3310,7 +3885,7 @@ const EVENTS=[
   }],
   ['war',2,say=>{
     const pairs=[];H.rivals.forEach((a,i)=>H.rivals.slice(i+1).forEach(b=>{if(relation(a.name,b.name)!=='ally'&&relation(a.name,b.name)!=='war')pairs.push([a,b])}));if(!pairs.length)return false;
-    const [a,b]=pick(pairs);setRel(a.name,b.name,'war');H.realm.warFrom[pairKey(a.name,b.name)]=a.name;say(`House ${a.name} marches on House ${b.name}. The realm is at war.`,'warn');
+    let [a,b]=pick(pairs);if(b.lands<LAND_WANT&&a.lands>=LAND_WANT&&b.power>=a.power)[a,b]=[b,a];setRel(a.name,b.name,'war');H.realm.warFrom[pairKey(a.name,b.name)]=a.name;say(`House ${a.name} marches on House ${b.name}. The realm is at war.`,'warn');
     allyAttacked(a,b,say);
   }],
   ['decree',3,say=>{
@@ -3357,7 +3932,8 @@ function lordSlain(r,out){
   widowConsorts(w=>w.kind==='lord'&&w.house===n);wid.forEach(m=>out.push(`${m.given} of your house is widowed`));
   const cl=claimOn(n);
   if(cl&&!isRoyalRival(n)&&!(H.disputes||[]).some(d=>d.house===n)){const t=[];inheritDeath(r,old,cl,x=>t.push(x));out.push(...t.map(x=>x.replace(/\.$/,'')));return}
-  const sx=Math.random()<.65?'m':'f';r.lord={given:nameFor(sx,r.sp),sex:sx,age:toSpAge(ri(15,40),r.sp)};
+  if(heirless(r)){fallHouse(r,`${lordWord(old)} ${old.given} died with no heir`,t=>out.push(t.replace(/\.$/,'')));return}
+  r.lord=takeHeir(r);
   out.push(`${lordWord(old)} ${old.given} of House ${n} is dead. ${r.lord.given} now leads the house`);
   if(r.power>1&&Math.random()<.5){r.power--;out.push('Leaderless for a time, their power falls')}
 }
@@ -3424,6 +4000,8 @@ function rivalStrike(r,say){
   if(live.length&&Math.random()<.5){const rt=pick(live);rt.cutUntil=H.cycle+3;griev(r.name,'Their raiders plundered your caravans');say(`Raiders in the colors of House ${r.name} fall on your caravans. The route with House ${rt.house} is cut for two seasons.`,'bad');return}
   const g=Math.min(H.gold,ri(4,9));H.gold-=g;griev(r.name,'Their raiders burned your storehouses');say(`Raiders in the colors of House ${r.name} burn your storehouses: −${g} gold.`,'bad');
 }
+/* a realm war clash comes out even about one time in six: a land on one side is laid waste, and no one gains it */
+function realmWarDraw(a,b,say){if(Math.random()>=1/6)return false;const v=Math.random()<.5?a:b;if(!houseLoseLand(v))return false;say(`Houses ${a.name} and ${b.name} fight to a bloody draw. A land of House ${v.name} is laid waste.`,'');return true}
 function realmTurn(){
   const news=[],say=(t,tone)=>news.push({t,tone}),Rz=H.realm;
   expireCalls(say);disputeTurn(say);
@@ -3444,7 +4022,9 @@ function realmTurn(){
     const win=a.power+bannersAnswer(a.name).sum+Math.random()*3>=b.power+bannersAnswer(b.name).sum+Math.random()*3?a:b,lose=win===a?b:a;
     const locked=H.dip.wars.some(x=>x.house===a.name&&x.allies.includes(b.name)||x.house===b.name&&x.allies.includes(a.name));
     if(!locked&&Math.random()<.3){setRel(a.name,b.name,null);say(`Houses ${a.name} and ${b.name} make peace.`,'');return}
-    if(lose.lands>0){lose.lands--;win.lands++;if(Math.random()<.5)say(`House ${win.name} takes land from House ${lose.name}.`,'')}else lose.power=Math.max(1,lose.power-1)});
+    {const weak=a.power<b.power?a:b.power<a.power?b:null;if(!locked&&weak&&weak.lands<LAND_WANT&&Math.random()<.5){setRel(a.name,b.name,null);say(`House ${weak.name}, bleeding land, sues for peace with House ${(weak===a?b:a).name}.`,'');return}}
+    if(realmWarDraw(a,b,say))return;
+    {const res=payLoss('h:'+lose.name);if(res&&res.land){gainForHouse(win.name,MT_HAMLET);if(Math.random()<.5)say(`House ${win.name} takes land from House ${lose.name}.`,'')}else if(res&&res.pip&&Math.random()<.5)say(`House ${win.name} breaks the levies of House ${lose.name}.`,'')}});
   const n=Math.random()<.5?1:2;
   for(let i=0;i<n;i++){let tries=0;while(tries++<6){const tot=EVENTS.reduce((a,e)=>a+e[1],0);let x=Math.random()*tot,ev=EVENTS[0];for(const e of EVENTS){x-=e[1];if(x<=0){ev=e;break}}if(ev[2](say)!==false)break}}
   H.rivals.forEach(r=>{if(!atWar(r.name)&&Math.random()<r.hostility*.06)rivalStrike(r,say)});
@@ -3534,7 +4114,7 @@ function clash(w,say){
   const r=rival(w.house);if(!r||w.since>H.cycle)return;
   const al=warAllies(w.house),ap=Math.min(3,al.reduce((s,a)=>s+((rival(a)||{}).power||0),0));
   const yb=bannersAnswer(YOU),tb=bannersAnswer(r.name);
-  const mine=playerPower()+armyPower()+ap+yb.sum+ri(1,6),theirs=r.power+tb.sum+ri(1,6),m=theirs-mine,withA=al.length?` and ${al.map(a=>'House '+a).join(', ')}`:'';
+  const mine=playerPower()+armyPower()+ap+yb.sum+hiredPower()+ri(1,6),theirs=r.power+tb.sum+ri(1,6),m=theirs-mine,withA=al.length?` and ${al.map(a=>'House '+a).join(', ')}`:'';
   if(yb.who.length||tb.who.length)say(`Bannermen answer the call against House ${r.name}: ${yb.who.length?`for you, ${yb.who.map(n=>'House '+n).join(', ')} (+${yb.sum})`:'none of yours'}; ${tb.who.length?`for them, ${tb.who.map(n=>'House '+n).join(', ')} (+${tb.sum})`:'none of theirs'}.`,'');
   if(m>=4){const free=H.lands.filter(l=>!raidOn(l));w.losses++;
     if(free.length){const L=pick(free);H.ops.defense.push(genSiege(r,L));say(`House ${r.name} overruns your levies and lays siege to your ${L.tier.toLowerCase()} of ${L.name}. Defend it this season or lose it.`,'bad')}
@@ -4022,7 +4602,7 @@ const TERM_W={gold:[0,1,2],land:[0,1,2,3]};
 const treatyWeight=t=>TERM_W.gold[t.gold]+TERM_W.land[t.land]+(t.ward?1:0)+(t.marriage?1:0);
 const treatyDanger=(w,t)=>t&&t.dissolve?3:w<=1?1:w<=3?2:3;
 const isRoyalRival=n=>H.realm&&!H.realm.yours&&H.realm.royal.name===n;
-const dissolveBlock=r=>isRoyalRival(r.name)?'The royal house cannot be dissolved':r.lands>0?`They still hold ${r.lands} land${r.lands===1?'':'s'}. Only a house with no lands left can be dissolved`:'';
+const dissolveBlock=r=>isRoyalRival(r.name)?'The royal house cannot be dissolved':totalLands(r)>0?`They still hold ${totalLands(r)} land${totalLands(r)===1?'':'s'}${bannerLands(r.name)?', with their bannermen':''}. Only a house with no lands left can be dissolved`:'';
 const repAmt=(r,lvl)=>lvl===1?6+2*r.power:lvl===2?12+4*r.power:0;
 const TALK_STAGES=['Ride in under a flag of truce','Lay out your terms','Answer their grievances','Haggle over every clause','Win over their council'];
 const talksOn=n=>H.ops.underway.some(x=>!x.done&&x.op.kind==='treaty'&&x.op.target===n);
@@ -4168,8 +4748,7 @@ function dissolveHouse(n,out){
   out.push(`Your renown grows: ${H.realm.yours?'':'royal favor +2, '}+3 influence. Every other house grows warier of you`);
   if(freed)out.push(`${freed} of their captives in your keeping are turned loose`);
   H.log.push({cycle:H.cycle,text:`House ${H.house.name} dissolves House ${n}. ${seat} becomes its castle.`});
-  replaceHouse(r);
-  out.push(`A new power rises in the realm: House ${r.name} of ${r.seat}`);
+  r.seat=pick(SEATS_BY[r.sp]||SEATS_BY.Kin);fallHouse(r,'you dissolved it',t=>out.push(t.replace(/\.$/,'')));
 }
 /* every tie to a house that is gone (dissolved or inherited) is cut; returns how many of their captives were turned loose */
 function cutHouseTies(n,out){
@@ -4414,7 +4993,7 @@ function powerOf(n){return n===H.house.name?playerPower():(rival(n)||{power:1}).
 const bannersOf=n=>bannerMax(n===H.house.name?YOU:n);
 const totalPower=n=>powerOf(n)+bannersOf(n);
 const powerHtml=n=>{const b=powerOf(n),m=bannersOf(n);return `${'◆'.repeat(b)}${'◇'.repeat(Math.max(0,3-b))}${m?` + ${m} sworn`:''} = <b>${b+m}</b>`};
-function landsOf(n){return n===H.house.name?H.lands.length+1:(rival(n)||{lands:0}).lands}
+function landsOf(n){return n===H.house.name?H.lands.length+1+bannerLands(YOU):totalLands(rival(n))}
 function alliesOf(n){
   if(n===H.house.name)return [...new Set(H.pacts.filter(BINDING).map(p=>p.house).concat(H.dip.allies.map(a=>a.house)))].filter(x=>rival(x)&&!atWar(x));
   const a=H.rivals.filter(o=>o.name!==n&&relation(n,o.name)==='ally').map(o=>o.name);
@@ -4496,7 +5075,7 @@ function realmView(){
       ${!done?`<div class="acts" style="margin-top:10px"><button class="main" data-claim="1" ${canClaim()?'':'disabled'}>Press your own claim</button><span class="muted" style="font-size:14px">Every great house grows more hostile. Lose, and the new crown will hate you.</span></div>`:''}</div></details></section>`}
   const houses=H.rivals.map(houseCard).join('');
   const detail=`<section class="pane fold "><details data-fold="houses" ${foldOpen('houses')?'open':''}><summary><h2>The houses in detail</h2></summary><div class="foldbody"><div class="hgrid">${houses}</div></div></details></section>`;
-  return `${detail}${minorsPanel()}${news}${crisis}${envoyPanel()}${treatyPanel()}${minorDissPanel()}${diploView()}<div class="two">${crown}${court}</div>
+  return `${detail}${contestPanel()}${minorsPanel()}${banditsPanel()}${crisis}${envoyPanel()}${treatyPanel()}${minorDissPanel()}${diploView()}<div class="two">${crown}${court}</div>
     <section class="pane fold dip"><details data-fold="largesse" ${foldOpen('largesse')?'open':''}><summary><h2>Largesse &amp; royal decrees</h2><span class="muted">${H.gold} gold · favor ${H.realm.favor}</span></summary><div class="foldbody">${courtSpendHtml()}</div></details></section>
     <section class="pane fold"><details data-fold="rank" ${foldOpen('rank')?'open':''}><summary><h2>Power rankings</h2></summary><div class="foldbody">${rankingsTable()}</div></details></section>
     <section class="pane fold "><details data-fold="relations" ${foldOpen('relations')?'open':''}><summary><h2>Your house and the great houses</h2></summary><div class="foldbody"><p class="muted" style="font-size:15px;margin:0 0 10px">Tension rises when you attack or are caught scheming, and cools with time, gifts and treaties. A house that is not held in check by a treaty, a marriage or a ward may strike at you between seasons.</p>${relationsOverview()}</div></details></section>`;
@@ -4930,6 +5509,7 @@ function skipBlockers(){
   if((H.ops.defense||[]).some(isRaid))b.push('Your lands are under attack. Defend them on the Operations board.');
   if((H.minors||[]).some(x=>x.rebel&&x.liege===YOU))b.push('A house sworn to you is in rebellion.');
   if(Rz.crisis)b.push('The throne is contested. See The Realm.');
+  if((H.contests||[]).length)b.push('A great house’s seat is contested. See The Realm.');
   if((H.disputes||[]).length)b.push('A claim by blood is disputed. Press it below.');
   if((d.calls||[]).length)b.push('An ally calls you to arms. Answer in The Realm.');
   if((d.demands||[]).length)b.push('Terms for peace await your answer in The Realm.');
@@ -4944,7 +5524,8 @@ function rivalLordPasses(r,say){
   const widSay=()=>wid.forEach(m=>say(`${m.given} of your house is widowed.`,'warn'));
   const cl=claimOn(n);
   if(cl&&!(H.disputes||[]).some(x=>x.house===n)){inheritDeath(r,old,cl,say);widSay();return}
-  const sx=Math.random()<.65?'m':'f';r.lord={given:nameFor(sx,r.sp),sex:sx,age:toSpAge(ri(15,40),r.sp)};
+  if(heirless(r)){widSay();fallHouse(r,`${lordWord(old)} ${old.given} died ${pick(NATURAL_DEATHS)}, at ${old.age}, with no heir`,say);return}
+  r.lord=takeHeir(r);
   let t=`${lordWord(old)} ${old.given} of House ${n} dies ${pick(NATURAL_DEATHS)}, at ${old.age}. ${r.lord.given} now leads the house`;
   if(Math.random()<.5&&r.hostility){r.hostility--;t+=' and sets aside an old grudge'}else{r.agenda=pick(Object.keys(AGENDAS));t+=`, and ${AGENDAS[r.agenda].toLowerCase()}`}
   const lapsed=H.pacts.filter(p=>p.house===n&&!p.dowered);if(lapsed.length&&Math.random()<.4){H.pacts=H.pacts.filter(p=>!lapsed.includes(p));t+='. Your agreements with them died with the old lord'}
@@ -5127,7 +5708,9 @@ function realmWarsYear(say){
     const win=a.power+bannersAnswer(a.name).sum+Math.random()*3>=b.power+bannersAnswer(b.name).sum+Math.random()*3?a:b,lose=win===a?b:a;
     const locked=H.dip.wars.some(x=>x.house===a.name&&x.allies.includes(b.name)||x.house===b.name&&x.allies.includes(a.name));
     if(!locked&&Math.random()<.3){setRel(a.name,b.name,null);say(`Houses ${a.name} and ${b.name} make peace.`,'');return}
-    if(lose.lands>0){lose.lands--;win.lands++;say(`House ${win.name} takes land from House ${lose.name}.`,'')}else lose.power=Math.max(1,lose.power-1)});
+    {const weak=a.power<b.power?a:b.power<a.power?b:null;if(!locked&&weak&&weak.lands<LAND_WANT&&Math.random()<.5){setRel(a.name,b.name,null);say(`House ${weak.name}, bleeding land, sues for peace with House ${(weak===a?b:a).name}.`,'');return}}
+    if(realmWarDraw(a,b,say))return;
+    {const res=payLoss('h:'+lose.name);if(res&&res.land){gainForHouse(win.name,MT_HAMLET);say(`House ${win.name} takes land from House ${lose.name}.`,'')}else if(res&&res.pip)say(`House ${win.name} breaks the levies of House ${lose.name}.`,'')}});
 }
 /* allies ask favors: unanswered they cool, unless your house rides under Valor; neglected allies may plot */
 function allyDriftYear(cfg,say){
@@ -5160,6 +5743,7 @@ function passYears(n,stance,danger,steward){
       const i=cycleIncome();H.gold+=i;inc+=i;
       const g0=H.gold;armyTurn((t,tone)=>{if(tone==='bad')say(t,tone)});paid+=g0-H.gold;
       allyTurn(say);
+      skipRealmSeason(say);
       if(needSteward()||(H.minors||[]).length){minorTurn((t,tone)=>/for its bannerman/.test(t)?0:say(t.replace(/ You could back the rebels with gold \(The Realm\)\./,'').replace(/ Answer (it )?in The Realm\.?/,'').replace(/ Quell them on the Operations board or treat with them in The Realm within \d+ seasons, or they break away[^.!]*\./,''),tone));if(steward)stewardTurn(steward,say)}
       if(s<3)H.cycle++;
     }
@@ -5172,7 +5756,7 @@ function passYears(n,stance,danger,steward){
     checkSuccession();
     if(!H.fallen)yourStanceYear(cfg,say);
     H.rivals.slice().forEach(r=>{const c=rs[r.name];if(c)rivalStanceYear(r,c,say)});
-    skipWarYear(cfg,say);
+    skipWarYear(cfg,say);skipCoWarsYear(say);capSweep(say);
     realmWarsYear(say);
     allyDriftYear(cfg,say);
     checkSuccession();
@@ -5511,8 +6095,10 @@ function replaceHouse(r){
   const sp=pick(SPECIES_KEYS);let pool=HOUSES_BY[sp].filter(x=>!taken.has(x));if(!pool.length)pool=HOUSES.filter(x=>!taken.has(x));if(!pool.length)return;
   const name=pick(pool),nsp=houseSp(name)||sp,sx=Math.random()<.7?'m':'f';
   H.realm.alliances=H.realm.alliances.filter(k=>!k.split('|').includes(n));H.realm.wars=H.realm.wars.filter(k=>!k.split('|').includes(n));
-  Object.assign(r,{name,sp:nsp,seat:pick(SEATS_BY[nsp]),sigil:newSigil(),power:ri(1,3),hostility:0,lands:ri(4,7),agenda:pick(Object.keys(AGENDAS)),
+  renameBanditHouse(n,name);
+  Object.assign(r,{name,sp:nsp,seat:pick(SEATS_BY[nsp]),sigil:newSigil(),power:ri(1,3),hostility:0,lands:ri(7,10),agenda:pick(Object.keys(AGENDAS)),
     lord:{given:nameFor(sx,nsp),sex:sx,age:toSpAge(ri(28,64),nsp)}});
+  r.heir=newHeir(r);
   if(Array.isArray(H.minors)){/* the old house's bannermen fade with it; the new house brings its own, one Estate per point of power */
     H.minors=H.minors.filter(x=>x.liege!==n);
     const tk=new Set([H.house.name,H.realm&&H.realm.royal&&H.realm.royal.name].concat(H.rivals.map(x=>x.name)).concat(H.minors.map(x=>x.name)).concat(ROYAL_HOUSES).filter(Boolean).map(x=>x.toLowerCase()));
@@ -5536,7 +6122,7 @@ function houseCard(r){
     <div class="stance"><span class="eyebrow" style="color:var(--gold)">${stanceOf(r)}</span>${tensionMeter(r)}</div>
     <p class="threat">${threatLine(r)}</p>
     <dl class="opdl">${tieHtml||'<dt>Ties</dt><dd class="muted">None yet.</dd>'}</dl>
-    <dl class="opdl theirs"><dt>Agenda</dt><dd>${AGENDAS[r.agenda]}</dd><dt>Strength</dt><dd>${powerHtml(r.name)} · ${r.lands} land${r.lands===1?'':'s'}</dd>${rels?`<dt>Realm</dt><dd>${rels}</dd>`:''}</dl>
+    <dl class="opdl theirs"><dt>Agenda</dt><dd>${AGENDAS[r.agenda]}</dd><dt>Strength</dt><dd>${powerHtml(r.name)}</dd><dt>Heir</dt><dd>${r.heir?`${esc(r.heir.given)}, age ${r.heir.age}`:isRoyalRival(r.name)?'Follows the crown':'<span class="hot">None. If the lord dies, the house falls</span>'}</dd><dt>Holdings</dt><dd>${totalLands(r)} land${totalLands(r)===1?'':'s'}${bannerLands(r.name)?` (${r.lands} their own, ${bannerLands(r.name)} held by bannermen)`:''}${outlawLandsOf(r.name)?` · ${outlawLandsOf(r.name)} more held by outlaws`:''}</dd>${rels?`<dt>Realm</dt><dd>${rels}</dd>`:''}</dl>
     ${hist.length?`<details class="hist"><summary>Recent dealings</summary><ul>${hist.map(l=>`<li><span class="cy">${seasonOf(l.cycle)}, yr ${yearOf(l.cycle)}</span>${esc(l.text)}</li>`).join('')}</ul></details>`:''}
     <details class="hacts" data-fold="hacts-${esc(r.name)}" ${H.ui&&H.ui.folds&&H.ui.folds['hacts-'+r.name]?'open':''}><summary>Actions</summary><div class="acts"><button class="sm" data-calm="${esc(r.name)}" ${H.influence>=2&&r.hostility?'':'disabled'}>Ease tensions · 2 influence</button><button class="sm" data-gift="${esc(r.name)}" ${r.hostility&&!court().gifts[r.name]&&H.gold>=giftCost(r)?'':'disabled'} title="${court().gifts[r.name]?'Already sent a gift this season':r.hostility?'−1 tension, once a season':'No tension to ease'}">Send a gift · ${giftCost(r)} gold</button>${dipActs(r)}${tradeActs(r)}
       <span class="lbl">Heraldry</span><button class="sm" data-hsigil="${esc(r.name)}">Redraw sigil</button><button class="sm" data-sgopen="rival" data-sgname="${esc(r.name)}">Edit sigil</button>${(()=>{const why=rerollBlock(r);return `<button class="sm" data-rerollhouse="${esc(r.name)}" ${why?`disabled title="${esc(why)}"`:'title="Replace this house with a new one"'}>Reroll house</button>`})()}</div></details>${warConfirm(r)}${secretHtml}</article>`;
@@ -5574,6 +6160,9 @@ document.addEventListener('click',e=>{
     if(k==='cancel')dissMinor=null;
     else if(k==='pick'&&dissMinor){const id=+a;dissMinor.team=dissMinor.team.includes(id)?dissMinor.team.filter(z=>z!==id):dissMinor.team.concat(id).slice(-3)}
     render();return}
+  if(t.dataset.seatclaim){const [n,id]=t.dataset.seatclaim.split('|');backClaimant(n,id);save();render();return}
+  if(t.dataset.groupby){H.ui=H.ui||{};H.ui.groupBy=t.dataset.groupby;save();render();return}
+  if(t.dataset.co){const [k,id]=t.dataset.co.split('|');if(k==='payoff')payOff(id);else if(k==='hire')hireCo(id);save();render();return}
   if(t.dataset.minor){const [k,id,a]=t.dataset.minor.split('|');minorAct(k,id,a);save();render();return}
   if(t.dataset.sel!=null){sel=+t.dataset.sel;if(t.dataset.go)section=t.dataset.go;lastRoll=null;render();if(t.dataset.go)window.scrollTo({top:0});return}
   if(t.dataset.sgopen){sigilEdit={kind:t.dataset.sgopen,name:t.dataset.sgname||null};render();return}
