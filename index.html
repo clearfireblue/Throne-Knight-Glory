@@ -5321,6 +5321,18 @@ function buy(slot,n){
   if(H.market[slot]){const k=H.market[slot].indexOf(n);if(k>=0)H.market[slot].splice(k,1)}
   H.log.push({cycle:H.cycle,text:`Bought ${n} for ${p} gold.`});render();
 }
+/* a commission: once per shop each season, pick any piece the shop isn't already showing, at double the price */
+const COMMISSION_SLOTS=['weapon','armor','heirloom','specialty'];
+const basePrice=(slot,n)=>slot==='weapon'||slot==='armor'?PRICES[slot][n]:(itemInfo(slot,n)||{}).price;
+const commissionPool=slot=>{const all=slot==='weapon'||slot==='armor'?Object.keys(PRICES[slot]):Object.keys(slot==='heirloom'?HEIRLOOMS:SPECIALTIES);
+  const shown=(H.market&&H.market[slot])||[];return all.filter(n=>!shown.includes(n)).sort((a,b)=>basePrice(slot,a)-basePrice(slot,b))};
+const commissioned=slot=>!!(H.market&&Array.isArray(H.market.ordered)&&H.market.ordered.includes(slot));
+function commission(slot,n){
+  if(!COMMISSION_SLOTS.includes(slot)||commissioned(slot)||!commissionPool(slot).includes(n))return;
+  const p=2*basePrice(slot,n);if(!p||H.gold<p)return;
+  H.gold-=p;H.armory.push({slot,name:n});H.market.ordered=(H.market.ordered||[]).concat(slot);
+  H.log.push({cycle:H.cycle,text:`Commissioned ${n} for ${p} gold.`});render();
+}
 function sell(i){const it=H.armory[i];if(!it)return;const g=sellPrice(it.slot,it.name);H.armory.splice(i,1);H.gold+=g;H.log.push({cycle:H.cycle,text:`Sold ${it.name} for ${g} gold.`});render()}
 /* put an item on a member; whatever they wore goes back to the armory */
 function equip(m,slot,name){
@@ -5380,7 +5392,14 @@ function marketView(){
     return `<li class="ware"><span style="flex:1;min-width:0"><b>${esc(n)}</b>${own?` <span class="muted">· ${own} in the armory</span>`:''}<br><span class="muted">${esc(itemDesc(slot,n))}</span></span><button class="sm" data-buy="${slot}|${esc(n)}" ${H.gold>=p?'':'disabled'}>Buy · ${p} gold</button></li>`};
   const list=slot=>Object.entries(PRICES[slot]).sort((a,b)=>a[1]-b[1]).map(([n,p])=>row(slot,n,p)).join('');
   const priceOf=(slot,n)=>slot==='weapon'||slot==='armor'?PRICES[slot][n]:itemInfo(slot,n).price;
-  const stock=slot=>H.market[slot].length?H.market[slot].map(n=>row(slot,n,priceOf(slot,n))).join(''):'<li class="muted">Sold out until next season.</li>';
+  const stock0=slot=>H.market[slot].length?H.market[slot].map(n=>row(slot,n,priceOf(slot,n))).join(''):'<li class="muted">Sold out until next season.</li>';
+  const COMM_WHO={weapon:'Have the smith forge a piece of your choosing',armor:'Have the armorer make a piece of your choosing',heirloom:'Seek out an heirloom of your choosing',specialty:'Send for a specialist of your choosing'};
+  const commRow=slot=>{if(commissioned(slot))return '<li class="ware muted">Commissioned this season. Another can be ordered next season.</li>';
+    const pool=commissionPool(slot);if(!pool.length)return '';const can=pool.filter(n=>H.gold>=2*basePrice(slot,n));
+    const tag=n=>slot==='weapon'?` (+${wVal(n)})`:slot==='armor'?` (+${aVal(n)})`:'';
+    return `<li class="ware" style="flex-wrap:wrap"><span style="flex:1;min-width:12em"><b>Commission</b> <span class="muted">· double price, once a season</span><br><span class="muted">${COMM_WHO[slot]}</span></span>
+      <span class="give"><select id="comm-${slot}" aria-label="Commission which piece" style="max-width:100%;min-width:0;flex:1">${pool.map(n=>`<option value="${esc(n)}" ${H.gold>=2*basePrice(slot,n)?'':'disabled'} ${can[0]===n?'selected':''}>${esc(n)}${tag(n)} · ${2*basePrice(slot,n)} gold</option>`).join('')}</select><button class="sm" data-commission="${slot}" ${can.length?'':'disabled'}>Commission</button></span></li>`};
+  const stock=slot=>stock0(slot)+commRow(slot);
   const alive=H.members.filter(m=>!m.dead&&!m.merc).sort((a,b)=>b.age-a.age);
   const arm=H.armory.length?`<ul class="wares">${H.armory.map((it,i)=>`<li class="ware"><span style="flex:1;min-width:0"><span class="tk" style="color:var(--gold)">${ITEM_SLOTS[it.slot]}</span><b>${esc(it.name)}</b><br><span class="muted">${esc(itemDesc(it.slot,it.name))}</span></span>
       <span class="give">${(()=>{const who=alive.filter(m=>isAdult(m)&&!m.captive&&improves(m,it.slot,it.name));
@@ -5630,6 +5649,7 @@ document.addEventListener('click',e=>{
   if(t.dataset.hire!=null){hireSword(+t.dataset.hire);render();return}
   if(t.dataset.levy){if(t.dataset.levy==='1')raiseLevy();else disbandLevy();render();return}
   if(t.dataset.garrison){const [i,on]=t.dataset.garrison.split('|');setGarrison(H.lands[+i],on==='1');render();return}
+  if(t.dataset.commission){const sl=$('comm-'+t.dataset.commission);if(sl)commission(t.dataset.commission,sl.value);return}
   if(t.dataset.buy){const k=t.dataset.buy.indexOf('|');buy(t.dataset.buy.slice(0,k),t.dataset.buy.slice(k+1));return}
   if(t.dataset.sell!=null){sell(+t.dataset.sell);return}
   if(t.dataset.give!=null){const i=+t.dataset.give,it=H.armory[i],sl=$('give-'+i),m=sl&&mem(+sl.value);if(it&&m){equip(m,it.slot,it.name);H.log.push({cycle:H.cycle,text:`${m.given} takes up the ${it.name}.`})}render();return}
