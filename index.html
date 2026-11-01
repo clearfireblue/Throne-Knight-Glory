@@ -2921,8 +2921,11 @@ function ensureHeirs(){(H.rivals||[]).forEach(r=>{if(r.heir===undefined)r.heir=n
 function takeHeir(r){const h=r.heir;r.heir=Math.random()<HEIR_KEEP?newHeir(r):null;if(h)return {given:h.given,sex:h.sex,age:h.age};
   const sx=Math.random()<.65?'m':'f';return {given:nameFor(sx,r.sp),sex:sx,age:toSpAge(ri(15,40),r.sp)}}
 const heirless=r=>r&&!r.heir&&!isRoyalRival(r.name)&&!contestFor(r.name);
+const LINE_MATCH=.25;
 function heirTurn(say){if(seasonOf(H.cycle+1)!=='Winter')return;
-  H.rivals.forEach(r=>{if(!r.heir){if(!isRoyalRival(r.name)&&Math.random()<.3){r.heir=newHeir(r);say(`House ${r.name} names an heir at last: ${r.heir.given}.`,'')}return}r.heir.age++;const old=humanAge(r.heir.age,r.sp)>60;
+  H.rivals.forEach(r=>{if(!r.heir){if(!isRoyalRival(r.name)&&Math.random()<.3){r.heir=newHeir(r);say(`House ${r.name} names an heir at last: ${r.heir.given}.`,'')}
+      else if(heirless(r)&&Math.random()<LINE_MATCH){const os=H.rivals.filter(o=>o!==r&&relation(r.name,o.name)!=='war');if(os.length){const o=pick(os),sx=Math.random()<.6?'m':'f';r.heir={given:nameFor(sx,r.sp),sex:sx,age:0,match:o.name};setRel(r.name,o.name,'ally');
+        say(`House ${r.name}, with no heir, weds into House ${o.name} to carry on its line. ${r.heir.given}, a child of the match, is named heir, and the two houses are allies.`,'')}}return}r.heir.age++;const old=humanAge(r.heir.age,r.sp)>60;
     if(Math.random()<(old?.08:.02)){const h=r.heir;r.heir=Math.random()<HEIR_KEEP?newHeir(r):null;
       say(`${h.given}, heir of House ${r.name}, has died.${r.heir?` ${r.heir.given} is named heir in their place.`:' House '+r.name+' has no heir left.'}`,r.heir?'':'warn')}});
 }
@@ -4546,9 +4549,10 @@ function envoyMods(kind,n,against){
   const M=[],add=(l,v)=>{if(v)M.push([l,v])},h=r.hostility,you=playerPower();
   const wed=H.pacts.some(p=>p.house===n&&p.kind==='Marriage alliance');
   if(H.dip.heard[n]===H.cycle)return {block:`House ${n} has already heard an envoy this season.`};
-  if(kind==='wed'){
+  if(kind==='wed'||kind==='line'){
     if(atWar(n))return {block:'You are at war with them. Make peace first.'};
-    if(!lordFree(r))return {block:`${lordWord(r.lord)} ${r.lord.given} is married or has an heir.`};
+    if(kind==='wed'&&!lordFree(r))return {block:`${lordWord(r.lord)} ${r.lord.given} is married or has children.`};
+    if(kind==='line'&&!heirless(r))return {block:`House ${n} has an heir and needs no match to carry on its line.`};
     if(h>=4)return {block:`Tension is ${TENSION[h].toLowerCase()}. Ease it before proposing a match.`};
     add(`Tension: ${TENSION[h]}`,TENSION_MOD[h]);
     if(wed)add('Already bound by marriage',1);
@@ -4601,7 +4605,7 @@ function envoyMods(kind,n,against){
   return {mods:M,sum:M.reduce((a,x)=>a+x[1],0)};
 }
 const envoyBase=m=>m.st.Insight+gearBonus(m,'Insight','Intrigue')+(H.realm&&H.realm.office==='chancellor'?1:0);
-const ENVOY_TITLE={wed:n=>{const r=rival(n);return r?`Propose a match to ${lordWord(r.lord)} ${r.lord.given} of House ${n}`:'Propose a match'},crown:()=>{const k=H.realm.king;return k?`Propose a royal match to ${crownWord(k)} ${k.given}`:'Propose a royal match'},ally:n=>`Propose an alliance to House ${n}`,call:(n,a)=>`Call House ${n} to arms against House ${a}`,peace:n=>`Sue House ${n} for peace`};
+const ENVOY_TITLE={wed:n=>{const r=rival(n);return r?`Propose a match to ${lordWord(r.lord)} ${r.lord.given} of House ${n}`:'Propose a match'},crown:()=>{const k=H.realm.king;return k?`Propose a royal match to ${crownWord(k)} ${k.given}`:'Propose a royal match'},ally:n=>`Propose an alliance to House ${n}`,call:(n,a)=>`Call House ${n} to arms against House ${a}`,peace:n=>`Sue House ${n} for peace`,line:n=>`Wed into House ${n} to carry on its line`};
 /* ---------- brokering peace: an envoy talks two warring powers (great houses, minor houses or outlaws) into a truce ---------- */
 function atWarE(a,b){return a[0]==='h'&&b[0]==='h'?relation(a.slice(2),b.slice(2))==='war':atWarO(a,b)}
 /* the wars an envoy sent from this house's card can try to end; none that involve you */
@@ -4661,8 +4665,13 @@ function envoyPanel(){
     wedHtml=pool.length?`<label class="fld" style="margin-bottom:10px"><span>Who will wed ${esc(T.title)} ${esc(T.given)}?</span><select data-wedwho="1">${pool.map(m=>`<option value="${m.id}" ${m.id===envoy.who?'selected':''}>${esc(m.given)} · ${spOf(m).name} · ${m.age}${m.ruler?' · your ruler':''}</option>`).join('')}</select></label>`:'';
     if(!pool.length)wedBlock=`No one in your house can wed ${T.title.toLowerCase()==='lord'||T.title==='King'?'him':'her'}: they must be of age, unmarried and of the other sex, near enough in age (${T.given} is ${T.age}), and not your heir, regent or a ward.`;
     else if(H.gold<price)wedBlock=`The dowry is ${price} gold. You have ${H.gold}.`}
+  if(kind==='line'){const pool=linePool();if(!pool.some(m=>m.id===envoy.who))envoy.who=pool[0]?pool[0].id:null;const pr=lineDowry(r);
+    wedHtml=pool.length?`<label class="fld" style="margin-bottom:10px"><span>Who will wed into House ${esc(n)}?</span><select data-wedwho="1">${pool.map(m=>`<option value="${m.id}" ${m.id===envoy.who?'selected':''}>${esc(m.given)} · ${spOf(m).name} · ${m.age}</option>`).join('')}</select></label>`:'';
+    if(!pool.length)wedBlock='No one in your house is free to marry out: they must be of age and unmarried, and not your ruler, heir, regent or a ward.';
+    else if(H.gold<pr)wedBlock=`The dowry is ${pr} gold. You have ${H.gold}.`}
   const E=envoyMods(kind,n,against);
-  const what={wed:`Success: you pay a dowry of ${price} gold and a dowered marriage alliance binds you. Your member becomes consort and stays with your house; a child of the match is heir to House ${n}, so your blood gains a claim on it. Failure: no dowry is paid, but tension rises.`,
+  const what={line:`House ${n} has no heir; when its lord dies, it falls. Success: you pay a dowry of ${lineDowry(r)} gold (half the usual), your member weds into House ${n} and leaves your house (their arms stay in your armory), and a child of the match is named heir to House ${n}. Your blood gains no claim on it, but a dowered marriage alliance binds the two houses. Failure: no dowry is paid, but tension rises.`,
+    wed:`Success: you pay a dowry of ${price} gold and a dowered marriage alliance binds you. Your member becomes consort and stays with your house; a child of the match is heir to House ${n}, so your blood gains a claim on it. Failure: no dowry is paid, but tension rises.`,
     crown:`Success: you pay a dowry of ${price} gold. Your member becomes royal consort (royal favor +3, +2 influence) and stays with your house; a child of the match is heir to the throne and is crowned when the monarch dies, unless the succession is contested. Houses that covet the throne grow warier. Failure: no dowry is paid, and royal favor falls by 1.`,
     ally:'Success: a military alliance. They will not strike at you, they join any war declared on you, and you can call them to arms. Failure: tension rises.',
     call:`Success: House ${n} goes to war with House ${against} and fights beside you (+1 to Might rolls in war operations, up to +2 with two allies, and their power joins yours in each season’s clash). Failure: tension rises.`,
@@ -4677,6 +4686,18 @@ function envoyPanel(){
     <div class="hhead" style="margin-bottom:10px"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r?r.sigil:H.realm.royal.sigil,'ev'+n)}</svg><p style="margin:0;font-size:16px;min-width:0">${esc(what)}</p></div>
     ${wedHtml}<div class="two"><div><h3 style="margin-top:0">How House ${esc(n)} leans</h3>${mods}</div><div><h3 style="margin-top:0">Send an envoy</h3>${pickHtml}</div></div></section>`;
 }
+/* ---------- a match to carry on a dying line: your member weds into an heirless house, which names a child of the match its heir. No claim ---------- */
+const heirKind=h=>h.member!=null?'your blood':h.line!=null?'child of your match':h.match?`child of a match with House ${h.match}`:'kin';
+const lineDowry=r=>Math.ceil(dowryPrice(r,3)/2);
+const linePool=()=>living().filter(canMarryOut);
+function wedForLine(n,r,m,out){
+  ['weapon','armor','heirloom','specialty'].forEach(s=>{const g=m.gear[s];if(g&&g!=='None'&&(s!=='heirloom'||HEIRLOOMS[g])&&(s!=='specialty'||SPECIALTIES[g]))H.armory.push({slot:s,name:g});m.gear[s]=s==='weapon'||s==='armor'?'None':''});
+  m.dead=true;m.givenTo=n;m.givenAs='spouse';m.givenWhy='line';m.fell=`Wed into House ${n} to carry on its line`;
+  const sx=Math.random()<.6?'m':'f';r.heir={given:nameFor(sx,r.sp),sex:sx,age:0,line:m.id};
+  sealMatch(n,r,1,out);
+  out.unshift(`${m.given} weds into House ${n}. A child of the match, ${r.heir.given}, is named heir, and House ${n} will not fall for want of one`);
+  if(sel===m.id){const ru=H.members.find(x=>x.ruler&&!x.dead);if(ru)sel=ru.id}
+}
 function sendEnvoy(id){
   if(!envoy)return;if(envoy.kind==='broker'){sendBroker(id);return}const m=mem(id),{kind,house:n,against}=envoy,r=rival(n);if(!m||!available(m)||(!r&&kind!=='crown'))return;
   const E=envoyMods(kind,n,against);if(E.block)return;
@@ -4688,6 +4709,11 @@ function sendEnvoy(id){
     if(ok){H.gold-=price;const out=[];wedRuler(kind,n,bride,out);text=`${m.given} wins the match ${rl}. You pay a dowry of ${price} gold. ${out.join('. ')}.`}
     else if(kind==='crown'){H.realm.favor=Math.max(0,H.realm.favor-1);text=`${crownWord(H.realm.king)} ${H.realm.king.given} declines the match ${rl}. Royal favor falls by 1.`}
     else{bump(r,roll===10?2:1);text=`${lordWord(r.lord)} ${r.lord.given} of House ${n} declines the match ${rl}.${roll===10?' The proposal is taken as an insult.':''} Tension rises.`}
+  }else if(kind==='line'){
+    const w=mem(envoy.who),pr=lineDowry(r);
+    if(!w||!canMarryOut(w)||H.gold<pr){envoy=null;render();return}
+    if(ok){H.gold-=pr;const out=[];wedForLine(n,r,w,out);text=`${m.given} wins the match ${rl}. You pay a dowry of ${pr} gold. ${out.join('. ')}.`}
+    else{bump(r,roll===10?2:1);text=`House ${n} declines the match ${rl}.${roll===10?' The proposal is taken as an insult.':''} Tension rises.`}
   }else if(kind==='ally'){
     if(ok){H.dip.allies.push({house:n,since:H.cycle});r.hostility=Math.max(0,r.hostility-1);text=`${m.given} wins House ${n} as your ally ${rl}. Each will defend the other.`}
     else{bump(r,roll===10?2:1);text=`House ${n} turns ${m.given} away ${rl}.${roll===10?' The proposal is taken as an insult.':''} Tension rises.`}
@@ -4979,6 +5005,7 @@ function dipActs(r){
   if(atWar(n))b.push(`<button class="sm" data-treaty="${esc(n)}" ${talksOn(n)?'disabled title="Talks are already underway"':''}>Negotiate peace · envoys</button>`);
   else{
     if(!alliedWith(n))b.push(`<button class="sm" data-envoy="ally|${esc(n)}">Propose an alliance · envoy</button>`);
+    if(heirless(r))b.push(`<button class="sm" data-envoy="line|${esc(n)}" title="They have no heir. No claim for you, but a marriage alliance">Wed into their house to carry on its line · ${lineDowry(r)} gold dowry · envoy</button>`);
     if(lordFree(r))b.push(`<button class="sm" data-envoy="wed|${esc(n)}">Propose a match to ${lordWord(r.lord)} ${esc(r.lord.given)} · ${dowryPrice(r,3)} gold dowry · envoy</button>`);
     if(inTruce(n))b.push(`<span class="muted" style="font-size:14px;align-self:center">A binding truce: no war until ${seasonOf(H.dip.truces.find(t=>t.house===n).until)}</span>`);
     else b.push(`<button class="sm danger" data-warask="${esc(n)}">Declare war</button>`);
@@ -6252,11 +6279,11 @@ function houseCard(r){
   const ties=tiesWith(r.name),groups=[...new Set(ties.map(x=>x.group))];
   const tieHtml=groups.length?groups.map(gr=>`<dt>${gr}</dt><dd><ul class="ties">${ties.filter(x=>x.group===gr).map(x=>`<li class="${x.tone}">${esc(x.text)}</li>`).join('')}</ul></dd>`).join(''):'';
   const hist=H.log.filter(l=>l.text.includes('House '+r.name)).slice(-3).reverse();
-  return `<article class="hcard" id="house-${esc(r.name)}"><div class="hhead"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'h'+r.name)}</svg><div style="min-width:0;flex:1"><h3 style="display:flex;gap:8px;align-items:center"><input class="hedit nm" data-hname="${esc(r.name)}" value="House ${esc(r.name)}" aria-label="Name of House ${esc(r.name)}">${Rz.royal.name===r.name?'<span class="status young">Royal</span>':''}</h3>${houseMsg&&houseMsg.key===r.name?`<p class="hmsg" role="alert">${esc(houseMsg.text)}</p>`:''}<p class="muted" style="margin:0;font-size:15px">${r.lord.sex==='f'?'Lady':'Lord'} ${esc(r.lord.given)}, ${r.sp} · ${r.lord.age}${(()=>{const c=H.members.find(m=>!m.dead&&m.wedTo&&m.wedTo.kind==='lord'&&m.wedTo.house===r.name);return c?` · <span class="okc">wed to ${esc(c.given)} of your house</span>`:lordFree(r)?' · <span class="okc">unmarried, no heir</span>':''})()}</p><input class="hedit st" data-hseat="${esc(r.name)}" value="Seat: ${esc(r.seat)}" aria-label="Seat of House ${esc(r.name)}"></div></div>
+  return `<article class="hcard" id="house-${esc(r.name)}"><div class="hhead"><svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(r.sigil,'h'+r.name)}</svg><div style="min-width:0;flex:1"><h3 style="display:flex;gap:8px;align-items:center"><input class="hedit nm" data-hname="${esc(r.name)}" value="House ${esc(r.name)}" aria-label="Name of House ${esc(r.name)}">${Rz.royal.name===r.name?'<span class="status young">Royal</span>':''}</h3>${houseMsg&&houseMsg.key===r.name?`<p class="hmsg" role="alert">${esc(houseMsg.text)}</p>`:''}<p class="muted" style="margin:0;font-size:15px">${r.lord.sex==='f'?'Lady':'Lord'} ${esc(r.lord.given)}, ${r.sp} · ${r.lord.age}${(()=>{const c=H.members.find(m=>!m.dead&&m.wedTo&&m.wedTo.kind==='lord'&&m.wedTo.house===r.name);return c?` · <span class="okc">wed to ${esc(c.given)} of your house</span>`:lordFree(r)?' · <span class="okc">unmarried, no children</span>':''})()}</p><input class="hedit st" data-hseat="${esc(r.name)}" value="Seat: ${esc(r.seat)}" aria-label="Seat of House ${esc(r.name)}"></div></div>
     <div class="stance"><span class="eyebrow" style="color:var(--gold)">${stanceOf(r)}</span>${tensionMeter(r)}</div>
     <p class="threat">${threatLine(r)}</p>
     <dl class="opdl">${tieHtml||'<dt>Ties</dt><dd class="muted">None yet.</dd>'}</dl>
-    <dl class="opdl theirs"><dt>Agenda</dt><dd>${AGENDAS[r.agenda]}</dd><dt>Strength</dt><dd>${powerHtml(r.name)}</dd><dt>Heir</dt><dd>${r.heir?`${esc(r.heir.given)}, age ${r.heir.age}`:isRoyalRival(r.name)?'Follows the crown':'<span class="hot">None. If the lord dies, the house falls</span>'}</dd><dt>Holdings</dt><dd>${totalLands(r)} land${totalLands(r)===1?'':'s'}${bannerLands(r.name)?` (${r.lands} their own, ${bannerLands(r.name)} held by bannermen)`:''}${outlawLandsOf(r.name)?` · ${outlawLandsOf(r.name)} more held by outlaws`:''}</dd>${rels?`<dt>Realm</dt><dd>${rels}</dd>`:''}</dl>
+    <dl class="opdl theirs"><dt>Agenda</dt><dd>${AGENDAS[r.agenda]}</dd><dt>Strength</dt><dd>${powerHtml(r.name)}</dd><dt>Heir</dt><dd>${r.heir?`${esc(r.heir.given)}, age ${r.heir.age} <span class="muted">(${heirKind(r.heir)})</span>`:isRoyalRival(r.name)?'Follows the crown':'<span class="hot">None. If the lord dies, the house falls</span>'}</dd><dt>Holdings</dt><dd>${totalLands(r)} land${totalLands(r)===1?'':'s'}${bannerLands(r.name)?` (${r.lands} their own, ${bannerLands(r.name)} held by bannermen)`:''}${outlawLandsOf(r.name)?` · ${outlawLandsOf(r.name)} more held by outlaws`:''}</dd>${rels?`<dt>Realm</dt><dd>${rels}</dd>`:''}</dl>
     ${hist.length?`<details class="hist"><summary>Recent dealings</summary><ul>${hist.map(l=>`<li><span class="cy">${seasonOf(l.cycle)}, yr ${yearOf(l.cycle)}</span>${esc(l.text)}</li>`).join('')}</ul></details>`:''}
     <details class="hacts" data-fold="hacts-${esc(r.name)}" ${H.ui&&H.ui.folds&&H.ui.folds['hacts-'+r.name]?'open':''}><summary>Actions</summary><div class="acts"><button class="sm" data-calm="${esc(r.name)}" ${H.influence>=2&&r.hostility?'':'disabled'}>Ease tensions · 2 influence</button><button class="sm" data-gift="${esc(r.name)}" ${r.hostility&&!court().gifts[r.name]&&H.gold>=giftCost(r)?'':'disabled'} title="${court().gifts[r.name]?'Already sent a gift this season':r.hostility?'−1 tension, once a season':'No tension to ease'}">Send a gift · ${giftCost(r)} gold</button>${dipActs(r)}${tradeActs(r)}
       <span class="lbl">Heraldry</span><button class="sm" data-hsigil="${esc(r.name)}">Redraw sigil</button><button class="sm" data-sgopen="rival" data-sgname="${esc(r.name)}">Edit sigil</button>${(()=>{const why=rerollBlock(r);return `<button class="sm" data-rerollhouse="${esc(r.name)}" ${why?`disabled title="${esc(why)}"`:'title="Replace this house with a new one"'}>Reroll house</button>`})()}</div></details>${warConfirm(r)}${secretHtml}</article>`;
