@@ -1595,8 +1595,8 @@ function person(o){
     const top=topStat(st);
     m.gear.weapon=top==='Might'?pick(['Longsword','Lance','Warhammer','Arming sword']):pick(['Dagger','Arming sword','Spear','Longbow']);
     m.gear.armor=top==='Might'||top==='Grit'?pick(['Mail hauberk','Brigandine','Plate harness']):pick(['None','Padded gambeson','Boiled leather']);
-    if(top==='Ability')m.gear.specialty=pick(['The household ledgers','A siege engineer']);
-    if(top==='Insight')m.gear.specialty=pick(['A network of chambermaids','The ear of a royal steward','A gift for poetry']);
+    if(top==='Ability')m.gear.specialty=pick(['The household ledgers','A siege engineer','A network of chambermaids']);
+    if(top==='Insight')m.gear.specialty=pick(['The ear of a royal steward','An esteemed poet']);
   }else m.gear.weapon=age>=Math.round(10*S.adult/16)?'Dagger':'None';
   return m;
 }
@@ -2078,7 +2078,7 @@ const canDeal=x=>x.liege===YOU||x.liege==null;
 function boonItemFor(x){ /* what they give your armory when one of yours weds into their house: a boon item, finer from stronger houses */
   if(x.gift)return x.gift;
   const cap=[0,18,22,99][x.power]||99,all=[];
-  Object.entries(HEIRLOOMS).forEach(([n,v])=>{if(v.boon&&v.price<=cap)all.push({slot:'heirloom',name:n})});
+  Object.entries(HEIRLOOMS).forEach(([n,v])=>{if(v.boon&&!v.commissionOnly&&v.price<=cap)all.push({slot:'heirloom',name:n})});
   Object.entries(SPECIALTIES).forEach(([n,v])=>{if(v.boon&&v.boon!=='concubine'&&v.price<=cap)all.push({slot:'specialty',name:n})});
   return x.gift=pick(all);
 }
@@ -3191,12 +3191,12 @@ function ensureState(){
 function migrateItems(){
   if(!Array.isArray(H.armory))H.armory=[];
   if(H.market&&Array.isArray(H.market.weapon))H.market.weapon=H.market.weapon.filter(n=>!NOT_SOLD.includes(n));
-  const RENAME={'A master-at-arms':'A personal trainer','Elixir of Life':'Dragon Blood Wine'};
+  const RENAME={'A master-at-arms':'A personal trainer','Elixir of Life':'Dragon Blood Wine','A gift for poetry':'An esteemed poet'};
   const toH=n=>HEIRLOOMS[n]&&!SPECIALTIES[n];
   H.armory.forEach(it=>{if(RENAME[it.name])it.name=RENAME[it.name];if(it.slot==='specialty'&&toH(it.name))it.slot='heirloom'});
   H.members.forEach(m=>{const g=m.gear;if(!g)return;if(RENAME[g.specialty])g.specialty=RENAME[g.specialty];
     if(g.specialty&&toH(g.specialty)){if(!g.heirloom)g.heirloom=g.specialty;else H.armory.push({slot:'heirloom',name:g.specialty});g.specialty=''}});
-  if(H.market&&H.market.weapon&&((H.market.heirloom||[]).some(n=>!HEIRLOOMS[n])||(H.market.specialty||[]).some(n=>!SPECIALTIES[n])))
+  if(H.market&&H.market.weapon&&((H.market.heirloom||[]).some(n=>!HEIRLOOMS[n])||(H.market.specialty||[]).some(n=>!SPECIALTIES[n])||(H.market.heirloom||[]).some(n=>HEIRLOOMS[n]&&HEIRLOOMS[n].commissionOnly)))
     H.market={...H.market,heirloom:shuffle(stockHeirlooms()).slice(0,3),specialty:shuffle(Object.keys(SPECIALTIES)).slice(0,4)};
 }
 /* ---------- peaceful operations: tourneys, hunts, bandits, wilds ---------- */
@@ -3569,6 +3569,7 @@ function rollStage(msId,memId){
   const op=ms.op,st=op.stages[ms.stage],T=stageTarget(ms,m);let roll=1+Math.floor(Math.random()*10);
   let ok=roll===1||(roll!==10&&roll<=T.t),note='',pre='';
   if(!ok&&hasBoon(m,'marble')){ms.marbled=ms.marbled||[];if(!ms.marbled.includes(m.id)){ms.marbled.push(m.id);const r0=roll;roll=1+Math.floor(Math.random()*10);ok=roll===1||(roll!==10&&roll<=T.t);pre=`The plot marble turns (first rolled ${r0}). `}}
+  if(!ok&&hasBoon(m,'statmarble')&&fxH(m).marbleStat===st.stat){ms.statMarbled=ms.statMarbled||[];if(!ms.statMarbled.includes(m.id)){ms.statMarbled.push(m.id);const r0=roll;roll=1+Math.floor(Math.random()*10);ok=roll===1||(roll!==10&&roll<=T.t);pre=`The ${fxH(m).marbleStat} marble turns (first rolled ${r0}). `}}
   if(!ok){
     const r=rival(op.target);
     if(st.stat==='Might'){const wn=op.peaceful&&!op.siege?(op.kind==='tourney'||op.kind==='melee'?1:Math.max(1,op.diff-1+(roll===10?1:0)-Math.floor(aVal(m.gear.armor)/2))):Math.max(1,op.diff+(roll===10?1:0)-Math.floor(aVal(m.gear.armor)/2));note=woundIn(ms,m,wn)+'.'}
@@ -5879,7 +5880,11 @@ const HEIRLOOMS={
   'Charm of long years':{price:20,boon:'longlife',d:'Boon: old age cannot kill for ten years past the usual'},
   'Martyr’s token':{price:24,boon:'martyr',d:'Boon: once, when the bearer would die, they live on and the token crumbles'},
   'Mask of the faceless':{price:20,boon:'mask',d:'Boon: never taken captive; a capture becomes a wound instead'},
-  'Plot marble':{price:22,boon:'marble',d:'Boon: once per operation, reroll one failed roll'},
+  'Plot marble':{price:500,boon:'marble',commissionOnly:true,d:'Boon: once per operation, reroll one failed roll'},
+  'Ability marble':{price:100,boon:'statmarble',marbleStat:'Ability',commissionOnly:true,d:'Boon: once per operation, reroll one failed Ability roll'},
+  'Insight marble':{price:100,boon:'statmarble',marbleStat:'Insight',commissionOnly:true,d:'Boon: once per operation, reroll one failed Insight roll'},
+  'Might marble':{price:100,boon:'statmarble',marbleStat:'Might',commissionOnly:true,d:'Boon: once per operation, reroll one failed Might roll'},
+  'Grit marble':{price:100,boon:'statmarble',marbleStat:'Grit',commissionOnly:true,d:'Boon: once per operation, reroll one failed Grit roll'},
   'Cradle-quilt of the old line':{price:20,boon:'cradle',d:'Boon: the bearer’s children are born with +1 to their species’ main stat'},
   'Crown-shard':{price:20,boon:'crownshard',d:'Boon: while the bearer lives, slander at court cannot lower your royal favor'},
   'Silver chalice':{price:18,boon:'chalice',d:'Boon: assassins cannot kill the bearer; a successful attempt becomes a single wound'},
@@ -5890,11 +5895,14 @@ const stockHeirlooms=()=>Object.keys(HEIRLOOMS).filter(n=>!HEIRLOOMS[n].commissi
 /* weapons the smiths never sell (still starting gear) */
 const NOT_SOLD=['Dagger'];
 const SPECIALTIES={
-  'A network of chambermaids':{price:10,op:'Intrigue',d:'+1 to every Intrigue roll'},
+  'A network of chambermaids':{price:10,op:'Espionage',d:'+1 to every Espionage roll'},
   'The ear of a royal steward':{price:12,op:'Intrigue',d:'+1 to every Intrigue roll'},
-  'A gift for poetry':{price:8,op:'Intrigue',d:'+1 to every Intrigue roll'},
+  'An esteemed poet':{price:12,op:'Intrigue',d:'+1 to every Intrigue roll'},
   'A veteran sergeant':{price:10,op:'Battle',d:'+1 to every Battle roll'},
-  'A war-hound':{price:8,op:'Battle',d:'+1 to every Battle roll'},
+  'A war-hound':{price:8,stat:'Might',d:'+1 to every Might roll'},
+  'A personal chef':{price:14,stat:'Grit',d:'+1 to every Grit roll'},
+  'A personal attendant':{price:14,stat:'Insight',d:'+1 to every Insight roll'},
+  'A dubious acquaintance':{price:12,stat:'Ability',d:'+1 to every Ability roll'},
   'A siege engineer':{price:12,op:'Conquest',d:'+1 to every Conquest roll'},
   'The household ledgers':{price:9,op:'Conquest',d:'+1 to every Conquest roll'},
   'A food taster':{price:8,taster:2,d:'+2 to see an assassin coming'},
@@ -5934,6 +5942,7 @@ function boonTurn(say){
 function gearBonus(m,stat,type){
   const h=fxH(m),s=fxS(m);let b=0;
   if(h.stat===stat)b++;
+  if(s.stat===stat)b++;
   if(type&&h.op===type)b++;
   if(type&&s.op===type)b++;
   if(type&&m.innate&&m.innate.op===type)b++;
