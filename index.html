@@ -567,7 +567,7 @@ function enforcePrimary(st,sp,min){min=min||6;const p=(SPECIES[sp]||SPECIES.Kin)
   while(st[p]<min){const donors=STATS.filter(k=>k!==p&&st[k]>2);if(!donors.length)break;const top=Math.max(...donors.map(k=>st[k]));const k=pick(donors.filter(x=>st[x]===top));st[k]--;st[p]++}}
 const birthOdds=(mother,n)=>{const o=spOf(mother).odds;return n<o.length?o[n]:Math.min(o[o.length-1],.05)};
 const oldOf=m=>spOf(m).old+(m.elixirs||0);
-const speciesLine=m=>{const S=spOf(m);return `${S.name}: ${S.desc} Primary stat ${S.primary} (marked ✦). Of age at ${S.adult}, old age from ${oldOf(m)}${m.elixirs?` (${m.elixirs} year${m.elixirs>1?'s':''} gained from the Elixir of Life)`:''}, fertile ${S.fert[0]} to ${S.fert[1]}.`};
+const speciesLine=m=>{const S=spOf(m);return `${S.name}: ${S.desc} Primary stat ${S.primary} (marked ✦). Of age at ${S.adult}, old age from ${oldOf(m)}, fertile ${S.fert[0]} to ${S.fert[1]}.`};
 
 /* ---------- names ---------- */
 const HOUSES_BY={
@@ -3149,7 +3149,7 @@ function ensureState(){
 function migrateItems(){
   if(!Array.isArray(H.armory))H.armory=[];
   if(H.market&&Array.isArray(H.market.weapon))H.market.weapon=H.market.weapon.filter(n=>!NOT_SOLD.includes(n));
-  const RENAME={'A master-at-arms':'A personal trainer'};
+  const RENAME={'A master-at-arms':'A personal trainer','Elixir of Life':'Dragon Blood Wine'};
   const toH=n=>HEIRLOOMS[n]&&!SPECIALTIES[n];
   H.armory.forEach(it=>{if(RENAME[it.name])it.name=RENAME[it.name];if(it.slot==='specialty'&&toH(it.name))it.slot='heirloom'});
   H.members.forEach(m=>{const g=m.gear;if(!g)return;if(RENAME[g.specialty])g.specialty=RENAME[g.specialty];
@@ -5836,7 +5836,7 @@ const HEIRLOOMS={
   'Cradle-quilt of the old line':{price:20,boon:'cradle',d:'Boon: the bearer’s children are born with +1 to their species’ main stat'},
   'Crown-shard':{price:20,boon:'crownshard',d:'Boon: while the bearer lives, slander at court cannot lower your royal favor'},
   'Silver chalice':{price:18,boon:'chalice',d:'Boon: assassins cannot kill the bearer; a successful attempt becomes a single wound'},
-  'Elixir of Life':{price:100,consumable:true,commissionOnly:true,d:'Drunk when given: the drinker’s old age comes one year later. The elixir is used up'}
+  'Dragon Blood Wine':{price:100,consumable:true,commissionOnly:true,d:'Drunk when given: the drinker’s old age comes one year later. The wine is used up'}
 };
 /* heirlooms that can turn up on their own (stock, suitors); commission-only pieces are left out */
 const stockHeirlooms=()=>Object.keys(HEIRLOOMS).filter(n=>!HEIRLOOMS[n].commissionOnly);
