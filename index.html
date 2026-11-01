@@ -2641,15 +2641,18 @@ function outlawTurn(say){
   if(!Array.isArray(H.bandits))return;if(!Array.isArray(H.owars))H.owars=[];
   H.owars=H.owars.filter(w=>w.split('|').every(entOf));
   if(H.bandits.length<BANDIT_MIN&&Math.random()<.3||H.bandits.length>=BANDIT_MIN&&H.bandits.length<BANDIT_MAX&&Math.random()<.1)spawnBandit(say);
-  /* landless minor houses strike outlaws in their liege's country (anywhere, if independent) to win land */
-  (H.minors||[]).forEach(x=>{if(x.estate||x.rebel||x.liege===YOU||Math.random()>=.1)return;const k='m:'+x.id;if(owarsOf(k).length)return;
+  /* landless minor houses strike outlaws in their liege's country (anywhere, if independent) to win land.
+     Independents want their Estate plus IND_WANT lands: below that they strike too, and hungrier (25% a season) */
+  (H.minors||[]).forEach(x=>{const hungry=indieHungry(x);if(x.rebel||x.liege===YOU||x.estate&&!hungry||Math.random()>=(hungry?IND_STRIKE:.1))return;const k='m:'+x.id;if(owarsOf(k).length)return;
     const bs=H.bandits.filter(b=>(!x.liege||b.hold.house===x.liege)&&!atWarO(k,'o:'+b.id));if(!bs.length)return;const b=pick(bs);
     H.owars.push(owKey(k,'o:'+b.id));say(`House ${x.name}, landless, takes up arms against ${b.name} to win land of its own.`,'')});
   /* some wars end */
   H.owars.slice().forEach(w=>{if(Math.random()<.15){H.owars=H.owars.filter(x=>x!==w);const [A,B]=w.split('|');say(`${EL(A)} and ${entLabel(B)} let the fighting lapse, for now.`,'')}});
+  /* every outlaw war fights on its own: each rolls a 30% clash each season */
+  H.owars.slice().forEach(w=>{if(H.owars.includes(w)&&w.split('|').every(entOf)&&Math.random()<OWAR_CLASH)owarClash(w,say)});
   if(!H.bandits.length||Math.random()>=.85)return;
   const r=Math.random();
-  if(H.owars.length&&r<.5){owarClash(pick(H.owars),say);return}
+  if(H.owars.length&&r<.5)return;
   if(r<.7){ /* a move: a company seizes a land without a war */
     const b=pick(H.bandits),t=banditTargets(b).filter(x=>!atWarO(x,'o:'+b.id));if(!t.length||Math.random()>=[1,.55,.3][b.power-1])return;
     if(banditLands(b)>=HOLD_CAP)return;const T=pick(t),o=entLoseLand(T);if(!o)return;entGainLand('o:'+b.id,o);
@@ -2662,15 +2665,23 @@ function outlawTurn(say){
   const b=pick(strong),opts=banditTargets(b).concat(H.bandits.filter(x=>x!==b).map(x=>'o:'+x.id)).filter(x=>!atWarO(x,'o:'+b.id));if(!opts.length)return;
   const T=pick(opts);H.owars.push(owKey(T,'o:'+b.id));say(`${cap1(b.name)} make war on ${entLabel(T)}.`,'warn');
 }
+/* independents want their seat plus 3 lands of any tier; below that they settle wilds (12%) and strike outlaws (25%) each season */
+/* independents with no Estate: settle the wilds 50% a season (as hamlets), and each step of raising their best land builds in 1 season */
+const LL_SETTLE=.5,LL_TIER=1,LL_BUILD=1,OWAR_CLASH=.3,RIVAL_SEAT=.25,IND_WANT=3,IND_SETTLE=.12,IND_STRIKE=.25;
+const indieHungry=x=>!!x&&!x.liege&&!x.rebel&&mN(x)<IND_WANT;
 /* minor houses win land of their own: settling the wilds, and their liege's grants in Winter */
 function minorLandTurn(say){
+  consumeTurn(say);
   (H.minors||[]).forEach(x=>{
-    if(x.rebel||!x.estate)return;
-    if(mN(x)<HOLD_CAP&&Math.random()<.03&&mAdd(x,MT_WILD))
+    if(x.rebel||!x.estate&&x.liege)return; /* landless independents settle the wilds too, always hungry */
+    if(mN(x)<HOLD_CAP&&Math.random()<(!x.estate?LL_SETTLE:indieHungry(x)?IND_SETTLE:.03)&&mAdd(x,!x.estate?LL_TIER:MT_WILD))
       say(`House ${x.name}${x.liege===YOU?', sworn to you,':''} settles a wild clearing (${mN(x)} land${mN(x)>1?'s':''}).`,x.liege===YOU?'good':'');
   });
   if(seasonOf(H.cycle+1)==='Winter')H.rivals.forEach(r=>{
     /* a landless bannerman petitions its liege, who grants a village if it can spare one */
+    /* 25% each Winter, a great house of strength 2+ spends a point of strength to seat a landless bannerman on a new Estate */
+    (H.minors||[]).filter(x=>x.liege===r.name&&!x.estate&&!x.rebel).forEach(x=>{if(r.power>=2&&Math.random()<RIVAL_SEAT){r.power--;seatMinor(x,pick(LAND_A)+pick(LAND_B),null);
+      say(`House ${r.name} spends its levies to raise ${x.estate.name} Estate for its landless bannerman House ${x.name} (strength ${r.power}).`,'')}});
     (H.minors||[]).filter(x=>x.liege===r.name&&!x.estate&&!x.rebel&&!mN(x)).forEach(x=>{if(r.lands>LAND_WANT&&Math.random()<.25){r.lands--;mAdd(x,MT_VILLAGE);say(`House ${r.name} grants its landless bannerman House ${x.name} a village.`,'')}});
     return;
     const bs=(H.minors||[]).filter(x=>x.liege===r.name&&!x.resentful&&!x.rebel&&x.estate&&mN(x)<HOLD_CAP);if(!bs.length)return;
@@ -2750,9 +2761,37 @@ function recruitTurn(say){
 }
 function minorGrowTurn(say){
   (H.minors||[]).forEach(x=>(x.holds||[]).forEach(h=>{
-    if(h.b){if(--h.b.left<=0){h.t=Math.min(MT_TOP,h.t+1);h.b=null;if(x.liege===YOU)say(`House ${x.name} finishes raising a ${LADDER[h.t][0].toLowerCase()}.`,'good')}return}
+    if(h.b){if(--h.b.left<=0){h.t=Math.min(h.b.to||MT_TOP,h.t+1);h.b=null;if(x.liege===YOU||h.t===MT_SEAT)say(`House ${x.name}${x.liege===YOU?'':!x.liege?', independent,':''} finishes raising a ${LADDER[h.t][0].toLowerCase()}.`,x.liege===YOU?'good':'')}return}
     if(h.t<MT_TOP&&Math.random()<.012){h.t++;if(x.liege===YOU)say(`A land of House ${x.name} grows into a ${LADDER[h.t][0].toLowerCase()}.`,'good')}
   }));
+  seatTurn(say);
+}
+/* a house with no Estate that holds an Estate among its lands makes it its seat */
+const MT_SEAT=5; /* the Estate, top of the LADDER */
+function seatMinor(x,nm,say,how){
+  if(x.liege===YOU){const N={name:nm,tier:'Estate',income:LADDER[MT_SEAT][1],peasants:LADDER[MT_SEAT][2],from:'House '+x.name,cycle:H.cycle,minor:x.id};H.lands.push(N);lk(N);x.estate={name:nm,lid:N.lid}}
+  else x.estate={name:nm};
+  x.landless=false;x.resentful=false;
+  if(say)say(`House ${x.name} ${how||'makes'} ${nm} Estate${how?'':' its seat'}. It is landless no more.`,x.liege===YOU?'good':'');
+}
+function seatTurn(say){
+  (H.minors||[]).forEach(x=>{if(x.estate||x.rebel)return;const i=(x.holds||[]).findIndex(h=>h.t>=MT_SEAT&&!h.b);if(i<0)return;
+    x.holds.splice(i,1);seatMinor(x,pick(LAND_A)+pick(LAND_B),say)});
+}
+/* independents with no Estate pour their smaller lands into their best one: each season one smaller land is consumed and its
+   income banked on the best land; when the best land's income plus the bank reaches the next tier's income, it builds that tier
+   (1 season a step), keeping any leftover. An Estate reached this way becomes the house's seat. */
+function bestHoldIdx(x){let bi=-1;(x.holds||[]).forEach((h,i)=>{if(bi<0||h.t>x.holds[bi].t||h.t===x.holds[bi].t&&(h.bank||0)>(x.holds[bi].bank||0))bi=i});return bi}
+function consumeTurn(say){
+  (H.minors||[]).forEach(x=>{if(x.liege||x.estate||x.rebel||mN(x)<1)return;
+    let bi=bestHoldIdx(x);const B=x.holds[bi];if(B.b||B.t>=MT_SEAT)return;
+    const need=()=>LADDER[B.t+1][1]-LADDER[B.t][1];
+    if((B.bank||0)<need()){if(mN(x)<2)return;
+      let si=-1;x.holds.forEach((h,i)=>{if(h!==B&&!h.b&&(si<0||h.t<x.holds[si].t))si=i});if(si<0)return;
+      const S=x.holds.splice(si,1)[0];B.bank=(B.bank||0)+LADDER[S.t][1]}
+    if((B.bank||0)>=need()){B.bank-=need();if(!B.bank)delete B.bank;B.b={left:LL_BUILD,to:MT_SEAT};
+      if(B.t+1===MT_SEAT)say(`House ${x.name}, independent and landless, pours its lands into its castle and begins raising it into an Estate.`,'')}
+  });
 }
 const upgradable=x=>(x.holds||[]).map((h,i)=>[h,i]).filter(([h])=>h&&Number.isInteger(h.t)&&h.t>=0&&h.t<MT_TOP&&!h.b);
 const upgradeCost=h=>Math.ceil(5*LADDER[h.t][1]/2);
@@ -3005,7 +3044,7 @@ function banditsPanel(){
   const B=H.bandits||[];
   const tot=B.reduce((a,b)=>a+1+banditLands(b),0);
   return `<section class="pane fold minors"><details data-fold="outlaws" ${foldOpen('outlaws')?'open':''}><summary><h2>Outlaw companies</h2><span class="muted">${B.length} compan${B.length===1?'y':'ies'} · ${tot} land${tot===1?'':'s'} held</span></summary><div class="foldbody">
-    <p class="muted" style="font-size:15px;margin:0 0 10px">Bands of outlaws who answer to no lord. Each holds one stronghold in a great house’s lands and seizes more from that house (while it has 3 or more), its bannermen and independent houses; the stronger a company grows, the less often it strikes without a war; every land they hold is one a house has lost. Their strength is their blades: it grows as outlaws flock to them (more often the more land they hold, and after each victory). They war on great houses, minor houses and each other, and the houses they rob strike back. Whoever loses a battle gives up a land or a pip of strength, never both. A company with neither left to give has its stronghold stormed and is broken; every land it held goes back. Your dealings: pay a company off (5 gold a point of strength) to leave you and your bannermen alone for a year; hire one (8 gold a point) for a year to fight your wars, or at peace to settle a restless hold each season; strike one on the Summer and Fall boards; set one on a rival from the Winter board.</p>
+    <p class="muted" style="font-size:15px;margin:0 0 10px">Bands of outlaws who answer to no lord. Each holds one stronghold in a great house’s lands and seizes more from that house (while it has 3 or more), its bannermen and independent houses; the stronger a company grows, the less often it strikes without a war; every land they hold is one a house has lost. Their strength is their blades: it grows as outlaws flock to them (more often the more land they hold, and after each victory). They war on great houses, minor houses and each other, and the houses they rob strike back; every war may come to blows each season. Whoever loses a battle gives up a land or a pip of strength, never both. A company with neither left to give has its stronghold stormed and is broken; every land it held goes back. Your dealings: pay a company off (5 gold a point of strength) to leave you and your bannermen alone for a year; hire one (8 gold a point) for a year to fight your wars, or at peace to settle a restless hold each season; strike one on the Summer and Fall boards; set one on a rival from the Winter board.</p>
     ${B.length?`<ul>${B.map(banditLi).join('')}</ul>`:'<p class="muted" style="margin:0;font-size:15px">No outlaw company troubles the realm.</p>'}</div></details></section>`;
 }
 function minorLi(x){
@@ -3023,7 +3062,7 @@ function minorsPanel(){
     +H.rivals.map(r=>grp(`Sworn to House ${esc(r.name)}`,r.sigil,'mnr'+r.name,swornTo(r.name))).join('')
     +grp('Independent',null,'',M.filter(x=>!x.liege),'No house stands alone.');
   return `<section class="pane fold minors"><details data-fold="minors" ${foldOpen('minors')?'open':''}><summary><h2>Minor houses</h2><span class="muted">${M.length} houses · ${M.filter(x=>x.estate).length} estates${M.some(x=>x.petition&&x.liege===YOU)?` · <span class="hot">${M.filter(x=>x.petition&&x.liege===YOU).length} petition${M.filter(x=>x.petition&&x.liege===YOU).length>1?'s':''} waiting</span>`:''}${M.some(x=>x.rebel&&x.liege===YOU)?` · <span class="hot">${M.filter(x=>x.rebel&&x.liege===YOU).length} in rebellion</span>`:''}${(H.feuds||[]).length?` · <span class="hot">${H.feuds.length} feud${H.feuds.length>1?'s':''}</span>`:''}${M.some(x=>x.oath)?` · <span class="okc">${M.filter(x=>x.oath).length} oath${M.filter(x=>x.oath).length>1?'s':''} offered</span>`:''}</span></summary><div class="foldbody">
-    <p class="muted" style="font-size:15px;margin:0 0 10px">Lesser houses seated on Estates, the greatest tier of holding. Beside its Estate, a house may hold up to 12 lands of its own, from wild clearings to castles; they grow over time, and a house sworn to you may ask your help to raise one. A sworn house’s lands count toward its liege, and pay its liege half their income. An Estate held by a sworn house pays its liege half its gold and peasants. Raise a castle to an Estate in your holdings, then grant it to a house sworn to you. Court an independent house with gold and influence, or bind a house to you for good by marriage: wed one of yours out and they send a boon for your armory; bring one of theirs in and they carry a boon of their own blood. A house turned out of its Estate is landless, and resentful. An independent house’s Estate can be stormed on the Fall Conquest board, with no war needed. A landless house, of any allegiance, can be dissolved with an Intrigue plot, once a season.</p>${body}</div></details></section>`;
+    <p class="muted" style="font-size:15px;margin:0 0 10px">Lesser houses seated on Estates, the greatest tier of holding. Beside its Estate, a house may hold up to 12 lands of its own, from wild clearings to castles; they grow over time, and a house sworn to you may ask your help to raise one. A sworn house’s lands count toward its liege, and pay its liege half their income. An Estate held by a sworn house pays its liege half its gold and peasants. Raise a castle to an Estate in your holdings, then grant it to a house sworn to you. Court an independent house with gold and influence, or bind a house to you for good by marriage: wed one of yours out and they send a boon for your armory; bring one of theirs in and they carry a boon of their own blood. A house turned out of its Estate is landless, and resentful. An independent house’s Estate can be stormed on the Fall Conquest board, with no war needed. An independent house wants its Estate and at least 3 lands beside it; short of that, it settles the wilds and makes war on outlaws more often. A landless independent settles the wilds readily and pours its smaller lands into its best one, a season at a time, until it rises to an Estate and becomes its seat. A great house may spend a point of strength to raise an Estate for a landless bannerman. A landless house, of any allegiance, can be dissolved with an Intrigue plot, once a season.</p>${body}</div></details></section>`;
 }
 /* ---------- sigil picker: edits apply instantly; the rule of tincture is enforced against the field ---------- */
 let sigilEdit=null; /* {kind:'mine'|'rival'|'royal', name} */
