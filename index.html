@@ -566,7 +566,8 @@ const childTotal=(age,sp)=>clamp(Math.round(4+age*(16/(SPECIES[sp]||SPECIES.Kin)
 function enforcePrimary(st,sp,min){min=min||6;const p=(SPECIES[sp]||SPECIES.Kin).primary;
   while(st[p]<min){const donors=STATS.filter(k=>k!==p&&st[k]>2);if(!donors.length)break;const top=Math.max(...donors.map(k=>st[k]));const k=pick(donors.filter(x=>st[x]===top));st[k]--;st[p]++}}
 const birthOdds=(mother,n)=>{const o=spOf(mother).odds;return n<o.length?o[n]:Math.min(o[o.length-1],.05)};
-const speciesLine=m=>{const S=spOf(m);return `${S.name}: ${S.desc} Primary stat ${S.primary} (marked ✦). Of age at ${S.adult}, old age from ${S.old}, fertile ${S.fert[0]} to ${S.fert[1]}.`};
+const oldOf=m=>spOf(m).old+(m.elixirs||0);
+const speciesLine=m=>{const S=spOf(m);return `${S.name}: ${S.desc} Primary stat ${S.primary} (marked ✦). Of age at ${S.adult}, old age from ${oldOf(m)}${m.elixirs?` (${m.elixirs} year${m.elixirs>1?'s':''} gained from the Elixir of Life)`:''}, fertile ${S.fert[0]} to ${S.fert[1]}.`};
 
 /* ---------- names ---------- */
 const HOUSES_BY={
@@ -1547,7 +1548,7 @@ function spriteFor(m){
   }
   speciesLook(m,c);
   if(!isAdult(m)){c.beard='none';c.headgear='bare';c.item='none';c.mark='none';if(setting==='medieval')c.garb=m.sex==='f'?'kirtle':'gambeson'}
-  {const S=spOf(m);if(m.age>=S.old-2)c.hair=m.age>=S.old+8?'#e2dccb':'#8a8680'}
+  {const O=oldOf(m);if(m.age>=O-2)c.hair=m.age>=O+8?'#e2dccb':'#8a8680'}
   return c;
 }
 const SF_CACHE=new Map();
@@ -3147,13 +3148,14 @@ function ensureState(){
 /* items renamed or moved between the heirloom and specialty slots */
 function migrateItems(){
   if(!Array.isArray(H.armory))H.armory=[];
+  if(H.market&&Array.isArray(H.market.weapon))H.market.weapon=H.market.weapon.filter(n=>!NOT_SOLD.includes(n));
   const RENAME={'A master-at-arms':'A personal trainer'};
   const toH=n=>HEIRLOOMS[n]&&!SPECIALTIES[n];
   H.armory.forEach(it=>{if(RENAME[it.name])it.name=RENAME[it.name];if(it.slot==='specialty'&&toH(it.name))it.slot='heirloom'});
   H.members.forEach(m=>{const g=m.gear;if(!g)return;if(RENAME[g.specialty])g.specialty=RENAME[g.specialty];
     if(g.specialty&&toH(g.specialty)){if(!g.heirloom)g.heirloom=g.specialty;else H.armory.push({slot:'heirloom',name:g.specialty});g.specialty=''}});
   if(H.market&&H.market.weapon&&((H.market.heirloom||[]).some(n=>!HEIRLOOMS[n])||(H.market.specialty||[]).some(n=>!SPECIALTIES[n])))
-    H.market={...H.market,heirloom:shuffle(Object.keys(HEIRLOOMS)).slice(0,3),specialty:shuffle(Object.keys(SPECIALTIES)).slice(0,4)};
+    H.market={...H.market,heirloom:shuffle(stockHeirlooms()).slice(0,3),specialty:shuffle(Object.keys(SPECIALTIES)).slice(0,4)};
 }
 /* ---------- peaceful operations: tourneys, hunts, bandits, wilds ---------- */
 const PEACE={
@@ -5179,8 +5181,8 @@ function bloodlineTurn(say){
     if(m.age===adultAge(m)){m.kit=pick(KIT_BY[topStat(m.st)]);if(m.gear.weapon==='None'||m.gear.weapon==='Dagger')m.gear.weapon=topStat(m.st)==='Might'?'Arming sword':'Dagger';
       if(m.hostage){m.returnDue=true;say(`${m.given}, your hostage ward from House ${m.hostage}, comes of age. Decide in Bloodlines whether to send them home.`,'warn')}
       else say(`${m.given} comes of age and can now be sent on operations.`,'good')}
-    if(m.age>=spOf(m).old+2&&m.st.Might>1&&Math.random()<.35)m.st.Might--;
-    if(m.age>=spOf(m).old&&!m.captive&&!(hasBoon(m,'longlife')&&m.age<spOf(m).old+10)&&Math.random()<(m.age-spOf(m).old+2)*.015){
+    if(m.age>=oldOf(m)+2&&m.st.Might>1&&Math.random()<.35)m.st.Might--;
+    if(m.age>=oldOf(m)&&!m.captive&&!(hasBoon(m,'longlife')&&m.age<oldOf(m)+10)&&Math.random()<(m.age-oldOf(m)+2)*.015){
       if(hasBoon(m,'martyr')){spendBoon(m,'martyr');say(`${fullName(m)} sickens near to death at ${m.age}, but the Martyr’s token crumbles and they recover.`,'warn')}
       else{m.dead=true;m.fell=`Died of old age in year ${yearOf(H.cycle+1)}`;say(`${fullName(m)} dies of old age, at ${m.age}.`,'bad')}}
   });
@@ -5237,8 +5239,8 @@ function makeSuitor(o,sex,tier,taken){
   const gear={weapon:'Dagger',armor:'None',heirloom:'',specialty:'Kin in House '+o.house};
   const W=(lo,hi)=>pick(Object.keys(PRICES.weapon).filter(n=>wVal(n)>=lo&&wVal(n)<=hi)),A=(lo,hi)=>pick(Object.keys(PRICES.armor).filter(n=>aVal(n)>=lo&&aVal(n)<=hi));
   if(tier===1){if(Math.random()<.5)gear.weapon=W(1,2);else gear.armor=A(1,2)}
-  if(tier===2){if(Math.random()<.5)gear.heirloom=pick(Object.keys(HEIRLOOMS));else gear.specialty=pick(Object.keys(SPECIALTIES))}
-  if(tier===3){gear.heirloom=pick(Object.keys(HEIRLOOMS));gear.weapon=W(2,3)}
+  if(tier===2){if(Math.random()<.5)gear.heirloom=pick(stockHeirlooms());else gear.specialty=pick(Object.keys(SPECIALTIES))}
+  if(tier===3){gear.heirloom=pick(stockHeirlooms());gear.weapon=W(2,3)}
   return {tier,heir:tier===3,given,sex,sp:ssp,age,st,gear,traits:traitsFor(ssp),look:(Math.floor(Math.random()*4294967295)>>>0)||1,origin:'married',from:o.house,parents:[],title:''};
 }
 /* the lineup for one offer and one sex, rolled once and kept; the heir is offered only while you hold no claim on that house */
@@ -5833,8 +5835,13 @@ const HEIRLOOMS={
   'Plot marble':{price:22,boon:'marble',d:'Boon: once per operation, reroll one failed roll'},
   'Cradle-quilt of the old line':{price:20,boon:'cradle',d:'Boon: the bearer’s children are born with +1 to their species’ main stat'},
   'Crown-shard':{price:20,boon:'crownshard',d:'Boon: while the bearer lives, slander at court cannot lower your royal favor'},
-  'Silver chalice':{price:18,boon:'chalice',d:'Boon: assassins cannot kill the bearer; a successful attempt becomes a single wound'}
+  'Silver chalice':{price:18,boon:'chalice',d:'Boon: assassins cannot kill the bearer; a successful attempt becomes a single wound'},
+  'Elixir of Life':{price:100,consumable:true,commissionOnly:true,d:'Drunk when given: the drinker’s old age comes one year later. The elixir is used up'}
 };
+/* heirlooms that can turn up on their own (stock, suitors); commission-only pieces are left out */
+const stockHeirlooms=()=>Object.keys(HEIRLOOMS).filter(n=>!HEIRLOOMS[n].commissionOnly);
+/* weapons the smiths never sell (still starting gear) */
+const NOT_SOLD=['Dagger'];
 const SPECIALTIES={
   'A network of chambermaids':{price:10,op:'Intrigue',d:'+1 to every Intrigue roll'},
   'The ear of a royal steward':{price:12,op:'Intrigue',d:'+1 to every Intrigue roll'},
@@ -5888,7 +5895,7 @@ function gearBonus(m,stat,type){
 function sellPrice(slot,n){const p=slot==='weapon'||slot==='armor'?PRICES[slot][n]:(itemInfo(slot,n)||{}).price;return p?Math.floor(p/2):0}
 /* three pieces each season, each rolled +1 to +3, then a ware of that value (no repeats where possible) */
 function smithStock(slot){
-  const val=slot==='weapon'?wVal:aVal,pool=Object.keys(PRICES[slot]).filter(n=>val(n)>=1&&val(n)<=3),out=[];
+  const val=slot==='weapon'?wVal:aVal,pool=Object.keys(PRICES[slot]).filter(n=>!NOT_SOLD.includes(n)&&val(n)>=1&&val(n)<=3),out=[];
   for(let i=0;i<3;i++){const v=1+Math.floor(Math.random()*3);let c=pool.filter(n=>val(n)===v&&!out.includes(n));if(!c.length)c=pool.filter(n=>!out.includes(n));if(c.length)out.push(pick(c))}
   return out.sort((a,b)=>val(a)-val(b));
 }
@@ -5896,7 +5903,7 @@ function ensureMarket(){
   if(!Array.isArray(H.armory))H.armory=[];
   if(H.market&&!H.market.swords)H.market.swords=swordStock();
   if(!H.market||H.market.cycle!==H.cycle||!H.market.weapon){
-    H.market={cycle:H.cycle,weapon:smithStock('weapon'),armor:smithStock('armor'),heirloom:shuffle(Object.keys(HEIRLOOMS)).slice(0,3),specialty:shuffle(Object.keys(SPECIALTIES)).slice(0,4),swords:swordStock()};
+    H.market={cycle:H.cycle,weapon:smithStock('weapon'),armor:smithStock('armor'),heirloom:shuffle(stockHeirlooms()).slice(0,3),specialty:shuffle(Object.keys(SPECIALTIES)).slice(0,4),swords:swordStock()};
   }
 }
 function buy(slot,n){
@@ -5908,7 +5915,7 @@ function buy(slot,n){
 /* a commission: once per shop each season, pick any piece the shop isn't already showing, at double the price */
 const COMMISSION_SLOTS=['weapon','armor','heirloom','specialty'];
 const basePrice=(slot,n)=>slot==='weapon'||slot==='armor'?PRICES[slot][n]:(itemInfo(slot,n)||{}).price;
-const commissionPool=slot=>{const all=slot==='weapon'||slot==='armor'?Object.keys(PRICES[slot]):Object.keys(slot==='heirloom'?HEIRLOOMS:SPECIALTIES);
+const commissionPool=slot=>{const all=(slot==='weapon'||slot==='armor'?Object.keys(PRICES[slot]):Object.keys(slot==='heirloom'?HEIRLOOMS:SPECIALTIES)).filter(n=>!NOT_SOLD.includes(n));
   const shown=(H.market&&H.market[slot])||[];return all.filter(n=>!shown.includes(n)).sort((a,b)=>basePrice(slot,a)-basePrice(slot,b))};
 const commissioned=slot=>!!(H.market&&Array.isArray(H.market.ordered)&&H.market.ordered.includes(slot));
 function commission(slot,n){
@@ -5921,6 +5928,9 @@ function sell(i){const it=H.armory[i];if(!it)return;const g=sellPrice(it.slot,it
 /* put an item on a member; whatever they wore goes back to the armory */
 function equip(m,slot,name){
   if(!m||m.gear[slot]===name)return;
+  const info=slot==='heirloom'&&HEIRLOOMS[name];
+  if(info&&info.consumable){if(m.dead)return;const i=H.armory.findIndex(x=>x.slot===slot&&x.name===name);if(i<0)return;H.armory.splice(i,1);
+    m.elixirs=(m.elixirs||0)+1;H.log.push({cycle:H.cycle,text:`${m.given} drinks the ${name}. Old age will come for them a year later, from ${oldOf(m)}.`});return}
   const old=m.gear[slot];
   if(name&&name!=='None'){const i=H.armory.findIndex(x=>x.slot===slot&&x.name===name);if(i<0)return;H.armory.splice(i,1)}
   if(old&&old!=='None')H.armory.push({slot,name:old});
@@ -5986,7 +5996,9 @@ function marketView(){
   const stock=slot=>stock0(slot)+commRow(slot);
   const alive=H.members.filter(m=>!m.dead&&!m.merc).sort((a,b)=>b.age-a.age);
   const arm=H.armory.length?`<ul class="wares">${H.armory.map((it,i)=>`<li class="ware"><span style="flex:1;min-width:0"><span class="tk" style="color:var(--gold)">${ITEM_SLOTS[it.slot]}</span><b>${esc(it.name)}</b><br><span class="muted">${esc(itemDesc(it.slot,it.name))}</span></span>
-      <span class="give">${(()=>{const who=alive.filter(m=>isAdult(m)&&!m.captive&&improves(m,it.slot,it.name));
+      <span class="give">${(()=>{const drink=it.slot==='heirloom'&&(HEIRLOOMS[it.name]||{}).consumable;
+        if(drink){const w=alive.filter(m=>!m.captive);return w.length?`<select id="give-${i}" aria-label="Who drinks the ${esc(it.name)}">${w.map(m=>`<option value="${m.id}">${esc(m.given)} · age ${m.age}, old age from ${oldOf(m)}</option>`).join('')}</select><button class="sm" data-give="${i}">Give to drink</button>`:'<span class="muted" style="font-size:14px">No one here to drink it</span>'}
+        const who=alive.filter(m=>isAdult(m)&&!m.captive&&improves(m,it.slot,it.name));
         return who.length?`<select id="give-${i}" aria-label="Give ${esc(it.name)} to">${who.map(m=>`<option value="${m.id}">${esc(m.given)} · ${m.gear[it.slot]&&m.gear[it.slot]!=='None'?'replaces '+esc(m.gear[it.slot]):'empty slot'}</option>`).join('')}</select><button class="sm" data-give="${i}">Equip</button>`:'<span class="muted" style="font-size:14px">No one would be better off with it</span>'})()}<button class="sm" data-sell="${i}">Sell · ${sellPrice(it.slot,it.name)}</button></span></li>`).join('')}</ul>`
     :'<p class="muted">Empty. What you buy lands here, along with anything a member takes off.</p>';
   const F=(k,title,sub,body)=>`<section class="pane fold"><details data-fold="${k}" ${foldOpen(k)?'open':''}><summary><h2>${title}</h2>${sub?`<span class="muted">${sub}</span>`:''}</summary><div class="foldbody">${body}</div></details></section>`;
@@ -6241,7 +6253,7 @@ document.addEventListener('click',e=>{
   if(t.dataset.commission){const sl=$('comm-'+t.dataset.commission);if(sl)commission(t.dataset.commission,sl.value);return}
   if(t.dataset.buy){const k=t.dataset.buy.indexOf('|');buy(t.dataset.buy.slice(0,k),t.dataset.buy.slice(k+1));return}
   if(t.dataset.sell!=null){sell(+t.dataset.sell);return}
-  if(t.dataset.give!=null){const i=+t.dataset.give,it=H.armory[i],sl=$('give-'+i),m=sl&&mem(+sl.value);if(it&&m){equip(m,it.slot,it.name);H.log.push({cycle:H.cycle,text:`${m.given} takes up the ${it.name}.`})}render();return}
+  if(t.dataset.give!=null){const i=+t.dataset.give,it=H.armory[i],sl=$('give-'+i),m=sl&&mem(+sl.value);if(it&&m){const dr=it.slot==='heirloom'&&(HEIRLOOMS[it.name]||{}).consumable;equip(m,it.slot,it.name);if(!dr)H.log.push({cycle:H.cycle,text:`${m.given} takes up the ${it.name}.`})}render();return}
   if(t.dataset.return){const [i,k]=t.dataset.return.split('|');returnWard(+i,k);return}
   if(t.id==='newSigil'){R=Math.random;H.house.sigil=newSigil();render();return}
   if(t.id==='savesBtn'){savesOpen=!savesOpen;pendingDelete=null;t.setAttribute('aria-expanded',savesOpen);renderSaves();return}
