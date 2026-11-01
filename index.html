@@ -2029,7 +2029,7 @@ function syncMinors(){detachSeats();
   if(!Array.isArray(H.minors))return;
   /* a land a bannerman asked to raise may since have been lost, taken or grown: point the petition at another land that can still rise, or drop it */
   H.minors.forEach(x=>{const p=x.petition;if(!p||p.kind!=='upgrade')return;const h=(x.holds||[])[p.i];
-    if(h&&typeof h.t==='number'&&h.t<MT_TOP&&!h.b)return;const up=upgradable(x);if(up.length)p.i=up[0][1];else x.petition=null});
+    if(h&&Number.isInteger(h.t)&&h.t>=0&&h.t<MT_TOP&&!h.b)return;const up=upgradable(x);if(up.length)p.i=up[0][1];else x.petition=null});
   const lids=new Set(H.lands.map(l=>l.lid));
   H.minors.forEach(x=>{
     if(x.liege===YOU&&x.estate&&x.estate.lid&&!lids.has(x.estate.lid)){
@@ -2754,7 +2754,7 @@ function minorGrowTurn(say){
     if(h.t<MT_TOP&&Math.random()<.012){h.t++;if(x.liege===YOU)say(`A land of House ${x.name} grows into a ${LADDER[h.t][0].toLowerCase()}.`,'good')}
   }));
 }
-const upgradable=x=>(x.holds||[]).map((h,i)=>[h,i]).filter(([h])=>h.t<MT_TOP&&!h.b);
+const upgradable=x=>(x.holds||[]).map((h,i)=>[h,i]).filter(([h])=>h&&Number.isInteger(h.t)&&h.t>=0&&h.t<MT_TOP&&!h.b);
 const upgradeCost=h=>Math.ceil(5*LADDER[h.t][1]/2);
 function mHoldsText(x){
   const hs=x.holds||[];if(!hs.length)return '';
