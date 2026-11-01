@@ -4221,7 +4221,7 @@ const ALLY_OPS={
   b_mediate:{title:'Mediate the feud between House {T} and House {O}'},
   b_match:{title:'Broker a match between House {T} and House {O}'},
   b_feast:{title:'Send gifts and hold a feast for House {T}'},
-  b_loan:{title:'Offer House {T} a loan of gold'},
+  b_loan:{title:'Grant House {T} gold'},
   b_trade:{title:'Broker a trade deal for House {T}'},
   b_buyoff:{title:'Buy off the levies of House {O}, enemy of House {T}'},
   b_lend:{title:'Lend House {T} {N} compan{IES} of your levies'}
@@ -4247,14 +4247,14 @@ function allyChoices(){
     const foes=realmFoes(n);if(foes.length)c.push(['b_mediate',r,pick(foes)]);
     const mates=H.rivals.filter(o=>o.name!==n&&!relation(n,o.name));if(mates.length)c.push(['b_match',r,pick(mates)]);
     if(r.hostility>0)c.push(['b_feast',r]);
-    c.push(['b_loan',r]);
+    if(r.power<3)c.push(['b_loan',r]);else{const ms=swornTo(n).filter(x=>!x.rebel&&(x.power||1)<3);if(ms.length)c.push(['b_loan',r,null,pick(ms)])}
     c.push(['b_trade',r]);
     const strong=foes.filter(o=>o.power>1);if(strong.length)c.push(['b_buyoff',r,pick(strong)]);
     if(r.power<3&&ownField()>=1)c.push(['b_lend',r]);
   });
   return c;
 }
-function genAllyOp([kind,r,o]){
+function genAllyOp([kind,r,o,m]){
   const D=ALLY_OPS[kind];let diff=ri(1,3);
   if(kind==='a_levies')diff=ri(1,Math.min(3,r.power-1));
   if(kind==='b_lend')diff=ri(1,Math.min(3,3-r.power,ownField()));
@@ -4262,10 +4262,12 @@ function genAllyOp([kind,r,o]){
     title:D.title.replace('{T}',r.name).replace('{O}',o?o.name:'').replace('{N}',diff).replace('{IES}',diff===1?'y':'ies'),
     stages:shuffle(OPS.Intrigue.stages).slice(0,diff+1).map(s=>({name:s,stat:'Insight'}))};
   if(kind==='a_loan'||kind==='b_loan')op.sum=8*diff;
-  if(kind==='b_loan')op.cost=op.sum;
   if(kind==='b_feast')op.cost=3*diff;
   if(kind==='b_buyoff')op.cost=4*diff;
   if(!op.ask)op.inf=diff;
+  /* a gift of gold: 20 gold for each pip of strength they have now; it raises them one pip (or a bannerman of theirs, if they stand at full strength) */
+  if(kind==='b_loan'){op.grant=true;const p=m?(m.power||1):r.power;op.sum=op.cost=20*p;op.inf=op.cost/10;
+    if(m){op.minor=m.id;op.minorName=m.name;op.title=`Grant gold to House ${m.name}, sworn to House ${r.name}`}}
   return op;
 }
 /* the Winter board: up to two of the three places go to plots aimed at allies */
@@ -4290,8 +4292,8 @@ function allyRewardText(op){
     case 'b_mediate':return `Their war with House ${op.about} ends · +${op.inf} influence`;
     case 'b_match':return `House ${op.target} and House ${op.about} become allies · +${op.inf} influence`;
     case 'b_feast':return `Their tension with you falls by 2 (1 on partial success) · +${op.inf} influence`;
-    case 'b_loan':return `They take ${op.sum} gold and repay ${owed(op.sum)} in ${ALLY_TERM} seasons · +${op.inf} influence`;
-    case 'b_trade':return `They gain a land · +${op.inf} influence`;
+    case 'b_loan':if(op.grant)return `${op.minor?`The power of House ${op.minorName} rises by 1`:'Their power rises by 1'} · +${op.inf} influence · a gift, not repaid`;return `They take ${op.sum} gold and repay ${owed(op.sum)} in ${ALLY_TERM} seasons · +${op.inf} influence`;
+    case 'b_trade':return `They gain a land and their tension with you falls by 2 (on partial success, no land and tension falls by 1) · +${op.inf} influence`;
     case 'b_buyoff':return `The power of House ${op.about} falls by 1 · +${op.inf} influence`;
     case 'b_lend':return `${N===1?'One of your companies serves':N+' of your companies serve'} them for ${ALLY_TERM} seasons: their power rises by ${N}. You still pay the upkeep · +${op.inf} influence`;
   }
@@ -4318,6 +4320,7 @@ function allyStillValid(op){
     case 'b_mediate':if(!o||relation(op.target,op.about)!=='war')return 'That feud has already ended.';break;
     case 'b_match':if(!o||relation(op.target,op.about))return `House ${op.target} and House ${op.about} are no longer free to wed.`;break;
     case 'b_buyoff':if(!o||relation(op.target,op.about)!=='war')return 'That war has already ended.';break;
+    case 'b_loan':if(op.grant){if(op.minor){const x=minorById(op.minor);if(!x||x.liege!==op.target||x.rebel)return `House ${op.minorName} is no longer sworn to House ${op.target}.`;if((x.power||1)>=3)return `House ${op.minorName} already stands at full strength.`}else if(r.power>=3)return `House ${op.target} already stands at full strength.`}break;
     case 'b_lend':if(ownField()<op.diff||r.power+op.diff>3)return 'You have too few companies in the field, or they need fewer.';break;
   }
   return null;
@@ -4352,8 +4355,11 @@ function finishAlly(ms,grade,out){
     case 'b_mediate':if(full){setRel(n,op.about,null);if(H.realm.warFrom)delete H.realm.warFrom[pairKey(n,op.about)];out.push(`House ${n} and House ${op.about} lay down their arms.`)}else out.push('Both sides listen, but the war goes on.');break;
     case 'b_match':if(full){setRel(n,op.about,'ally');out.push(`House ${n} and House ${op.about} are joined by marriage and alliance.`)}else out.push('The match is discussed, but no one signs.');break;
     case 'b_feast':{const k=full?2:1;r.hostility=Math.max(0,r.hostility-k);out.push(`House ${n} is pleased. Tension falls to ${TENSION[r.hostility].toLowerCase()}.`);break}
-    case 'b_loan':if(full){H.dip.loans.push({house:n,dir:'out',amount:owed(op.sum),due:H.cycle+ALLY_TERM});out.push(`House ${n} takes ${op.sum} gold and will repay ${owed(op.sum)} by ${seasonOf(H.cycle+ALLY_TERM)}, year ${yearOf(H.cycle+ALLY_TERM)}.`)}else{out.push('They thank you but will not take your gold.');refund()}break;
-    case 'b_trade':if(full){r.lands++;out.push(`House ${n} gains a land through the deal.`)}else out.push('The merchants haggle and part without a deal.');break;
+    case 'b_loan':if(op.grant){if(!full){out.push('They thank you but will not take your gold.');refund();break}
+      if(op.minor){const x=minorById(op.minor);x.power=Math.min(3,(x.power||1)+1);out.push(`House ${n} accepts your gift for its bannerman. The power of House ${x.name} rises to ${x.power}.`)}
+      else{r.power=Math.min(3,r.power+1);out.push(`House ${n} accepts your gift. Their power rises to ${r.power}.`)}break}
+      if(full){H.dip.loans.push({house:n,dir:'out',amount:owed(op.sum),due:H.cycle+ALLY_TERM});out.push(`House ${n} takes ${op.sum} gold and will repay ${owed(op.sum)} by ${seasonOf(H.cycle+ALLY_TERM)}, year ${yearOf(H.cycle+ALLY_TERM)}.`)}else{out.push('They thank you but will not take your gold.');refund()}break;
+    case 'b_trade':{const k=full?2:1;r.hostility=Math.max(0,r.hostility-k);if(full){r.lands++;out.push(`House ${n} gains a land through the deal. Tension falls to ${TENSION[r.hostility].toLowerCase()}.`)}else out.push(`The merchants haggle and part without a deal, but House ${n} thanks you for trying. Tension falls to ${TENSION[r.hostility].toLowerCase()}.`);break}
     case 'b_buyoff':if(full){o.power=Math.max(1,o.power-1);out.push(`The levies of House ${op.about} melt away. Their power falls to ${o.power}.`)}else out.push('Some of their levies take your coin and stay anyway.');break;
     case 'b_lend':if(full){r.power+=N;H.army.lent.push({house:n,n:N,until:H.cycle+ALLY_TERM});out.push(`${N===1?'One of your companies marches':N+' of your companies march'} to House ${n} until ${seasonOf(H.cycle+ALLY_TERM)}, year ${yearOf(H.cycle+ALLY_TERM)}. Their power rises to ${r.power}. You still pay the upkeep.`)}else out.push('They decline your levies for now.');break;
   }
