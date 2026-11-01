@@ -2481,7 +2481,8 @@ function landPanel(x){
   return `<span class="rebel feud" style="display:block"><b>Grant a land.</b> It keeps its tier and pays you half its income; their unrest eases, resentment ends, and they will not rise against you for a year.<span class="macts">${give}</span>
     <b>Take a land back.</b> It becomes your hold again; their unrest rises a step.<span class="macts">${take}</span></span>`;
 }
-function minorActs(x){
+function minorActs(x){const h=minorActsCore(x),bk=brokerBtns('m:'+x.id)+bTruceNote('m:'+x.id);return bk?h.replace(/<\/span>$/,bk+'</span>'):h}
+function minorActsCore(x){
   const why=minorRerollBlock(x),rr=`<button data-minor="reroll|${x.id}" ${why?`disabled title="${esc(why)}"`:'title="New name, sigil, words and species"'}>Reroll</button>`;
   if(!canDeal(x)){const bk=x.rebel&&x.liege?(x.rebel.backed?'<button disabled>Backed: they break away to you at season’s end</button>':`<button data-minor="back|${x.id}" ${H.gold>=backCost(x)?'':'disabled'} title="They break from House ${esc(x.liege)} at season’s end and swear to you. House ${esc(x.liege)} grows more hostile.">Back the rebels · ${backCost(x)}g</button>`):'';return `<span class="macts">${bk}${dissBtn(x)}${rr}</span>`}
   const b=[];
@@ -2556,6 +2557,12 @@ function entOf(k){const id=k.slice(2);return k[0]==='h'?rival(id):k[0]==='m'?min
 function entLabel(k){if(k==='y')return 'your house';const e=entOf(k);if(!e)return 'a house now gone';return k[0]==='o'?e.name:'House '+e.name}
 const EL=k=>cap1(entLabel(k));
 function entLands(k){const e=entOf(k);if(!e)return 0;return k[0]==='h'?totalLands(e):k[0]==='m'?mN(e):banditLands(e)}
+/* truces you broker between other powers: entity keys (h:, m:, o:), binding for BROKER_TRUCE seasons */
+const BROKER_TRUCE=4;
+function bTruce(a,b){if(!Array.isArray(H.btruces))return null;H.btruces=H.btruces.filter(t=>t.until>H.cycle);return H.btruces.find(t=>t.k===owKey(a,b))||null}
+const bTruceH=(a,b)=>!!bTruce('h:'+a,'h:'+b);
+const basePow=k=>{const e=entOf(k);return e?(k[0]==='m'?(e.power||1):e.power||1):0};
+const brokerCost=(a,b)=>2*(basePow(a)+basePow(b));
 function entPower(k){const e=entOf(k);if(!e)return 0;return k[0]==='h'?e.power+1+Math.min(1.5,.5*(H.minors||[]).filter(x=>x.liege===e.name&&!x.rebel).length):k[0]==='m'?(e.power||1)+.5:e.power}
 /* a great house loses one land: from its own, or from a bannerman's, in proportion. Returns the key of whoever lost it, or null */
 function houseLoseLand(r){
@@ -2644,7 +2651,7 @@ function outlawTurn(say){
   /* landless minor houses strike outlaws in their liege's country (anywhere, if independent) to win land.
      Independents want their Estate plus IND_WANT lands: below that they strike too, and hungrier (25% a season) */
   (H.minors||[]).forEach(x=>{const hungry=indieHungry(x);if(x.rebel||x.liege===YOU||x.estate&&!hungry||Math.random()>=(hungry?IND_STRIKE:.1))return;const k='m:'+x.id;if(owarsOf(k).length)return;
-    const bs=H.bandits.filter(b=>(!x.liege||b.hold.house===x.liege)&&!atWarO(k,'o:'+b.id));if(!bs.length)return;const b=pick(bs);
+    const bs=H.bandits.filter(b=>(!x.liege||b.hold.house===x.liege)&&!atWarO(k,'o:'+b.id)&&!bTruce(k,'o:'+b.id));if(!bs.length)return;const b=pick(bs);
     H.owars.push(owKey(k,'o:'+b.id));say(`House ${x.name}, landless, takes up arms against ${b.name} to win land of its own.`,'')});
   /* some wars end */
   H.owars.slice().forEach(w=>{if(Math.random()<.15){H.owars=H.owars.filter(x=>x!==w);const [A,B]=w.split('|');say(`${EL(A)} and ${entLabel(B)} let the fighting lapse, for now.`,'')}});
@@ -2658,11 +2665,11 @@ function outlawTurn(say){
     if(banditLands(b)>=HOLD_CAP)return;const T=pick(t),o=entLoseLand(T);if(!o)return;entGainLand('o:'+b.id,o);
     say(`${cap1(b.name)} seize a land from ${entLabel(o)}.`,'warn');winRecruit('o:'+b.id,say);return}
   /* a declaration: the wronged strike back, or a strong company looks for more */
-  const wronged=[];H.bandits.forEach(b=>Object.keys(b.lands||{}).forEach(k=>{if(entOf(k)&&!atWarO(k,'o:'+b.id)&&owarsOf('o:'+b.id).length<2&&k!=='y')wronged.push([k,b])}));
-  H.bandits.forEach(b=>{const r0=rival(b.hold.house);if(r0&&!atWarO('h:'+r0.name,'o:'+b.id)&&owarsOf('o:'+b.id).length<2)wronged.push(['h:'+r0.name,b])});
+  const wronged=[];H.bandits.forEach(b=>Object.keys(b.lands||{}).forEach(k=>{if(entOf(k)&&!atWarO(k,'o:'+b.id)&&!bTruce(k,'o:'+b.id)&&owarsOf('o:'+b.id).length<2&&k!=='y')wronged.push([k,b])}));
+  H.bandits.forEach(b=>{const r0=rival(b.hold.house);if(r0&&!atWarO('h:'+r0.name,'o:'+b.id)&&!bTruce('h:'+r0.name,'o:'+b.id)&&owarsOf('o:'+b.id).length<2)wronged.push(['h:'+r0.name,b])});
   if(wronged.length&&Math.random()<.85){const [k,b]=pick(wronged);H.owars.push(owKey(k,'o:'+b.id));say(`${EL(k)} ${k[0]==='h'?'marches':'takes up arms'} against ${b.name}.`,'warn');return}
   const strong=H.bandits.filter(b=>b.power>=2&&owarsOf('o:'+b.id).length<2);if(!strong.length)return;
-  const b=pick(strong),opts=banditTargets(b).concat(H.bandits.filter(x=>x!==b).map(x=>'o:'+x.id)).filter(x=>!atWarO(x,'o:'+b.id));if(!opts.length)return;
+  const b=pick(strong),opts=banditTargets(b).concat(H.bandits.filter(x=>x!==b).map(x=>'o:'+x.id)).filter(x=>!atWarO(x,'o:'+b.id)&&!bTruce(x,'o:'+b.id));if(!opts.length)return;
   const T=pick(opts);H.owars.push(owKey(T,'o:'+b.id));say(`${cap1(b.name)} make war on ${entLabel(T)}.`,'warn');
 }
 /* independents want their seat plus 3 lands of any tier; below that they settle wilds (12%) and strike outlaws (25%) each season */
@@ -2747,9 +2754,9 @@ function landHungerTurn(say){
       if(bs.length){const x=bs[0];let bi=0;x.holds.forEach((h,i)=>{if(h.t>x.holds[bi].t)bi=i});const h=x.holds.splice(bi,1)[0];r.lands++;
         x.unrest=Math.min(3,(x.unrest||0)+1);
         say(`House ${r.name} takes back a ${LADDER[h.t][0].toLowerCase()} from its bannerman House ${x.name}, who ${['','grow restless','fall into unrest','rise in revolt'][x.unrest]}.`,'')}}
-    if(Array.isArray(H.bandits)&&Math.random()<.25){const k='h:'+r.name,b=pick(H.bandits.filter(b=>((b.lands||{})[k]||b.hold.house===r.name)&&!atWarO(k,'o:'+b.id))||[]);
+    if(Array.isArray(H.bandits)&&Math.random()<.25){const k='h:'+r.name,b=pick(H.bandits.filter(b=>((b.lands||{})[k]||b.hold.house===r.name)&&!atWarO(k,'o:'+b.id)&&!bTruce(k,'o:'+b.id))||[]);
       if(b){H.owars.push(owKey(k,'o:'+b.id));say(`House ${r.name}, hungry for its lost lands, marches against ${b.name}.`,'warn')}}
-    if(r.power>=2&&Math.random()<.08&&!H.rivals.some(o=>o!==r&&relation(r.name,o.name)==='war')){const fs=H.rivals.filter(o=>o!==r&&o.power<=r.power&&relation(r.name,o.name)!=='ally'&&relation(r.name,o.name)!=='war'&&totalLands(o)>1).sort((a,b)=>totalLands(b)-totalLands(a));
+    if(r.power>=2&&Math.random()<.08&&!H.rivals.some(o=>o!==r&&relation(r.name,o.name)==='war')){const fs=H.rivals.filter(o=>o!==r&&o.power<=r.power&&relation(r.name,o.name)!=='ally'&&relation(r.name,o.name)!=='war'&&!bTruceH(r.name,o.name)&&totalLands(o)>1).sort((a,b)=>totalLands(b)-totalLands(a));
       if(fs.length){const o=fs[0];setRel(r.name,o.name,'war');H.realm.warFrom[pairKey(r.name,o.name)]=r.name;say(`House ${r.name}, hungry for land, marches on House ${o.name}.`,'warn');allyAttacked(r,o,say)}}
   });
 }
@@ -3929,7 +3936,7 @@ const EVENTS=[
     else say(`Houses ${a.name} and ${b.name} seal an alliance${Math.random()<.5?' with a marriage':''}.`,'');
   }],
   ['war',2,say=>{
-    const pairs=[];H.rivals.forEach((a,i)=>H.rivals.slice(i+1).forEach(b=>{if(relation(a.name,b.name)!=='ally'&&relation(a.name,b.name)!=='war')pairs.push([a,b])}));if(!pairs.length)return false;
+    const pairs=[];H.rivals.forEach((a,i)=>H.rivals.slice(i+1).forEach(b=>{if(relation(a.name,b.name)!=='ally'&&relation(a.name,b.name)!=='war'&&!bTruceH(a.name,b.name))pairs.push([a,b])}));if(!pairs.length)return false;
     let [a,b]=pick(pairs);if(b.lands<LAND_WANT&&a.lands>=LAND_WANT&&b.power>=a.power)[a,b]=[b,a];setRel(a.name,b.name,'war');H.realm.warFrom[pairKey(a.name,b.name)]=a.name;say(`House ${a.name} marches on House ${b.name}. The realm is at war.`,'warn');
     allyAttacked(a,b,say);
   }],
@@ -4144,7 +4151,7 @@ const WAR_WHY={land:'they want your lands',revenge:'old grudges boil over',crown
 function aiDeclare(r,say){
   const w=newWar(r.name,{since:H.cycle+1,by:'them',cause:WAR_WHY[r.agenda]||'old grudges boil over'});H.dip.wars.push(w);r.hostility=Math.max(r.hostility,3);
   say(`House ${r.name} declares war on you: ${w.cause}.`,'bad');
-  H.dip.allies.forEach(a=>{const ar=rival(a.house);if(!ar||relation(a.house,r.name)==='ally')return;setRel(a.house,r.name,'war');w.allies.push(a.house);say(`House ${a.house} honors your alliance and goes to war against House ${r.name}.`,'good')});
+  H.dip.allies.forEach(a=>{const ar=rival(a.house);if(!ar||relation(a.house,r.name)==='ally')return;if(bTruceH(a.house,r.name)){say(`House ${a.house} is bound by a truce with House ${r.name} and cannot march.`,'warn');return}setRel(a.house,r.name,'war');w.allies.push(a.house);say(`House ${a.house} honors your alliance and goes to war against House ${r.name}.`,'good')});
   H.rivals.filter(o=>o.name!==r.name&&relation(o.name,r.name)==='ally'&&!alliedWith(o.name)&&!atWar(o.name)&&!inTruce(o.name)).forEach(o=>{
     if(Math.random()<.5){H.dip.wars.push(newWar(o.name,{since:H.cycle+1,by:'them',cause:`Joined its ally House ${r.name}`,joined:r.name}));o.hostility=Math.max(o.hostility,3);say(`House ${o.name} joins its ally House ${r.name} in the war against you.`,'bad')}});
 }
@@ -4569,6 +4576,7 @@ function envoyMods(kind,n,against){
   }else if(kind==='call'){
     const e=rival(against);if(!e)return {block:'That enemy is gone.'};
     if(!alliedWith(n))return {block:'They are not your allies.'};
+    if(bTruceH(n,against))return {block:`They are bound by a truce with House ${against} that you brokered.`};
     if(relation(n,against)==='ally')return {block:`They are allied with House ${against} and will not fight them.`};
     if(warAllies(against).includes(n))return {block:'They already fight beside you.'};
     add('Bound by your alliance',2);
@@ -4594,8 +4602,59 @@ function envoyMods(kind,n,against){
 }
 const envoyBase=m=>m.st.Insight+gearBonus(m,'Insight','Intrigue')+(H.realm&&H.realm.office==='chancellor'?1:0);
 const ENVOY_TITLE={wed:n=>{const r=rival(n);return r?`Propose a match to ${lordWord(r.lord)} ${r.lord.given} of House ${n}`:'Propose a match'},crown:()=>{const k=H.realm.king;return k?`Propose a royal match to ${crownWord(k)} ${k.given}`:'Propose a royal match'},ally:n=>`Propose an alliance to House ${n}`,call:(n,a)=>`Call House ${n} to arms against House ${a}`,peace:n=>`Sue House ${n} for peace`};
+/* ---------- brokering peace: an envoy talks two warring powers (great houses, minor houses or outlaws) into a truce ---------- */
+function atWarE(a,b){return a[0]==='h'&&b[0]==='h'?relation(a.slice(2),b.slice(2))==='war':atWarO(a,b)}
+/* the wars an envoy sent from this house's card can try to end; none that involve you */
+function brokerWars(k){
+  const out=[];
+  if(k[0]==='h'){const n=k.slice(2);H.rivals.forEach(o=>{if(o.name!==n&&relation(n,o.name)==='war')out.push('h:'+o.name)})}
+  owarsOf(k).forEach(o=>{if(o[0]==='o')out.push(o)});
+  return out;
+}
+const brokerHeard=k=>H.dip.heard[k[0]==='h'?k.slice(2):k]===H.cycle;
+function brokerBlock(a,b){
+  if(!entOf(a)||!entOf(b))return 'That war is over: one side is gone.';
+  if(!atWarE(a,b))return 'That war has already ended.';
+  if(brokerHeard(a)||brokerHeard(b))return 'One side has already heard an envoy this season.';
+  const c=brokerCost(a,b);if(H.influence<c)return `The talks cost ${c} influence. You have ${H.influence}.`;
+  return null;
+}
+function brokerMods(a,b){const top=Math.max(basePow(a),basePow(b)),M=[];if(top>1)M.push(['Strength of the strongest side',1-top]);return {mods:M,sum:M.reduce((x,y)=>x+y[1],0)}}
+function brokerBtns(k){
+  return brokerWars(k).map(o=>{const why=brokerBlock(k,o),c=brokerCost(k,o);
+    return `<button class="sm" data-envoy="broker|${esc(k)}|${esc(o)}" ${why?`disabled title="${esc(why)}"`:`title="Success: the war ends, a truce holds ${BROKER_TRUCE} seasons, royal favor +1"`}>Broker peace with ${esc(entLabel(o))} · ${c} influence · envoy</button>`}).join('');
+}
+function brokerPanel(){
+  const {house:a,against:b}=envoy,A=entOf(a),B=entOf(b);if(!A||!B){envoy=null;return ''}
+  const why=brokerBlock(a,b),E=brokerMods(a,b),c=brokerCost(a,b);
+  const mods=E.mods.length?`<ul class="mods">${E.mods.map(([l,v])=>`<li><span>${esc(l)}</span><b class="${v>0?'okc':'hot'}">${v>0?'+':'−'}${Math.abs(v)}</b></li>`).join('')}</ul>`:'<p class="muted" style="margin:0">No modifiers either way.</p>';
+  const avail=H.members.filter(available).sort((x,y)=>envoyBase(y)-envoyBase(x));
+  const pickHtml=why?`<p class="hot" style="margin:0">${esc(why)}</p>`:avail.length?`<div class="teampick scroll" role="group" aria-label="Choose the envoy">${avail.map(m=>{const t=envoyBase(m)+E.sum,g=gearBonus(m,'Insight','Intrigue');
+      return `<button data-sendenvoy="${m.id}">${portrait(m,48)}<span>${esc(m.given)} <span class="muted">· Insight ${m.st.Insight}${g?', gear +'+g:''}${H.realm.office==='chancellor'?', chancellor +1':''}</span></span><b>${clamp(t,1,9)} or under</b></button>`}).join('')}</div>
+      <p class="muted" style="margin:0;font-size:14px">A 1 always succeeds and a 10 always fails. The envoy is away for the season and cannot join an operation.</p>`:'<p class="muted" style="margin:0">No one of age is free to go. Members on operations this season are away.</p>';
+  const what=`The talks cost ${c} influence, paid when the envoy sets out (2 for each pip of strength on either side). Success: the war ends, the two may not make war on each other for ${BROKER_TRUCE} seasons, and royal favor rises by 1. Failure: the war goes on, and the influence is spent.`;
+  return `<section class="pane crisis" id="envoyPanel"><div class="boardhead"><h2>Broker peace between ${esc(entLabel(a))} and ${esc(entLabel(b))}</h2><button class="sm" data-envoy="">Cancel</button></div>
+    <div class="hhead" style="margin-bottom:10px">${A.sigil?`<svg class="rsig" viewBox="0 0 100 118" aria-hidden="true">${sigilSVG(A.sigil,'bk'+a)}</svg>`:''}<p style="margin:0;font-size:16px;min-width:0">${esc(what)}</p></div>
+    <div class="two"><div><h3 style="margin-top:0">How the talks lean</h3>${mods}</div><div><h3 style="margin-top:0">Send an envoy</h3>${pickHtml}</div></div></section>`;
+}
+function sendBroker(id){
+  const m=mem(id),{house:a,against:b}=envoy;if(!m||!available(m)||brokerBlock(a,b))return;
+  const c=brokerCost(a,b),E=brokerMods(a,b),t=envoyBase(m)+E.sum,roll=1+Math.floor(Math.random()*10),ok=roll===1||(roll!==10&&roll<=t),rl=`(rolled ${roll} against ${clamp(t,1,9)})`;
+  H.influence-=c;m.onOp=H.cycle;[a,b].forEach(k=>{H.dip.heard[k[0]==='h'?k.slice(2):k]=H.cycle});
+  const la=entLabel(a),lb=entLabel(b);let text;
+  if(ok){
+    if(a[0]==='h'&&b[0]==='h'){setRel(a.slice(2),b.slice(2),null);if(H.realm.warFrom)delete H.realm.warFrom[pairKey(a.slice(2),b.slice(2))]}
+    else H.owars=(H.owars||[]).filter(w=>w!==owKey(a,b));
+    if(!Array.isArray(H.btruces))H.btruces=[];H.btruces=H.btruces.filter(x=>x.k!==owKey(a,b));H.btruces.push({k:owKey(a,b),until:H.cycle+BROKER_TRUCE});
+    fav(1);
+    text=`${m.given} brokers peace between ${la} and ${lb} ${rl}. A truce holds until ${seasonOf(H.cycle+BROKER_TRUCE)}, year ${yearOf(H.cycle+BROKER_TRUCE)}.${H.realm&&!H.realm.yours?' Royal favor +1.':''} −${c} influence.`}
+  else text=`${cap1(la)} and ${lb} will not make peace ${rl}. The war goes on. −${c} influence.`;
+  H.dip.last={text,ok,cycle:H.cycle};H.log.push({cycle:H.cycle,text});envoy=null;render();
+}
+/* brokered truces shown on a house's card */
+function bTruceNote(k){if(!Array.isArray(H.btruces))return '';return H.btruces.filter(t=>t.until>H.cycle&&t.k.split('|').includes(k)).map(t=>{const o=t.k.split('|').find(x=>x!==k);return `<span class="muted" style="font-size:14px;align-self:center">A truce you brokered with ${esc(entLabel(o))} holds until ${seasonOf(t.until)}, year ${yearOf(t.until)}</span>`}).join('')}
 function envoyPanel(){
-  if(!envoy)return '';const {kind,house:n,against}=envoy,r=rival(n);if(!r&&kind!=='crown'){envoy=null;return ''}
+  if(!envoy)return '';if(envoy.kind==='broker')return brokerPanel();const {kind,house:n,against}=envoy,r=rival(n);if(!r&&kind!=='crown'){envoy=null;return ''}
   const wedK=kind==='wed'||kind==='crown',T=wedK?wedTarget(kind,n):null,price=wedK?rulerDowry(kind):0;
   let wedHtml='',wedBlock='';
   if(wedK&&T){const pool=wedPool(T.sex,T);if(!pool.some(m=>m.id===envoy.who))envoy.who=pool[0]?pool[0].id:null;
@@ -4619,7 +4678,7 @@ function envoyPanel(){
     ${wedHtml}<div class="two"><div><h3 style="margin-top:0">How House ${esc(n)} leans</h3>${mods}</div><div><h3 style="margin-top:0">Send an envoy</h3>${pickHtml}</div></div></section>`;
 }
 function sendEnvoy(id){
-  if(!envoy)return;const m=mem(id),{kind,house:n,against}=envoy,r=rival(n);if(!m||!available(m)||(!r&&kind!=='crown'))return;
+  if(!envoy)return;if(envoy.kind==='broker'){sendBroker(id);return}const m=mem(id),{kind,house:n,against}=envoy,r=rival(n);if(!m||!available(m)||(!r&&kind!=='crown'))return;
   const E=envoyMods(kind,n,against);if(E.block)return;
   const wedK=kind==='wed'||kind==='crown',T=wedK&&wedTarget(kind,n),bride=wedK&&mem(envoy.who),price=wedK?rulerDowry(kind):0;
   if(wedK&&(!T||!bride||!wedPool(T.sex,T).includes(bride)||H.gold<price))return;
@@ -4925,6 +4984,7 @@ function dipActs(r){
     else b.push(`<button class="sm danger" data-warask="${esc(n)}">Declare war</button>`);
     H.rivals.filter(o=>o!==r&&relation(n,o.name)==='war'&&!atWar(o.name)&&!alliedWith(o.name)&&!inTruce(o.name)).forEach(o=>b.push(`<button class="sm" data-joinwar="${esc(n)}|${esc(o.name)}">Join their war on House ${esc(o.name)}</button>`));
   }
+  b.push(brokerBtns('h:'+n),bTruceNote('h:'+n));
   return b.join('');
 }
 function warConfirm(r){
@@ -5674,7 +5734,7 @@ function rivalStanceYear(r,c,say){
     if(ok){r.lands+=x;let t=`${tag} seizes ${x} new land${x>1?'s':''}`;
       if(r.hostility>=3&&!atWar(n)&&!inTruce(n)&&!c.declared&&Math.random()<1/3){c.declared=true;const ln=[];aiDeclare(r,(s)=>ln.push(s));say(`${t}, then turns its eyes on you. ${ln.join(' ')}`,'bad');return}
       say(t+'.','')}
-    else{const foes=H.rivals.filter(o=>o!==r&&!relation(o.name,n)&&!isRoyalRival(o.name));
+    else{const foes=H.rivals.filter(o=>o!==r&&!relation(o.name,n)&&!bTruceH(n,o.name)&&!isRoyalRival(o.name));
       if(foes.length){const f=pick(foes);setRel(n,f.name,'war');say(`${tag} provokes House ${f.name}: the two houses go to war.`,'');if(alliedWith(f.name))allyAttacked(r,f,say)}}}
   if(c.stance==='Valor'){
     if(ok){const t0=r.hostility;r.hostility=Math.max(0,r.hostility-x);r.renown=(r.renown||0)+x;say(`${tag} wins renown at court${t0>r.hostility?', and softens toward you':''}.`,t0>r.hostility?'good':'')}
