@@ -2453,6 +2453,9 @@ function petText(x,p){
   if(p.kind==='upgrade'){const h=(x.holds||[])[p.i];return h&&LADDER[h.t+1]?`House ${x.name} asks your help to raise one of its lands, a ${LADDER[h.t][0].toLowerCase()}, into a ${LADDER[h.t+1][0].toLowerCase()}: ${upgradeCost(h)} gold, half the cost. It takes ${LADDER[h.t+1][3]} season${LADDER[h.t+1][3]>1?'s':''}, and you have half its income.`:`House ${x.name} asks your help to raise one of its lands.`}
   return `House ${x.name}, landless, asks for an Estate of its own.`;
 }
+/* a petition that can no longer be granted (their strength reached 3, the land is already being raised or is gone) is withdrawn */
+function petStale(x,p){if(!p)return false;if(p.kind==='levy')return (x.power||1)>=3;if(p.kind==='upgrade'){const h=(x.holds||[])[p.i];return !h||h.t>=MT_TOP||!!h.b}return false}
+function clearStalePetitions(){(H.minors||[]).forEach(x=>{if(petStale(x,x.petition))x.petition=null})}
 function newPetition(x){
   const kinds=['gold','justice'];if(x.power<3)kinds.push('levy');if(!x.estate)kinds.push('grant','grant');const up=upgradable(x);if(up.length)kinds.push('upgrade','upgrade');
   const p={kind:pick(kinds),since:H.cycle};if(p.kind==='upgrade')p.i=pick(up)[1];if(p.kind==='justice'){p.what=pick(DISPUTES);x.unrest=Math.min(3,(x.unrest||0)+1)}return p;
@@ -2473,7 +2476,7 @@ function answerPetition(x,how,lid){
   x.petition=null;H.log.push({cycle:H.cycle,text:t});
 }
 function minorTurn(say){
-  if(!Array.isArray(H.minors))return;
+  if(!Array.isArray(H.minors))return;clearStalePetitions();
   /* rebellions already burning run down first: backed rebels go over to you, others break away when time runs out */
   const moved=new Set();
   H.minors.filter(x=>x.rebel&&x.rebel.since<H.cycle).forEach(x=>{
@@ -2903,7 +2906,7 @@ function rebelHtml(x){
   return `<span class="rebel"><b class="hot">In rebellion against House ${esc(x.liege)}.</b> ${x.rebel.backed?'Your gold is behind them.':`${n} season${n>1?'s':''} before they break away and stand independent. Back them, and they break away at season’s end and swear to you.`}</span>`;
 }
 function petitionHtml(x){
-  const p=x.petition;if(!p||x.liege!==YOU)return '';const c=petCost(x,p);
+  if(petStale(x,x.petition))x.petition=null;const p=x.petition;if(!p||x.liege!==YOU)return '';const c=petCost(x,p);
   const yes=p.kind==='grant'?(freeEstates().length?freeEstates().map(L=>`<button data-minor="petyes|${x.id}|${lk(L)}">Grant ${esc(L.name)} Estate</button>`).join(''):'<button disabled title="Raise a castle to an Estate first">Grant an Estate</button>')
     :`<button data-minor="petyes|${x.id}" ${canAnswer(x,p)?'':'disabled'}>Grant${c.gold?` · ${c.gold} gold`:c.inf?` · ${c.inf} influence`:''}</button>`;
   return `<span class="petition"><b>Petition:</b> ${esc(petText(x,p))}<span class="muted" style="display:block;font-size:13px">Grant it: resentment ends and unrest eases. Refuse: they resent you. Leave it waiting: if they press it again, unrest grows.</span><span class="macts">${yes}<button data-minor="petno|${x.id}">Refuse</button></span></span>`;
@@ -3611,6 +3614,7 @@ function genBoard(){const t=SEASON_OP[seasonOf(H.cycle)];
 function ensureState(){
   if(H.influence==null)H.influence=0;
   ['lands','captives','secrets','plans','pacts','offers','log'].forEach(k=>{if(!Array.isArray(H[k]))H[k]=[]});migrateLands();
+  if(H.house&&H.house.rank==='great'&&Array.isArray(H.minors)&&H.minors.some(x=>x.wedTie)){const t=honorTies();if(t)H.log.push({cycle:H.cycle,text:t.trim()})}
   if(!Array.isArray(H.rivals))H.rivals=genRivals();
   H.rivals.forEach(r=>{if(!r.sp)r.sp=houseSp(r.name)||pick(SPECIES_KEYS)});H.members.forEach(m=>{if(!m.sp)m.sp='Kin'});
   if(!H.ops)H.ops={nextOp:1,board:[],underway:[]};
