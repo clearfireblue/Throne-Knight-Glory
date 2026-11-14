@@ -1647,6 +1647,12 @@ const greatConds=()=>[{ok:armyPower()>=GREAT_STR,t:'Strength 3',d:`${fieldLevies
   {ok:seatIsEstate(),t:'An Estate seat',d:seatIsEstate()?`${H.house.seat} is an Estate.`:`${H.house.seat} is a ${(mySeatLand()||{tier:'?'}).tier.toLowerCase()}. Build it up to an Estate.`},
   {ok:landsBesideSeat()>=GREAT_LANDS,t:'Six lands',d:`You hold ${landsBesideSeat()} land${landsBesideSeat()===1?'':'s'} besides your seat.`}];
 let greatAsk=false,greatNote=null;
+/* houses tied to you by a marriage made while you were a company or minor house swear to you, loyal, once you are a major house */
+function honorTies(){
+  const tied=(H.minors||[]).filter(x=>x.wedTie);if(!tied.length)return '';
+  tied.forEach(x=>{if(x.rebel)endRebel(x);x.wedTie=false;x.liege=YOU;x.loyal=true;x.courted=false;x.resentful=false});
+  return ` Bound by marriage, ${tied.map(x=>'House '+x.name).join(', ')} swear${tied.length===1?'s':''} to you.`;
+}
 function riseToGreat(){if(!youQualify()||H.house.claimant)return;greatAsk=false;
   if(seventhDone()){H.house.claimant=true;
     H.log.push({cycle:H.cycle,text:`House ${H.house.name} has the strength of a major house, but every major seat is held. It waits for a seat, or will take one.`});
@@ -1654,7 +1660,7 @@ function riseToGreat(){if(!youQualify()||H.house.claimant)return;greatAsk=false;
   H.realm.seventh={by:H.house.name,cycle:H.cycle,you:true};
   H.house.rank='great';H.house.claimant=false;H.house.greatAt=H.cycle;
   H.members.forEach(m=>{if(m.ruler&&!m.dead)m.title=rulerTitle(m)});
-  H.log.push({cycle:H.cycle,text:`House ${H.house.name} rises to fill an open seat among the major houses of the realm, seated at ${H.house.seat}.`});
+  H.log.push({cycle:H.cycle,text:`House ${H.house.name} rises to fill an open seat among the major houses of the realm, seated at ${H.house.seat}.`+honorTies()});
   greatNote=`House ${H.house.name} is a major house of the realm now. Minor houses may swear to you.`;render()}
 /* a minor house becomes a major house (a rival): the shared core of the seventh rising and of taking your seat */
 function minorToGreat(x,seat){const sx=Math.random()<.65?'m':'f',oldKey='m:'+x.id;
@@ -1682,7 +1688,7 @@ function takeSeat(r,say){const n=r.name,old=H.house.seat,out=[];
   H.ops.defense=(H.ops.defense||[]).filter(o=>o.target!==n);
   H.house.seat=r.seat;H.house.rank='great';H.house.claimant=false;H.house.greatAt=H.cycle;
   H.members.forEach(m=>{if(m.ruler&&!m.dead)m.title=rulerTitle(m)});
-  const t=`House ${H.house.name} takes the seat of House ${n} at ${r.seat} and rises to stand among the major houses of the realm. ${old} stays yours as a hold.${bann.length?` ${bann.map(x=>'House '+x.name).join(', ')} swear${bann.length===1?'s':''} to you.`:''}`;
+  const t=`House ${H.house.name} takes the seat of House ${n} at ${r.seat} and rises to stand among the major houses of the realm. ${old} stays yours as a hold.${bann.length?` ${bann.map(x=>'House '+x.name).join(', ')} swear${bann.length===1?'s':''} to you.`:''}${honorTies()}`;
   H.log.push({cycle:H.cycle,text:t});say(t,'good')}
 function seizeBlock(r){if(rankOf()!=='minor'||!H.house.claimant)return 'Only a minor house waiting for a major seat can seize one';
   if(!youQualify())return 'You no longer meet every condition of a major house';
