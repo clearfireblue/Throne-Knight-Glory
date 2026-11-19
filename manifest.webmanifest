@@ -1,0 +1,9 @@
+{
+  "name": "Throne Knight Glory",
+  "short_name": "TKG",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f1420",
+  "theme_color": "#0f1420"
+}
